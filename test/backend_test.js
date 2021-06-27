@@ -12,8 +12,6 @@ let mongoose = require('mongoose');
 const moment = require('moment');
 const chalk = require('chalk');
 const pkg = require('../package.json');
-const ora = require('ora');
-const spinner = ora('');
 const wipe = chalk.white;
 const dataStore = require('data-store');
 const config_storage = new dataStore({path: '../config/config.json'});
@@ -36,10 +34,10 @@ before(done => {
     // Check configuration values
     setup.check_values(config_storage, stats_storage);
     // Connect to mongodb using mongoose
-    spinner.start(wipe(`${chalk.bold.yellow('Mongoose')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_storage.get('mongodb_url') + `"`));
+    console.log(wipe(`${chalk.bold.yellow('Mongoose')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_storage.get('mongodb_url') + `"`));
     mongoose.connection.on('connected', function () {
-        spinner.succeed(wipe(`${chalk.bold.yellow('Mongoose')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at ` + config_storage.get('mongodb_url')));
-        spinner.info(wipe(`${chalk.bold.red('Mocha')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Starting unit tests for BACKEND`));
+        console.log(wipe(`${chalk.bold.yellow('Mongoose')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at ` + config_storage.get('mongodb_url')));
+        console.log(wipe(`${chalk.bold.red('Mocha')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Starting unit tests for BACKEND`));
         done();
     });
     mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
@@ -172,6 +170,6 @@ describe('Game deletion', function() {
 // Author(s) : RAk3rman
 after(done => {
     // Close mongoose connection
-    spinner.info(wipe(`${chalk.bold.yellow('Mongoose')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Closing mongodb connection`));
+    console.log(wipe(`${chalk.bold.yellow('Mongoose')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Closing mongodb connection`));
     mongoose.disconnect().then(result => {done()});
 });

@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "develop": "npm i && cd public/css && cross-env NODE_ENV=production npx tailwindcss-cli@latest build -o tailwind.css -c ../../config/tailwind.config.js && cd ../../ && nodemon app.js develop --ignore public/ --ignore templates/ --ignore config/stats.json",
+    "dev": "npm i && cd public/css && cross-env NODE_ENV=production npx tailwindcss-cli@latest build -o tailwind.css -c ../../config/tailwind.config.js && cd ../../ && nodemon app.js develop --ignore public/ --ignore templates/ --ignore config/stats.json",
     "build": "cd public/css && cross-env NODE_ENV=production npx tailwindcss-cli@latest build -o tailwind.css -c ../../config/tailwind.config.js && cd ../../",
     "test": "mocha"
   },
@@ -43,7 +43,6 @@
     "mongoose": "^5.7.12",
     "morgan": "^1.9.1",
     "nodemon": "^2.0.6",
-    "ora": "^5.1.0",
     "point-of-view": "^4.7.0",
     "postcss": "^8.2.10",
     "sweetalert2": "^10.16.2",

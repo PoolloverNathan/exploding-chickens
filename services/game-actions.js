@@ -7,10 +7,8 @@ Author(s): RAk3rman
 
 // Packages
 let game = require('../models/game.js');
-const ora = require('ora');
 const chalk = require('chalk');
 const moment = require('moment');
-const spinner = ora('');
 const wipe = chalk.white;
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 const dataStore = require('data-store');
@@ -383,12 +381,12 @@ exports.delete_game = async function (game_id) {
 // Author(s) : RAk3rman
 exports.game_purge = async function (debug) {
     if (debug !== false) {
-        spinner.info(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all games older than ` + config_storage.get('game_purge_age_hrs') + ` hours`));
+        console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all games older than ` + config_storage.get('game_purge_age_hrs') + ` hours`));
     }
     await new Promise((resolve, reject) => {
         game.find({}, function (err, found_games) {
             if (err) {
-                spinner.fail(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Could not retrieve games`));
+                console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Could not retrieve games`));
                 reject(err);
             } else {
                 // Loop through each game
@@ -398,7 +396,7 @@ exports.game_purge = async function (debug) {
                         // Delete game
                         game_actions.delete_game(found_games[i]._id).then(() => {
                             if (debug !== false) {
-                                spinner.succeed(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Deleted game with id:` + found_games[i]._id));
+                                console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Deleted game with id:` + found_games[i]._id));
                             }
                         });
                     }

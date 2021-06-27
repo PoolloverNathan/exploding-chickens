@@ -9,8 +9,6 @@ module.exports = function (fastify) {
 
     // Packages
     const chalk = require('chalk');
-    const ora = require('ora');
-    const spinner = ora('');
     const wipe = chalk.white;
     const moment = require('moment');
 
@@ -27,20 +25,21 @@ module.exports = function (fastify) {
         }
     }, async function (req, reply) {
         // Create sample game
-        spinner.start(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} Received request to create new game`));
+        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('POST ' + req.url + '')} ${chalk.bold.green('200')} Create new game, redirect to game url`));
+        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} Received request to create new game`));
         let game_details = await game_actions.create_game().catch(e => {failed_step(e, reply)});
-        spinner.succeed(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} ${chalk.dim.yellow(game_details["slug"])} Created new game`));
+        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} ${chalk.dim.yellow(game_details["slug"])} Created new game`));
         let game_id = game_details["_id"];
         // Import cards
         let card_count = await game_actions.import_cards(game_id, '../packs/base.json').catch(e => {failed_step(e, reply)});
-        spinner.succeed(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} ${chalk.dim.yellow(game_details["slug"])} Imported ` + chalk.bold(card_count) + ` cards from base.json`));
+        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} ${chalk.dim.yellow(game_details["slug"])} Imported ` + chalk.bold(card_count) + ` cards from base.json`));
         // Redirect to game url
         reply.redirect("/game/" + game_details["slug"]);
     })
 
     // Failed step in api
     function failed_step (desc, reply) {
-        spinner.fail(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.red('FAIL')} Failed previous step with error message: "` + desc + `"`));
+        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.red('FAIL')} Failed previous step with error message: "` + desc + `"`));
         reply.code(500);
     }
 };

@@ -16,8 +16,6 @@ const stats_storage = new dataStore({path: './config/stats.json'});
 const moment = require('moment');
 const chalk = require('chalk');
 const pkg = require('./package.json');
-const ora = require('ora');
-const spinner = ora('');
 const wipe = chalk.white;
 
 // Configuration & testing
@@ -79,6 +77,7 @@ fastify.get('/', (req, reply) => {
         stat_explosions: stats_storage.get('explosions').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
         stats_avg_play_time: Math.round(stats_storage.get('mins_played') / stats_storage.get('games_played'))
     })
+    console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET /')} ${chalk.bold.green('200')} Rendering home page`));
 })
 
 // Game page
@@ -93,8 +92,10 @@ fastify.get('/game/:_id', {
     // Make sure game exists
     if (await game.exists({ slug: req.params._id })) {
         reply.view('/templates/game.hbs', { slug_1: req.params._id, slug_2: req.params._id, version: pkg.version })
+        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.green('200')} Game exists, rendering game page`));
     } else {
         reply.status(404).view('/templates/error.hbs', { error_code: "404", title: "Game does not exist", desc_1: "Unfortunately, we could not find the game lobby you are looking for.", desc_2: "Try a different link or create a new game on the home page." });
+        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.red('404')} Game does not exist, rendering error page`));
     }
 })
 
@@ -105,27 +106,28 @@ fastify.get('/game/:_id', {
 
 // Prepare async mongoose connection messages
 mongoose.connection.on('connected', function () {mongoose_connected()});
-mongoose.connection.on('timeout', function () {spinner.fail(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connection timed out`));mongoose_disconnected()});
-mongoose.connection.on('disconnected', function () {spinner.warn(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connection was interrupted`));mongoose_disconnected()});
+mongoose.connection.on('timeout', function () {console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connection timed out`));mongoose_disconnected()});
+mongoose.connection.on('disconnected', function () {console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connection was interrupted`));mongoose_disconnected()});
 
 // Connect to mongodb using mongoose
-spinner.start(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_storage.get('mongodb_url') + `"`));
+console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_storage.get('mongodb_url') + `"`));
 mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
 mongoose.set('useFindAndModify', false);
 
 // When mongoose establishes a connection with mongodb
 function mongoose_connected() {
-    spinner.succeed(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at ` + config_storage.get('mongodb_url')));
+    console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at ` + config_storage.get('mongodb_url')));
     // Start purge game cycle
     game_actions.game_purge().then(function () {});
     setInterval(game_actions.game_purge, 3600000*2);
     // Start webserver using config values
-    spinner.info(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to start http webserver on port ` + config_storage.get('webserver_port')));
+    console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to start http webserver on port ` + config_storage.get('webserver_port')));
     fastify.listen(config_storage.get('webserver_port'), function (err) {
         if (err) {
             fastify.log.error(err)
             process.exit(1)
         }
+        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Started http webserver on port ` + config_storage.get('webserver_port')));
         // Open socket.io connection
         socket_handler(fastify, stats_storage);
     })
@@ -133,7 +135,7 @@ function mongoose_connected() {
 
 // When mongoose losses a connection with mongodb
 function mongoose_disconnected() {
-    spinner.succeed(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Stopping http webserver on port ` + config_storage.get('webserver_port')));
+    console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Stopping http webserver on port ` + config_storage.get('webserver_port')));
     //server.close();
 }
 
