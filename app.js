@@ -91,7 +91,7 @@ fastify.get('/game/:_id', {
 }, async function (req, reply) {
     // Make sure game exists
     if (await game.exists({ slug: req.params._id })) {
-        reply.view('/templates/game.hbs', { slug_1: req.params._id, slug_2: req.params._id, version: pkg.version })
+        reply.view('/templates/game.hbs', { slug_1: req.params._id, slug_2: req.params._id, slug_3: req.params._id, version: pkg.version })
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.green('200')} Game exists, rendering game page`));
     } else {
         reply.status(404).view('/templates/error.hbs', { error_code: "404", title: "Game does not exist", desc_1: "Unfortunately, we could not find the game lobby you are looking for.", desc_2: "Try a different link or create a new game on the home page." });
