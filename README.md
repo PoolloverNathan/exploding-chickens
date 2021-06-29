@@ -11,7 +11,7 @@ From there, the drawing deck slowly shrinks and the explosions only become more 
 
 - Supports up to **2-5 players**
 - Utilizes a **51-card** base deck
-- **20 min** average game time
+- **5 min** average game time
 
 ![Home UI](public/home_ui.png)
 

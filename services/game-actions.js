@@ -143,10 +143,10 @@ exports.draw_card = async function (game_details, player_id) {
     });
 }
 
-// Name : game_actions.base_router(game_details, player_id, card_id, target, stats_storage)
+// Name : game_actions.base_router(game_details, player_id, card_id, target, stats_storage, config_storage, bot)
 // Desc : base deck - calls the appropriate card function based on card action
 // Author(s) : RAk3rman
-exports.base_router = async function (game_details, player_id, card_id, target, stats_storage) {
+exports.base_router = async function (game_details, player_id, card_id, target, stats_storage, config_storage, bot) {
     // Find card details from id
     let card_details = await card_actions.find_card(card_id, game_details.cards);
     // Determine which function to run
@@ -160,8 +160,7 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         await game_actions.discard_card(game_details, card_id);
         game_details.turns_remaining = 0;
         stats_storage.set('explosions', stats_storage.get('explosions') + 1);
-        if ((await game_actions.is_winner(game_details)) === true) {
-            stats_storage.set('mins_played', stats_storage.get('mins_played') + moment().diff(moment(game_details.start_time), 'minutes'));
+        if ((await game_actions.is_winner(game_details, stats_storage, bot)) === true) {
             return {trigger: "winner", data: ""};
         } else {
             await game_actions.advance_turn(game_details);
@@ -292,10 +291,10 @@ exports.advance_turn = async function (game_details) {
     });
 }
 
-// Name : game_actions.is_winner(game_details)
+// Name : game_actions.is_winner(game_details, stats_storage, bot)
 // Desc : check to see if there is a winner
 // Author(s) : RAk3rman
-exports.is_winner = async function (game_details) {
+exports.is_winner = async function (game_details, stats_storage, bot) {
     // Count the number of active players
     let ctn = 0;
     let player_id = undefined;
@@ -307,6 +306,31 @@ exports.is_winner = async function (game_details) {
     }
     // Determine if there is a winner, end game if so
     if (ctn === 1) {
+        // Game completed, update game stats
+        let print_players = "";
+        game_details.players.forEach(ele => {
+            print_players += "**'" + ele.nickname + "'** ";
+        })
+        // Determine number of exploding chickens
+        let ec_count = 0;
+        for (let i = 0; i < game_details.cards.length; i++) {
+            // If the card is assigned to deck, add to count
+            if (game_details.cards[i].action === "chicken" && game_details.cards[i].assignment !== "out_of_play") {
+                ec_count += 1;
+            }
+        }
+        // Get draw deck length
+        let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
+        bot.createMessage(config_storage.get('discord_bot_channel'),
+            ":chicken: **Exploding Chickens: Game Completed** (DEV)\n" +
+            "Game Link: <https://chickens.rakerman.com/game/" + game_details.slug + ">\n" +
+            "Total Time: **" + moment().diff(moment(game_details.start_time), 'minutes') + " minutes**\n" +
+            "Players in game: " + print_players + "\n" +
+            "EC's remaining: **" + ec_count + " (" + Math.floor((ec_count / draw_deck.length)*100) + "%)**\n" +
+            "Cards remaining: **" + draw_deck.length + "**"
+        );
+        console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Sent game summary message`));
+        // Reset game
         await game_actions.reset_game(game_details, "idle", "in_lobby");
         // Create new promise to save game
         await new Promise((resolve, reject) => {
@@ -321,6 +345,8 @@ exports.is_winner = async function (game_details) {
                     }
                 });
         })
+        stats_storage.set('games_played', stats_storage.get('games_played') + 1);
+        stats_storage.set('mins_played', stats_storage.get('mins_played') + moment().diff(moment(game_details.start_time), 'minutes'));
         return true;
     } else {
         return false;

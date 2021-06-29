@@ -49,7 +49,7 @@ if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_t
         bot.editStatus("online");
         // Send update to console
         console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Bot is now connected to Discord API`));
-        bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: Exploding Chickens is now online");
+        bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens: System Online** (DEV)");
     });
 
     // Handle any errors that the bot encounters
@@ -152,7 +152,7 @@ function mongoose_connected() {
         }
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Started http webserver on port ` + config_storage.get('webserver_port')));
         // Open socket.io connection
-        socket_handler(fastify, stats_storage);
+        socket_handler(fastify, stats_storage, config_storage, bot);
         // Connect discord bot
         if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '') {
             bot.connect();

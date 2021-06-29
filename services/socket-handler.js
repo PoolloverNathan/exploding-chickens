@@ -17,7 +17,7 @@ let game_actions = require('../services/game-actions.js');
 let player_actions = require('../services/player-actions.js');
 
 //Export to app.js file
-module.exports = function (fastify, stats_storage) {
+module.exports = function (fastify, stats_storage, config_storage, bot) {
     stats_storage.set('sockets_active', 0);
     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Successfully opened socket.io connection`));
 
@@ -117,8 +117,6 @@ module.exports = function (fastify, stats_storage) {
                         // Emit start game event
                         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('start-game      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} New game has started successfully`));
                         await update_game_ui(data.slug, "", "start-game      ", socket.id, data.player_id);
-                        // Update stats
-                        stats_storage.set('games_played', stats_storage.get('games_played') + 1);
                     } else {
                         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('start-game      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Host attempted to start game out of player range`));
                         fastify.io.to(socket.id).emit(data.slug + "-error", "You must have 2-5 players");
@@ -146,8 +144,6 @@ module.exports = function (fastify, stats_storage) {
                 if (validate_host(data.player_id, game_details)) {
                     // Reset game
                     await game_actions.reset_game(game_details, "idle", "in_lobby");
-                    // Update stats
-                    stats_storage.set('games_played', stats_storage.get('games_played') - 1);
                     // Emit reset game event
                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('reset-game      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Existing game has been reset successfully`));
                     await update_game_ui(data.slug, "", "reset-game      ", socket.id, data.player_id);
@@ -173,7 +169,7 @@ module.exports = function (fastify, stats_storage) {
                 if (validate_turn(data.player_id, game_details)) {
                     if (game_details.status === "in_game") {
                         // Send card id to router
-                        let action_res = await game_actions.base_router(game_details, data.player_id, data.card_id, data.target, stats_storage);
+                        let action_res = await game_actions.base_router(game_details, data.player_id, data.card_id, data.target, stats_storage, config_storage, bot);
                         if (action_res.data === "true") {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Card action completed successfully, no callbacks`));
                             // Update clients
@@ -436,8 +432,8 @@ module.exports = function (fastify, stats_storage) {
             // Determine number of exploding chickens
             let ec_count = 0;
             for (let i = 0; i < raw_game_details["cards"].length; i++) {
-                // If the card is assigned to this player, add to hand
-                if (raw_game_details["cards"][i].action === "chicken" && raw_game_details["cards"][i].assignment === "draw_deck") {
+                // If the card is assigned to deck, add to count
+                if (raw_game_details["cards"][i].action === "chicken" && raw_game_details["cards"][i].assignment !== "out_of_play") {
                     ec_count += 1;
                 }
             }
