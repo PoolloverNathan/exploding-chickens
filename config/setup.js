@@ -31,6 +31,16 @@ exports.check_values = function (config_storage, stats_storage) {
         config_storage.set('game_purge_age_hrs', 12);
         console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] "game_purge_age_hrs" value in config.json set to default: "12"`));
     }
+    // Config value: discord_bot_token | token of discord bot, not used if blank
+    if (!config_storage.has('discord_bot_token') || config_storage.get('discord_bot_token') === '') {
+        config_storage.set('discord_bot_token', '');
+        console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Please set "discord_bot_token" value in config.json`));
+    }
+    // Config value: discord_bot_channel | discord channel that the bot will post messages to
+    if (!config_storage.has('discord_bot_channel') || config_storage.get('discord_bot_channel') === '') {
+        config_storage.set('discord_bot_channel', '');
+        console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Please set "discord_bot_channel" value in config.json`));
+    }
     // Exit if the config values are not set properly
     if (invalid_config) {
         console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Please check "config.json" and configure the appropriate values`));

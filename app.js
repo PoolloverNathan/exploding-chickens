@@ -16,6 +16,7 @@ const stats_storage = new dataStore({path: './config/stats.json'});
 const moment = require('moment');
 const chalk = require('chalk');
 const pkg = require('./package.json');
+const eris = require('eris');
 const wipe = chalk.white;
 
 // Configuration & testing
@@ -34,6 +35,28 @@ console.log(chalk.white('--> Github: ' + pkg.homepage + '\n'));
 
 // Check configuration values
 setup.check_values(config_storage, stats_storage);
+
+// Discord bot setup
+let bot;
+if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
+    config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
+    // Declare variable
+    bot = new eris.Client(config_storage.get('discord_bot_token'));
+
+    // When the bot is connected and ready, update console
+    bot.on('ready', () => {
+        // Set bot status
+        bot.editStatus("online");
+        // Send update to console
+        console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Bot is now connected to Discord API`));
+        bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: Exploding Chickens is now online");
+    });
+
+    // Handle any errors that the bot encounters
+    bot.on('error', err => {
+        console.warn(err);
+    });
+}
 
 // End of Packages and configuration - - - - - - - - - - - - - - - - - - - - - -
 
@@ -130,6 +153,10 @@ function mongoose_connected() {
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Started http webserver on port ` + config_storage.get('webserver_port')));
         // Open socket.io connection
         socket_handler(fastify, stats_storage);
+        // Connect discord bot
+        if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '') {
+            bot.connect();
+        }
     })
 }
 
