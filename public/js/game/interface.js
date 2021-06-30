@@ -116,7 +116,7 @@ function itr_update_hand(game_details) {
                 if (game_details.players[i].cards[j].action === "chicken") {
                     if (!exploding_active) {
                         ec_defuse_count = 15;
-                        itr_trigger_exp(game_details.players[i].cards[j]._id, true);
+                        itr_trigger_exp(game_details.players[i].cards[j]._id, true, game_details.placed_by_name);
                     }
                     session_user.can_draw = false;
                 }
@@ -138,7 +138,7 @@ function itr_update_hand(game_details) {
             // Check if chicken is active
             if (!exploding_active && game_details.players[i].status === "exploding") {
                 ec_defuse_count = 15;
-                itr_trigger_exp(false, true);
+                itr_trigger_exp(false, true, game_details.placed_by_name);
             } else if (exploding_active && game_details.players[i]._id === game_details.req_player_id && game_details.players[i].status === "exploding") {
                 ec_defuse_count = 15;
             }
@@ -147,9 +147,9 @@ function itr_update_hand(game_details) {
     document.getElementById("itr_ele_player_hand").innerHTML = payload;
 }
 
-// Name : frontend-game.itr_trigger_exp(card_id, setup)
+// Name : frontend-game.itr_trigger_exp(card_id, setup, placed_nickname)
 // Desc : triggers the exploding chicken ui to appear
-function itr_trigger_exp(card_id, setup) {
+function itr_trigger_exp(card_id, setup, placed_nickname) {
     // Check to make sure the element wasn't replaced
     exploding_active = true;
     if (document.getElementById("itr_val_defuse_counter") === null && setup === false) {
@@ -158,6 +158,15 @@ function itr_trigger_exp(card_id, setup) {
     }
     // Append html overlay if on first function call
     if (setup) {
+        let placed_by_txt = "";
+        if (placed_nickname !== "") {
+            placed_by_txt = "<div class=\"flex items-center justify-center tooltip-box\">\n" +
+                "    <div class=\"tooltip\">\n" +
+                "        <span class=\"triangle\"></span>\n" +
+                "        " + placed_nickname + " placed this card\n" +
+                "    </div>\n" +
+                "</div>";
+        }
         document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/public/cards/base/chicken.png');\">\n" +
             "    <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain border-dashed border-4 border-green-500 h-full\" style=\"border-color: rgb(178, 234, 55); color: rgb(178, 234, 55);\">\n" +
             "        <div class=\"flex flex-wrap content-center justify-center h-full w-full\">\n" +
@@ -168,17 +177,17 @@ function itr_trigger_exp(card_id, setup) {
             "            </div>\n" +
             "        </div>\n" +
             "    </div>\n" +
-            "</div>";
+            "</div>" + placed_by_txt;
     }
     // Call program again if not placed
     if (ec_defuse_count > 0 && document.getElementById("itr_val_defuse_counter") !== null) {
         document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i> " + ec_defuse_count + "</a>";
         document.getElementById("itr_val_defuse_counter").innerHTML = ec_defuse_count;
-        setTimeout(function(){ itr_trigger_exp(card_id, false) }, 1000);
+        setTimeout(function(){ itr_trigger_exp(card_id, false, placed_nickname) }, 1000);
     } else if (ec_defuse_count > -1 && document.getElementById("itr_val_defuse_counter") !== null) {
         document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i> RIP</a>";
         document.getElementById("itr_val_defuse_counter").innerHTML = "<i class=\"fas fa-skull-crossbones\"></i>"
-        setTimeout(function(){ itr_trigger_exp(card_id, false) }, 1000);
+        setTimeout(function(){ itr_trigger_exp(card_id, false, placed_nickname) }, 1000);
     } else if (card_id !== false) {
         // Force play chicken since time expired
         play_card(card_id);

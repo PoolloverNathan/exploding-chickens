@@ -102,6 +102,7 @@ exports.defuse = async function (game_details, player_id, target, card_id) {
         if (game_details.cards[i].assignment === player_id && game_details.cards[i].action === "chicken") {
             game_details.cards[i].assignment = "draw_deck";
             game_details.cards[i].position = ctn - target;
+            game_details.cards[i].placed_by_id = player_id;
         }
         // Add to new array
         if (game_details.cards[i].assignment === "draw_deck" && game_details.cards[i].position >= ctn - target) {
@@ -214,6 +215,7 @@ exports.shuffle_draw_deck = async function (game_details) {
         //Check to see if card in draw deck and not chicken
         if (game_details.cards[i].assignment === "draw_deck") {
             game_details.cards[i].position = rand_bucket(bucket);
+            game_details.cards[i].placed_by_id = "";
         }
     }
     // Save event

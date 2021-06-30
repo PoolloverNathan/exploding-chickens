@@ -437,8 +437,23 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     ec_count += 1;
                 }
             }
-            // Prepare pretty game details
+            // Prepare draw deck
             let draw_deck = await card_actions.filter_cards("draw_deck", raw_game_details["cards"]);
+            // Check if placed_by is active
+            let placed_by_name = "";
+            for (let i = 0; i < raw_game_details["cards"].length; i++) {
+                if (raw_game_details["cards"][i].placed_by_id !== "") {
+                    // Go through players and find nickname
+                    for (let j = 0; j < raw_game_details["players"].length; j++) {
+                        if (raw_game_details["cards"][i].placed_by_id === raw_game_details["players"][j]._id) {
+                            placed_by_name = raw_game_details["players"][j].nickname;
+                            i = raw_game_details["cards"].length;
+                            j = raw_game_details["players"].length;
+                        }
+                    }
+                }
+            }
+            // Prepare pretty game details
             let pretty_game_details = {
                 players: [],
                 discard_deck: [],
@@ -451,7 +466,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 cards_remaining: draw_deck.length,
                 ec_remaining: ec_count,
                 req_player_id: player_id,
-                trigger: source.trim()
+                trigger: source.trim(),
+                placed_by_name: placed_by_name
             }
             // Sort and add players to json array
             raw_game_details["players"].sort(function(a, b) {

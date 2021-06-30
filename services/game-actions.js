@@ -306,30 +306,26 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
     }
     // Determine if there is a winner, end game if so
     if (ctn === 1) {
-        // Game completed, update game stats
-        let print_players = "";
-        game_details.players.forEach(ele => {
-            print_players += "**'" + ele.nickname + "'** ";
-        })
-        // Determine number of exploding chickens
-        let ec_count = 0;
-        for (let i = 0; i < game_details.cards.length; i++) {
-            // If the card is assigned to deck, add to count
-            if (game_details.cards[i].action === "chicken" && game_details.cards[i].assignment !== "out_of_play") {
-                ec_count += 1;
-            }
+        // Send message if bot is configured
+        if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
+            config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
+            // Game completed, update game stats
+            let print_players = "";
+            game_details.players.forEach(ele => {
+                print_players += "**'" + ele.nickname + "'** ";
+            })
+            // Get draw deck length
+            let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
+            bot.createMessage(config_storage.get('discord_bot_channel'),
+                ":chicken: **Exploding Chickens: Game Completed** (DEV)\n" +
+                "Game Link: <https://chickens.rakerman.com/game/" + game_details.slug + ">\n" +
+                "Total Time: **" + moment().diff(moment(game_details.start_time), 'minutes') + " minutes**\n" +
+                "Players in game: " + print_players + "\n" +
+                "EC chance: **" + Math.floor((1 / draw_deck.length)*100) + "%**\n" +
+                "Cards remaining: **" + draw_deck.length + "**"
+            );
+            console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Sent game summary message`));
         }
-        // Get draw deck length
-        let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
-        bot.createMessage(config_storage.get('discord_bot_channel'),
-            ":chicken: **Exploding Chickens: Game Completed** (DEV)\n" +
-            "Game Link: <https://chickens.rakerman.com/game/" + game_details.slug + ">\n" +
-            "Total Time: **" + moment().diff(moment(game_details.start_time), 'minutes') + " minutes**\n" +
-            "Players in game: " + print_players + "\n" +
-            "EC's remaining: **" + ec_count + " (" + Math.floor((ec_count / draw_deck.length)*100) + "%)**\n" +
-            "Cards remaining: **" + draw_deck.length + "**"
-        );
-        console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Sent game summary message`));
         // Reset game
         await game_actions.reset_game(game_details, "idle", "in_lobby");
         // Create new promise to save game
@@ -361,6 +357,7 @@ exports.reset_game = async function (game_details, player_status, game_status) {
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
         game_details.cards[i].assignment = "draw_deck";
         game_details.cards[i].position = i;
+        game_details.cards[i].placed_by_id = "";
     }
     // Reset players
     for (let i = 0; i <= game_details.players.length - 1; i++) {

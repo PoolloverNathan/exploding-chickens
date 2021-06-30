@@ -154,7 +154,8 @@ function mongoose_connected() {
         // Open socket.io connection
         socket_handler(fastify, stats_storage, config_storage, bot);
         // Connect discord bot
-        if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '') {
+        if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
+            config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
             bot.connect();
         }
     })

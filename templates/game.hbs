@@ -38,11 +38,35 @@
             height: 14.4rem;
             border-radius: 1.6rem;
         }
+        .tooltip {
+            width: 10.2rem;
+            background: #333;
+            color: #ffffff;
+            text-align: center;
+            padding: 9px 20px 10px 20px;
+            border-radius: 10px;
+            top: calc(100% + 11px);
+            left: 50%;
+            transform: translate-x(-50%);
+            font-size: 14px;
+        }
         @media (min-width: 640px) {
             .center-card {
                 width: 12.75rem;
                 height: 18rem;
                 border-radius: 2rem;
+            }
+            .tooltip {
+                width: 12.75rem;
+                background: #333;
+                color: #ffffff;
+                text-align: center;
+                padding: 9px 20px 10px 20px;
+                border-radius: 10px;
+                top: calc(100% + 11px);
+                left: 50%;
+                transform: translate-x(-50%);
+                font-size: 14px;
             }
         }
         .center-card-text {
@@ -52,6 +76,19 @@
             .center-card-text {
                 height: 18rem;
             }
+        }
+        .tooltip-box {
+            position: relative;
+            padding-top: 6px;
+        }
+        .triangle {
+            border-width: 0 6px 6px;
+            border-color: transparent;
+            border-bottom-color: #333;
+            position: absolute;
+            top: 0;
+            left: 48%;
+            transform: translate-x(-50%)
         }
     </style>
 </head>

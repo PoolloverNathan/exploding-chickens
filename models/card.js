@@ -28,5 +28,9 @@ module.exports = mongoose.Schema({
     position: {
         type: Number,
         required: true
-    }
+    },
+    placed_by_id: {
+        type: String,
+        required: false
+    },
 });
