@@ -16,6 +16,7 @@ const stats_storage = new dataStore({path: './config/stats.json'});
 const moment = require('moment');
 const chalk = require('chalk');
 const pkg = require('./package.json');
+require('eris-embed-builder');
 const eris = require('eris');
 const wipe = chalk.white;
 
@@ -49,7 +50,7 @@ if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_t
         bot.editStatus("online");
         // Send update to console
         console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Bot is now connected to Discord API`));
-        bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens: System Online** (DEV)");
+        bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens: System Online**");
     });
 
     // Handle any errors that the bot encounters

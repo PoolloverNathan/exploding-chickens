@@ -29,6 +29,7 @@
     "data-store": "^3.1.0",
     "ejs": "^2.6.1",
     "eris": "^0.15.1",
+    "eris-embed-builder": "^0.1.2",
     "express": "^4.17.1",
     "express-session": "^1.15.6",
     "fastify": "^3.9.2",
