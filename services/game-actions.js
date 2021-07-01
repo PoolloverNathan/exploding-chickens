@@ -327,7 +327,7 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             embed.color("3447003");
             embed.field("Total time", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
             embed.field("Cards left", draw_deck.length + "", true);
-            embed.field("Chance of EC", Math.floor((1 / draw_deck.length)*100) + "%", true);
+            embed.field("Chance of EC", Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
             embed.field("Games played", stats_storage.get("games_played") + "", true);
             embed.field("Time played",  moment.duration(stats_storage.get("mins_played"), "minutes").format("h [hrs], m [min]") + "", true);
             embed.field("Connections", stats_storage.get("sockets_active") + "", true);
