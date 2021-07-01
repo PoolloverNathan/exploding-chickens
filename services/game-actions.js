@@ -306,6 +306,9 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
     }
     // Determine if there is a winner, end game if so
     if (ctn === 1) {
+        // Update stats
+        stats_storage.set('games_played', stats_storage.get('games_played') + 1);
+        stats_storage.set('mins_played', stats_storage.get('mins_played') + moment().diff(moment(game_details.start_time), 'minutes'));
         // Send message if bot is configured
         if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
             config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
@@ -323,6 +326,9 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             embed.field("Total time", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
             embed.field("Cards remaining", draw_deck.length + "", true);
             embed.field("Chance of EC", Math.floor((1 / draw_deck.length)*100) + "%", true);
+            embed.field("Total games played", stats_storage.get("games_played") + "", true);
+            embed.field("Total time played",  moment.relativeTimeThreshold('m', stats_storage.get("mins_played")) + "", true);
+            embed.field("Connected clients", stats_storage.get("sockets_active") + "", true);
             embed.field("Players in game", print_players, false);
             let event = new Date();
             embed.timestamp(event.toISOString());
@@ -344,8 +350,6 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
                     }
                 });
         })
-        stats_storage.set('games_played', stats_storage.get('games_played') + 1);
-        stats_storage.set('mins_played', stats_storage.get('mins_played') + moment().diff(moment(game_details.start_time), 'minutes'));
         return true;
     } else {
         return false;
