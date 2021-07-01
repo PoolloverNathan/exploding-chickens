@@ -9,10 +9,12 @@ Author(s): RAk3rman
 let game = require('../models/game.js');
 const chalk = require('chalk');
 const moment = require('moment');
+let momentDurationFormatSetup = require("moment-duration-format");
 const wipe = chalk.white;
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 const dataStore = require('data-store');
 const config_storage = new dataStore({path: './config/config.json'});
+const pkg = require('../package.json');
 
 //Services
 let card_actions = require('../services/card-actions.js');
@@ -324,16 +326,17 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             embed.url("https://chickens.rakerman.com/game/" + game_details.slug);
             embed.color("3447003");
             embed.field("Total time", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
-            embed.field("Cards remaining", draw_deck.length + "", true);
+            embed.field("Cards left", draw_deck.length + "", true);
             embed.field("Chance of EC", Math.floor((1 / draw_deck.length)*100) + "%", true);
-            embed.field("Total games played", stats_storage.get("games_played") + "", true);
-            embed.field("Total time played",  moment.relativeTimeThreshold('m', stats_storage.get("mins_played")) + "", true);
-            embed.field("Connected clients", stats_storage.get("sockets_active") + "", true);
+            embed.field("Games played", stats_storage.get("games_played") + "", true);
+            embed.field("Time played",  moment.duration(stats_storage.get("mins_played"), "minutes").format("h [hrs], m [min]") + "", true);
+            embed.field("Connections", stats_storage.get("sockets_active") + "", true);
             embed.field("Players in game", print_players, false);
+            embed.footer("Release v" + pkg.version);
             let event = new Date();
             embed.timestamp(event.toISOString());
             embed.send();
-            console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Sent game summary message`));
+            console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.greenBright('game-won        ')} Sent game summary message`));
         }
         // Reset game
         await game_actions.reset_game(game_details, "idle", "in_lobby");

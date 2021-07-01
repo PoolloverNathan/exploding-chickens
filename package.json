@@ -1,6 +1,6 @@
 {
   "name": "exploding-chickens",
-  "version": "1.0.3-beta",
+  "version": "1.0.4",
   "description": "A beautiful, online alternative to the popular Exploding Kittens card game (just with chickens).",
   "main": "app.js",
   "scripts": {
@@ -42,6 +42,7 @@
     "http-errors": "^1.7.2",
     "mocha": "^8.3.0",
     "moment": "^2.29.1",
+    "moment-duration-format": "^2.3.2",
     "mongoose": "^5.7.12",
     "morgan": "^1.9.1",
     "nodemon": "^2.0.6",
