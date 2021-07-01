@@ -39,6 +39,7 @@ setup.check_values(config_storage, stats_storage);
 
 // Discord bot setup
 let bot;
+let send_startup_msg = true;
 if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
     config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
     // Declare variable
@@ -50,7 +51,10 @@ if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_t
         bot.editStatus("online");
         // Send update to console
         console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Bot is now connected to Discord API`));
-        bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens: System Online**");
+        if (send_startup_msg) {
+            bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens: System Online**");
+            send_startup_msg = false;
+        }
     });
 
     // Handle any errors that the bot encounters
