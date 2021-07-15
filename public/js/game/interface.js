@@ -108,8 +108,9 @@ function itr_update_hand(game_details) {
             // Add cards to hand
             for (let j = 0; j < game_details.players[i].cards.length; j++) {
                 let play_card_funct = "";
+                // Allow to play if seat is playing AND if the card is a defuse or hotpotato allow play while exploding, else don't allow
                 if (game_details.seat_playing === game_details.players[i].seat &&
-                    game_details.players[i].cards[j].action === "defuse" || game_details.players[i].status !== "exploding") {
+                    (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato" || game_details.players[i].status !== "exploding")) {
                     play_card_funct = "play_card('" + game_details.players[i].cards[j]._id + "', '')";
                 }
                 // Check if chicken is active

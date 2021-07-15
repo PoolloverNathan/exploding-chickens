@@ -258,6 +258,57 @@ exports.reverse = async function (game_details) {
     });
 }
 
+// Name : card_actions.defuse(game_details, player_id)
+// Desc : removes exploding chicken from hand and inserts into next players hand
+// Author(s) : RAk3rman
+exports.hot_potato = async function (game_details, player_id) {
+    // Verify player is exploding, update status
+    for (let i = 0; i <= game_details.players.length - 1; i++) {
+        if (game_details.players[i]._id === player_id) {
+            if (game_details.players[i].status !== "exploding") {
+                return {trigger: "error", data: "You cannot play this card now"};
+            } else {
+                game_details.players[i].status = "playing";
+            }
+            break;
+        }
+    }
+    // Advance to the next seat
+    game_details.seat_playing = await player_actions.next_seat(game_details);
+    // Make sure the number of turns remaining is 1
+    game_details.turns_remaining = 1;
+    // Find next player and update status
+    let next_player_id = "";
+    for (let i = 0; i <= game_details.players.length - 1; i++) {
+        if (game_details.players[i].seat === game_details.seat_playing) {
+            game_details.players[i].status = "exploding";
+            next_player_id = game_details.players[i]._id;
+            break;
+        }
+    }
+    // Assign chicken to next player
+    for (let i = 0; i <= game_details.cards.length - 1; i++) {
+        if (game_details.cards[i].assignment === player_id && game_details.cards[i].action === "chicken") {
+            game_details.cards[i].assignment = next_player_id;
+            break;
+        }
+    }
+    // Save event
+    game_details = await game_actions.log_event(game_details, "hot_potato", "");
+    // Create new promise for game save
+    await new Promise((resolve, reject) => {
+        // Save updated game
+        game_details.save({}, function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+    return true;
+}
+
 // Name : card_actions.filter_cards(assignment, card_array)
 // Desc : filters and sorts cards based on assignment and position
 // Author(s) : RAk3rman

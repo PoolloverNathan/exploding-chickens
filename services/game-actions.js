@@ -266,6 +266,35 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         await game_actions.advance_turn(game_details);
         stats_storage.set('skips', stats_storage.get('skips') + 1);
         return {trigger: "skip", data: "true"};
+    } else if (card_details.action === "hotpotato") {
+        let hotpotato_stat = await card_actions.hot_potato(game_details, player_id);
+        if (hotpotato_stat === true) {
+            await game_actions.discard_card(game_details, card_id);
+            stats_storage.set('hotpotatos', stats_storage.get('hotpotatos') + 1);
+            return {trigger: "hotpotato", data: "true"};
+        } else {
+            return hotpotato_stat;
+        }
+    } else if (card_details.action === "favorgator") {
+        let v_favor = await card_actions.verify_favor(game_details, player_id, target);
+        if (v_favor === true) {
+            let card_taken = await card_actions.ask_favor(game_details, player_id, target);
+            await game_actions.discard_card(game_details, card_id);
+            stats_storage.set('favors', stats_storage.get('favors') + 1);
+            return {trigger: "favor_taken", data: {
+                    target_player_id: target, favor_player_name: (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: card_taken.image_loc
+                }};
+        } else {
+            return v_favor;
+        }
+    } else if (card_details.action === "scrambledeggs") {
+
+    } else if (card_details.action === "superskip") {
+
+    } else if (card_details.action === "safetydraw") {
+
+    } else if (card_details.action === "drawbottom") {
+
     } else {
         // Houston, we have a problem
         return {trigger: "error", data: "Invalid card"};
