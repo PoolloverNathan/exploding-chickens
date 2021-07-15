@@ -296,13 +296,13 @@ function itr_trigger_chicken_target(max_pos, card_id) {
 // Desc : increments the # of cards deep in the chicken pos ui
 function _itr_inc_chicken_pos(max_pos) {
     let cur = document.getElementById("custom_chicken_pos").innerHTML.trim();
-    if (cur === "Place on Top" && max_pos === 1) {
+    if (cur === "Place on Top" && parseInt(max_pos) === 1) {
         document.getElementById("custom_chicken_pos").innerHTML = "Place on Bottom";
-    } else if (cur === "Place on Top" && max_pos > 1) {
+    } else if (cur === "Place on Top" && parseInt(max_pos) > 1) {
         document.getElementById("custom_chicken_pos").innerHTML = "Place 1 Card Deep";
-    } else if (cur !== "Place on Bottom" && max_pos >= parseInt(cur.substr(6,2)) + 1) {
+    } else if (cur !== "Place on Bottom" && parseInt(max_pos) > parseInt(cur.substr(6,2)) + 1) {
         document.getElementById("custom_chicken_pos").innerHTML = "Place " + (parseInt(cur.substr(6,2)) + 1) + " Cards Deep";
-    } else if (cur !== "Place on Bottom" && max_pos >= parseInt(cur.substr(6,2))) {
+    } else if (cur !== "Place on Bottom" && parseInt(max_pos) >= parseInt(cur.substr(6,2))) {
         document.getElementById("custom_chicken_pos").innerHTML = "Place on Bottom";
     }
 }
@@ -312,14 +312,14 @@ function _itr_inc_chicken_pos(max_pos) {
 function _itr_dec_chicken_pos(max_pos) {
     let cur = document.getElementById("custom_chicken_pos").innerHTML.trim();
     let cur_place = parseInt(cur.substr(6,2));
-    if ((max_pos <= 1 || cur_place === 1) && cur !== "Place on Top") {
+    if ((parseInt(max_pos) <= 1 || cur_place === 1) && cur !== "Place on Top") {
         document.getElementById("custom_chicken_pos").innerHTML = "Place on Top";
-    } else if ((max_pos <= 2 || cur_place === 2) && cur !== "Place on Top") {
+    } else if ((parseInt(max_pos) <= 2 || cur_place === 2) && cur !== "Place on Top") {
         document.getElementById("custom_chicken_pos").innerHTML = "Place 1 Card Deep";
     } else if (cur_place > 2) {
         document.getElementById("custom_chicken_pos").innerHTML = "Place " + (parseInt(cur.substr(6,2)) - 1) + " Cards Deep";
     } else if (cur === "Place on Bottom") {
-        document.getElementById("custom_chicken_pos").innerHTML = "Place " + (max_pos - 1) + " Cards Deep";
+        document.getElementById("custom_chicken_pos").innerHTML = "Place " + (parseInt(max_pos) - 1) + " Cards Deep";
     }
 }
 
