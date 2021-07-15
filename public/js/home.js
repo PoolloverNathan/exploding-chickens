@@ -1,8 +1,6 @@
 /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 Filename : exploding-chickens/public/js/home.js
-Desc     : handles socket.io connection
-           related to site wide statistics and modals
-Author(s): RAk3rman, SengdowJones
+Desc     : handles attempt to join game on home page
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Swal toast settings

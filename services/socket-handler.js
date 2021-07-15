@@ -105,7 +105,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 // Verify host
                 if (validate_host(data.player_id, game_details)) {
                     //Make sure we have the correct number of players
-                    if (game_details.players.length > 1 && game_details.players.length < 6) {
+                    if (game_details.players.length > 1 && game_details.players.length <= game_details.player_cap) {
                         // Reset game and update start time
                         game_details.start_time = moment();
                         await game_actions.reset_game(game_details, "playing", "in_game");
@@ -119,7 +119,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         await update_game_ui(data.slug, "", "start-game      ", socket.id, data.player_id);
                     } else {
                         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('start-game      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Host attempted to start game out of player range`));
-                        fastify.io.to(socket.id).emit(data.slug + "-error", "You must have 2-5 players");
+                        fastify.io.to(socket.id).emit(data.slug + "-error", "You must have 2-" + game_details.player_cap + " players");
                     }
                 } else {
                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('start-game      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to complete host action`));
@@ -336,6 +336,96 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             }
         })
 
+        // Name : socket.on.import-pack
+        // Desc : imports a new pack into a game
+        // Author(s) : RAk3rman
+        socket.on('import-pack', async function (data) {
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to import card pack ` + data.pack_name));
+            // Verify game exists
+            if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
+                // Get game details
+                let game_details = await game_actions.game_details_slug(data.slug);
+                // Verify host
+                if (validate_host(data.player_id, game_details)) {
+                    // Verify game is in lobby
+                    if (game_details.status === "in_lobby") {
+                        // Verify pack isn't installed already
+                        if (!game_details.imported_packs.includes(data.pack_name)) {
+                            if (data.pack_name === "yolking_around") {
+                                game_details.player_cap += 2;
+                            } else {
+                                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Pack does not exist`));
+                                fastify.io.to(socket.id).emit(data.slug + "-error", "Pack does not exist");
+                                return;
+                            }
+                            // Import pack
+                            await game_actions.import_cards(game_details,  data.pack_name);
+                            // Emit reset game event
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Imported pack ` + data.pack_name));
+                            await update_game_ui(data.slug, "", "import-pack     ", socket.id, data.player_id);
+                        } else {
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Pack has already been imported`));
+                            fastify.io.to(socket.id).emit(data.slug + "-error", "Pack has already been imported");
+                        }
+                    } else {
+                        console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Game has already started, packs can only be imported while in lobby`));
+                        fastify.io.to(socket.id).emit(data.slug + "-error", "Packs cannot be imported now");
+                    }
+                } else {
+                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to complete host action`));
+                    fastify.io.to(socket.id).emit(data.slug + "-error", "You are not the host");
+                }
+            } else {
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Target game does not exist`));
+                fastify.io.to(socket.id).emit(data.slug + "-error", "Game does not exist");
+            }
+        })
+
+        // Name : socket.on.export-pack
+        // Desc : exports a new pack from a game
+        // Author(s) : RAk3rman
+        socket.on('export-pack', async function (data) {
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to export card pack ` + data.pack_name));
+            // Verify game exists
+            if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
+                // Get game details
+                let game_details = await game_actions.game_details_slug(data.slug);
+                // Verify host
+                if (validate_host(data.player_id, game_details)) {
+                    // Verify game is in lobby
+                    if (game_details.status === "in_lobby") {
+                        // Verify pack is installed already
+                        if (game_details.imported_packs.includes(data.pack_name)) {
+                            if (data.pack_name === "yolking_around") {
+                                game_details.player_cap -= 2;
+                            } else {
+                                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Pack does not exist`));
+                                fastify.io.to(socket.id).emit(data.slug + "-error", "Pack does not exist");
+                                return;
+                            }
+                            // Import pack
+                            await game_actions.export_cards(game_details, data.pack_name);
+                            // Emit reset game event
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Exported pack ` + data.pack_name));
+                            await update_game_ui(data.slug, "", "export-pack     ", socket.id, data.player_id);
+                        } else {
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Pack has not been imported`));
+                            fastify.io.to(socket.id).emit(data.slug + "-error", "Pack was never imported");
+                        }
+                    } else {
+                        console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Game has already started, packs can only be exported while in lobby`));
+                        fastify.io.to(socket.id).emit(data.slug + "-error", "Packs cannot be exported now");
+                    }
+                } else {
+                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to complete host action`));
+                    fastify.io.to(socket.id).emit(data.slug + "-error", "You are not the host");
+                }
+            } else {
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Target game does not exist`));
+                fastify.io.to(socket.id).emit(data.slug + "-error", "Game does not exist");
+            }
+        })
+
         // Name : socket.on.check-slug
         // Desc : runs when we need to see if a slug exists in the db
         // Author(s) : RAk3rman
@@ -467,7 +557,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 ec_remaining: ec_count,
                 req_player_id: player_id,
                 trigger: source.trim(),
-                placed_by_name: placed_by_name
+                placed_by_name: placed_by_name,
+                imported_packs: raw_game_details["imported_packs"]
             }
             // Sort and add players to json array
             raw_game_details["players"].sort(function(a, b) {

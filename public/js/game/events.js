@@ -41,6 +41,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
         }
         sbr_update_widgets(data);
         sbr_update_players(data);
+        sbr_update_packs(data);
         itr_update_players(data);
     } else if (data.trigger === "start-game") { // Game started
         sbr_update_widgets(data);
@@ -102,6 +103,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
         }
         sbr_update_widgets(data);
         sbr_update_players(data);
+        sbr_update_packs(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
@@ -118,12 +120,27 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
             icon: 'info',
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Player was kicked</h1>'
         });
+    } else if (data.trigger === "import-pack") {
+        sbr_update_packs(data);
+        toast_turn.close();
+        toast_alert.fire({
+            icon: 'success',
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was imported</h1>'
+        });
+    } else if (data.trigger === "export-pack") {
+        sbr_update_packs(data);
+        toast_turn.close();
+        toast_alert.fire({
+            icon: 'success',
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was removed</h1>'
+        });
     } else if (data.trigger === "disconnect") { // Existing player disconnected
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
     } else { // Update entire ui
         sbr_update_widgets(data);
         sbr_update_players(data);
+        sbr_update_packs(data);
         itr_update_players(data);
         itr_update_discard(data);
         itr_update_hand(data);
@@ -292,6 +309,26 @@ function make_host(target_player_id) {
         slug: window.location.pathname.substr(6),
         player_id: session_user._id,
         suc_player_id: target_player_id
+    })
+}
+
+// Name : frontend-game.import_pack(pack_name)
+// Desc : emits the import-pack event to import a pack
+function import_pack(pack_name) {
+    socket.emit('import-pack', {
+        slug: window.location.pathname.substr(6),
+        player_id: session_user._id,
+        pack_name: pack_name
+    })
+}
+
+// Name : frontend-game.export_pack(pack_name)
+// Desc : emits the export-pack event to export a pack
+function export_pack(pack_name) {
+    socket.emit('export-pack', {
+        slug: window.location.pathname.substr(6),
+        player_id: session_user._id,
+        pack_name: pack_name
     })
 }
 

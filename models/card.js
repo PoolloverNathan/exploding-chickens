@@ -33,4 +33,8 @@ module.exports = mongoose.Schema({
         type: String,
         required: false
     },
+    pack: {
+        type: String,
+        required: true
+    },
 });

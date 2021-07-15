@@ -135,6 +135,33 @@ function sbr_update_players(game_details) {
     }
 }
 
+// Name : frontend-game.sbr_update_packs(game_details)
+// Desc : updates which card packs are marked as imported
+function sbr_update_packs(game_details) {
+    if (game_details.imported_packs.includes("yolking_around") && session_user.is_host) {
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none\" onclick=\"export_pack('yolking_around')\">\n" +
+            "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M18 12H6\" />\n" +
+            "      </svg>" +
+            "      Remove\n" +
+            "</button>";
+    } else if (game_details.imported_packs.includes("yolking_around")) {
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none\">\n" +
+            "      <svg class=\"-ml-1 mr-1 h-5 w-5\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\" />\n" +
+            "      </svg>\n" +
+            "      Imported\n" +
+            "</button>";
+    } else if (session_user.is_host) {
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none\" onclick=\"import_pack('yolking_around')\">\n" +
+            "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6v6m0 0v6m0-6h6m-6 0H6\" />\n" +
+            "      </svg>\n" +
+            "      Add Pack\n" +
+            "</button>";
+    }
+}
+
 // Name : frontend-game.sbr_update_pstatus(game_details)
 // Desc : updates only the status symbol of players
 function sbr_update_pstatus(game_details) {

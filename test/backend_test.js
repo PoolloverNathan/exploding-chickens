@@ -91,10 +91,10 @@ describe('Game setup', function() {
             assert.equal(game_details_create.slug, game_details_slug.slug);
         });
     });
-    describe('#game_actions.import_cards(game_id, pack_loc)', function() {
+    describe('#game_actions.import_cards(game_details, pack_loc)', function() {
         let card_count;
         it('importing cards', function(done) {
-            game_actions.import_cards(game_id, '../packs/base.json').then(result => {
+            game_actions.import_cards(game_details_create, 'base').then(result => {
                 card_count = result;
                 done();
             })

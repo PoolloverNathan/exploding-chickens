@@ -1,0 +1,86 @@
+[
+  {
+    "pack_name": "yolking_around",
+    "type": "expansion"
+  },
+  {
+    "_id": "hotpotato-1",
+    "file_name": "card_back.png",
+    "action": "hotpotato"
+  },
+  {
+    "_id": "favorgator-1",
+    "file_name": "card_back.png",
+    "action": "favorgator"
+  },
+  {
+    "_id": "favorgator-2",
+    "file_name": "card_back.png",
+    "action": "favorgator"
+  },
+  {
+    "_id": "scrambledeggs-1",
+    "file_name": "card_back.png",
+    "action": "scrambledeggs"
+  },
+  {
+    "_id": "scrambledeggs-2",
+    "file_name": "card_back.png",
+    "action": "scrambledeggs"
+  },
+  {
+    "_id": "superskip-1",
+    "file_name": "card_back.png",
+    "action": "superskip"
+  },
+  {
+    "_id": "superskip-2",
+    "file_name": "card_back.png",
+    "action": "superskip"
+  },
+  {
+    "_id": "superskip-3",
+    "file_name": "card_back.png",
+    "action": "superskip"
+  },
+  {
+    "_id": "safetydraw-1",
+    "file_name": "card_back.png",
+    "action": "safetydraw"
+  },
+  {
+    "_id": "safetydraw-2",
+    "file_name": "card_back.png",
+    "action": "safetydraw"
+  },
+  {
+    "_id": "safetydraw-3",
+    "file_name": "card_back.png",
+    "action": "safetydraw"
+  },
+  {
+    "_id": "safetydraw-4",
+    "file_name": "card_back.png",
+    "action": "safetydraw"
+  },
+  {
+    "_id": "drawbottom-1",
+    "file_name": "card_back.png",
+    "action": "drawbottom"
+  },
+  {
+    "_id": "drawbottom-2",
+    "file_name": "card_back.png",
+    "action": "drawbottom"
+  },
+  {
+    "_id": "drawbottom-3",
+    "file_name": "card_back.png",
+    "action": "drawbottom"
+  },
+  {
+    "_id": "drawbottom-4",
+    "file_name": "card_back.png",
+    "action": "drawbottom"
+  }
+]

@@ -34,8 +34,38 @@
         }
     </style>
 </head>
-<body class="leading-normal tracking-normal text-indigo-400 m-6 bg-cover bg-fixed" style="background-image: url('/public/home_back.jpg');background-color: #0f0f0f;">
-<div class="h-full">
+<body class="leading-normal tracking-normal text-indigo-400 bg-cover bg-fixed" style="background-image: url('/public/home_back.jpg');background-color: #0f0f0f;">
+{{! Banner }}
+<div class="bg-indigo-600 hidden" id="banner">
+    <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between flex-wrap">
+            <div class="w-0 flex-1 flex items-center">
+                <span class="flex p-2 rounded-lg bg-indigo-800">
+                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                </span>
+                <p class="ml-3 font-medium text-white truncate">
+                    <span class="md:hidden">
+                        New Expansion Pack Released!
+                    </span>
+                    <span class="hidden md:inline">
+                        We've added the brand new "Yolking Around" Expansion Pack! Learn more below.
+                    </span>
+                </p>
+            </div>
+            <div class="order-2 flex-shrink-0 sm:order-3 sm:ml-3">
+                <button type="button" class="-mr-1 flex p-2 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-white sm:-mr-2" onclick="hide_banner()">
+                    <span class="sr-only">Dismiss</span>
+                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="h-full m-6">
     {{! Header }}
     <div class="w-full container mx-auto">
         <div class="w-full flex items-center justify-between">
@@ -108,7 +138,7 @@
                 Game Structure
             </p>
             <p class="leading-normal text-white opacity-60 text-lg md:text-2xl pt-1.5 text-left">
-                Supports 2-5 players. {{ stats_avg_play_time }} min average play time.
+                Supports 2-5+ players. {{ stats_avg_play_time }} min average play time.
             </p>
         </div>
         <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10">
@@ -301,11 +331,196 @@
                 </div>
             </div>
         </div>
+        {{! How to Play: Expansion Pack 1}}
+        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-10 pb-5">
+            <p class="leading-normal text-white opacity-80 text-2xl md:text-3xl text-left">
+                "Yolking Around" Pack
+            </p>
+            <p class="leading-normal text-white opacity-60 text-lg md:text-2xl pt-1.5 text-left">
+                Add a little spice to your gameplay. +2 player capacity.
+            </p>
+        </div>
+        <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-x-8 md:gap-y-10">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
+                </div>
+                <div class="ml-4">
+                    <dt class="text-xl text-white opacity-80">
+                        Hot Potato <i class="opacity-30 text-lg">x1</i>
+                    </dt>
+                    <dd class="mt-2 text-base text-white opacity-60">
+                        An old classic. If you draw an Exploding Chicken, end your turn by tossing the EC to the next player in line. Now they must defuse it!
+                    </dd>
+                </div>
+            </div>
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
+                </div>
+                <div class="ml-4">
+                    <dt class="text-xl text-white opacity-80">
+                        Favor Gator <i class="opacity-30 text-lg">x2</i>
+                    </dt>
+                    <dd class="mt-2 text-base text-white opacity-60">
+                        The pet that bites back. Anytime someone tries to steal a card from you, the Favor Gator blocks their attempt and yanks a card from them. Can be played as a favor card.
+                    </dd>
+                </div>
+            </div>
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
+                </div>
+                <div class="ml-4">
+                    <dt class="text-xl text-white opacity-80">
+                        Scrambled Eggs <i class="opacity-30 text-lg">x2</i>
+                    </dt>
+                    <dd class="mt-2 text-base text-white opacity-60">
+                        Shake things up a little. Dump everyone's hand into a pot and re-deal the entire deck (the discard deck remains as-is). Player card counts stay the same.
+                    </dd>
+                </div>
+            </div>
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
+                </div>
+                <div class="ml-4">
+                    <dt class="text-xl text-white opacity-80">
+                        Super Skip <i class="opacity-30 text-lg">x3</i>
+                    </dt>
+                    <dd class="mt-2 text-base text-white opacity-60">
+                        Effectively skips your turn without having to draw a card, even if you are stuck with multiple turns. Useful for escaping an onslaught of Attack cards.
+                    </dd>
+                </div>
+            </div>
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
+                </div>
+                <div class="ml-4">
+                    <dt class="text-xl text-white opacity-80">
+                        Safety Draw <i class="opacity-30 text-lg">x4</i>
+                    </dt>
+                    <dd class="mt-2 text-base text-white opacity-60">
+                        End your turn by drawing the first card in the draw deck that <strong>IS NOT</strong> an Exploding Chicken. If there is a 100% chance of an EC, then your turn is skipped.
+                    </dd>
+                </div>
+            </div>
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
+                </div>
+                <div class="ml-4">
+                    <dt class="text-xl text-white opacity-80">
+                        Draw from the Bottom <i class="opacity-30 text-lg">x4</i>
+                    </dt>
+                    <dd class="mt-2 text-base text-white opacity-60">
+                        Is the top of the deck looking a little too dangerous? End your turn by drawing a card from the bottom of the deck. Plain and simple.
+                    </dd>
+                </div>
+            </div>
+        </div>
+        {{! Meet the Team }}
+        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-20">
+            <h1 class="my-4 text-4xl md:text-5xl text-white opacity-80 font-bold leading-tight text-left">
+                Meet the <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">Team</span>
+            </h1>
+            <p class="leading-normal text-white opacity-80 text-lg md:text-2xl mb-8 text-left">
+                The im-peck-able team behind Exploding Chickens.
+            </p>
+        </div>
+        <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-x-8 md:gap-y-10 w-full">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="w-28 px-1">
+                        <img src="/public/team/radison.jpg" alt="Member" class="shadow rounded-full max-w-full h-auto align-middle border-none" />
+                    </div>
+                </div>
+                <div class="flex flex-wrap content-center ml-4">
+                    <div class="text-white">
+                        <p class="text-xl opacity-80">
+                            Radison Akerman
+                            <a class="inline-block -mb-1.5 opacity-70 no-underline hover:text-underline transform hover:scale-125 duration-300 ease-in-out" href="https://rakerman.com" target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 pb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                            </a>
+                        </p>
+                        <p class="text-lg text-blue-400 opacity-70">
+                            Creator + Coding Wizard
+                        </p>
+                        <p class="text-sm opacity-60 md:w-64">
+                            Might make an overcomplicated web game if you push him enough
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="w-28 px-1">
+                        <img src="/public/avatars/default.png" alt="Member" class="shadow rounded-full max-w-full h-auto align-middle border-none" />
+                    </div>
+                </div>
+                <div class="flex flex-wrap content-center ml-4">
+                    <div class="text-white">
+                        <p class="text-xl opacity-80">
+                            Sengdao Inthavong
+                        </p>
+                        <p class="text-lg text-blue-400 opacity-70">
+                            Game Graphics + Content
+                        </p>
+                        <p class="text-sm opacity-60 md:w-64">
+                            Might ... Lorem ipsum dolor sit amet, consectetur adipiscing elit
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="w-28 px-1">
+                        <img src="/public/avatars/default.png" alt="Member" class="shadow rounded-full max-w-full h-auto align-middle border-none" />
+                    </div>
+                </div>
+                <div class="flex flex-wrap content-center ml-4">
+                    <div class="text-white">
+                        <p class="text-xl opacity-80">
+                            Vincent Do
+                        </p>
+                        <p class="text-lg text-blue-400 opacity-70">
+                            Game Content
+                        </p>
+                        <p class="text-sm opacity-60 md:w-64">
+                            Might ... Lorem ipsum dolor sit amet, consectetur adipiscing elit
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="w-28 px-1">
+                        <img src="/public/avatars/default.png" alt="Member" class="shadow rounded-full max-w-full h-auto align-middle border-none" />
+                    </div>
+                </div>
+                <div class="flex flex-wrap content-center ml-4">
+                    <div class="text-white">
+                        <p class="text-xl opacity-80">
+                            Richard Yang
+                        </p>
+                        <p class="text-lg text-blue-400 opacity-70">
+                            Game Content
+                        </p>
+                        <p class="text-sm opacity-60 md:w-64">
+                            Might ... Lorem ipsum dolor sit amet, consectetur adipiscing elit
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
         {{! Footer }}
         <div class="w-full pt-16 pb-12 text-sm text-center md:text-left fade-in">
-            <h1 class="text-white opacity-80 pb-1 md:float-left md:mr-1">Exploding Chickens <script>document.write(new Date().getFullYear())</script>.</h1>
-            <h1 class="text-white opacity-80 pb-1 md:float-left">Made with <i class="fas fa-heart text-red-500"></i> by our <a class="text-blue-400" href="https://github.com/rak3rman/exploding-chickens#contributors" target="_blank">contributors</a>.</h1>
-            <h1 class="text-white opacity-80 pb-1 md:float-right">Release v{{ version }}</h1>
+            <h1 class="text-white opacity-70 pb-1 md:float-left md:mr-1">Exploding Chickens <script>document.write(new Date().getFullYear())</script>.</h1>
+            <h1 class="text-white opacity-70 pb-1 md:float-left">Made with <i class="fas fa-heart text-red-500"></i> by our <a class="text-blue-400" href="https://github.com/rak3rman/exploding-chickens#contributors" target="_blank">contributors</a>.</h1>
+            <h1 class="text-white opacity-70 pb-1 md:float-right">Release v{{ version }}</h1>
         </div>
     </div>
 </div>
@@ -314,4 +529,5 @@
 <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.0"></script>
 <script src="/public/js/home.js"></script>
+<script src="/public/js/banner.js"></script>
 </html>

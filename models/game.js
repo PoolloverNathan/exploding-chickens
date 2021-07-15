@@ -37,6 +37,10 @@ let gameSchema = mongoose.Schema({
         type: Number,
         default: 1
     },
+    player_cap: {
+        type: Number,
+        default: 5
+    },
     status: {
         type: String,
         default: "in_lobby"
@@ -51,7 +55,8 @@ let gameSchema = mongoose.Schema({
     },
     players: [player],
     cards: [card],
-    events: [event]
+    events: [event],
+    imported_packs: [String]
 });
 
 // Export game model
