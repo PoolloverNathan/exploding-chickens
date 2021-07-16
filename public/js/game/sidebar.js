@@ -70,7 +70,11 @@ function sbr_update_widgets(game_details) {
         p_chance = Math.floor((game_details.ec_remaining/game_details.cards_remaining)*100);
     }
     document.getElementById("sbr_ele_ec_count").innerHTML = game_details.ec_remaining + "<a class=\"font-light\"> / " +  p_chance + "% chance</a>";
-    document.getElementById("itr_ele_ec_count").innerHTML = "<i class=\"fas fa-bomb\"></i> " + game_details.ec_remaining + "<a class=\"font-light\"> / " +  p_chance + "%</a>";
+    if (game_details.status === "in_lobby") {
+        document.getElementById("itr_ele_ec_count").innerHTML = "";
+    } else if (game_details.status === "in_game") {
+        document.getElementById("itr_ele_ec_count").innerHTML = "<i class=\"fas fa-bomb\"></i> " + game_details.ec_remaining + "<a class=\"font-light\"> / " +  p_chance + "%</a>";
+    }
     // Update cards remaining widget
     document.getElementById("sbr_ele_cards_remain").innerHTML = game_details.cards_remaining;
 }

@@ -176,6 +176,10 @@ function itr_recur_exp(card_id, placed_by_name, card_url, first_run) {
 // Name : frontend-game.itr_trigger_exp(count, placed_by_name, card_url)
 // Desc : triggers the exploding chicken ui to appear
 function itr_trigger_exp(count, placed_by_name, card_url) {
+    // Check if we are at the end of a count
+    if (count === -2) {
+        return;
+    }
     // Append html overlay if element doesn't exist
     if (document.getElementById("itr_val_defuse_counter") === null) {
         let placed_by_txt = "";

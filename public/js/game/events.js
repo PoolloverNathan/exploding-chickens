@@ -35,7 +35,9 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
     if (data.trigger === "player-connected") { // Existing player connected
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
-        //itr_update_hand(data);
+        if (data.req_player_id === session_user._id) {
+            itr_update_hand(data);
+        }
     } else if (data.trigger === "create-player") { // New player was created
         if (user_prompt_open) {
             setup_update_options(data);
