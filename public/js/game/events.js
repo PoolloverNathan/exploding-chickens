@@ -121,6 +121,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Player was kicked</h1>'
         });
     } else if (data.trigger === "import-pack") {
+        sbr_update_widgets(data);
         sbr_update_packs(data);
         toast_turn.close();
         toast_alert.fire({
@@ -128,6 +129,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was imported</h1>'
         });
     } else if (data.trigger === "export-pack") {
+        sbr_update_widgets(data);
         sbr_update_packs(data);
         toast_turn.close();
         toast_alert.fire({
@@ -166,6 +168,9 @@ socket.on(window.location.pathname.substr(6) + "-callback", function (data) {
         if (session_user._id === data.payload.target_player_id) {
             itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc);
         }
+    } else if (data.trigger === "hand_refresh") {
+        itr_update_discard(data.payload.game_details);
+        itr_update_hand(data.payload.game_details);
     }
 });
 
@@ -383,5 +388,21 @@ preload (
     "/public/cards/base/skip-1.png",
     "/public/cards/base/skip-2.png",
     "/public/cards/base/skip-3.png",
-    "/public/cards/base/skip-4.png"
+    "/public/cards/base/skip-4.png",
+    "/public/cards/yolking_around/drawbottom-1.png",
+    "/public/cards/yolking_around/drawbottom-2.png",
+    "/public/cards/yolking_around/drawbottom-3.png",
+    "/public/cards/yolking_around/drawbottom-4.png",
+    "/public/cards/yolking_around/favorgator-1.png",
+    "/public/cards/yolking_around/favorgator-2.png",
+    "/public/cards/yolking_around/hotpotato-1.png",
+    "/public/cards/yolking_around/safetydraw-1.png",
+    "/public/cards/yolking_around/safetydraw-2.png",
+    "/public/cards/yolking_around/safetydraw-3.png",
+    "/public/cards/yolking_around/safetydraw-4.png",
+    "/public/cards/yolking_around/scrambledeggs-1.png",
+    "/public/cards/yolking_around/scrambledeggs-2.png",
+    "/public/cards/yolking_around/superskip-1.png",
+    "/public/cards/yolking_around/superskip-2.png",
+    "/public/cards/yolking_around/superskip-3.png"
 )

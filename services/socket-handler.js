@@ -219,7 +219,16 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                     card_image_loc: action_res.data["card_image_loc"]
                                 }
                             });
-                        } else if (action_res.trigger === "winner") {
+                        } else if (action_res.trigger === "hotpotato") {
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Hotpotato callback, refreshing all hands`));
+                            // Trigger favor_taken callback
+                            fastify.io.emit(data.slug + "-callback", {
+                                trigger: "hand_refresh",
+                                payload: {
+                                    game_details: await get_game_export(data.slug, "play-card       ", data.player_id)
+                                }
+                            });
+                        }  else if (action_res.trigger === "winner") {
                             // Emit reset game event and winner
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Existing game has ended, a player has won`));
                             await update_game_ui(data.slug, "", "reset-game      ", socket.id, "winner_callback");
@@ -258,10 +267,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     setTimeout( function () {cooldown = true}, 300);
                     if (game_details.status === "in_game") {
                         // Draw card from draw deck and place in hand
-                        let card_drawn = await game_actions.draw_card(game_details, data.player_id);
+                        let card_drawn = await game_actions.draw_card(game_details, data.player_id, "top");
                         // Check if card drawn in an ec
                         if (card_drawn.action !== "chicken") {
-                            game_details = await game_actions.game_details_slug(data.slug);
                             await game_actions.advance_turn(game_details);
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('draw-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Drew new card and advanced turn for player_id:` + data.player_id));
                         } else {

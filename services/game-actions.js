@@ -143,17 +143,22 @@ exports.export_cards = async function (game_details, pack_name) {
 // Name : game_actions.draw_card(game_details, player_id)
 // Desc : draw a card from the draw deck and place at the end of a players hand
 // Author(s) : Vincent Do, RAk3rman
-exports.draw_card = async function (game_details, player_id) {
+exports.draw_card = async function (game_details, player_id, location) {
     // Filter draw deck
     let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
     // Filter player hand
     let player_hand = await card_actions.filter_cards(player_id, game_details.cards);
+    // Determine if top or bottom
+    let pos = draw_deck.length-1;
+    if (location === "bottom") {
+        pos = 0;
+    }
     // Check if new card is a chicken
     for (let i = 0; i <= game_details.players.length - 1; i++) {
         if (game_details.players[i]._id === player_id) {
             if (game_details.players[i].status === "exploding") {
-                return "chicken";
-            } else if (draw_deck[draw_deck.length-1].action === "chicken") {
+                return { "action": "chicken" };
+            } else if (draw_deck[pos].action === "chicken") {
                 game_details.players[i].status = "exploding";
             }
             break;
@@ -161,7 +166,7 @@ exports.draw_card = async function (game_details, player_id) {
     }
     // Update card
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
-        if (game_details.cards[i]._id === draw_deck[draw_deck.length-1]._id) {
+        if (game_details.cards[i]._id === draw_deck[pos]._id) {
             game_details.cards[i].assignment = player_id;
             game_details.cards[i].position = player_hand.length;
             break;
@@ -176,7 +181,7 @@ exports.draw_card = async function (game_details, player_id) {
             if (err) {
                 reject(err);
             } else {
-                resolve(draw_deck[draw_deck.length-1]);
+                resolve(draw_deck[pos]);
             }
         });
     });
@@ -218,8 +223,8 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
     } else if (card_details.action === "favor") { // Favor, expecting target player_id
         let v_favor = await card_actions.verify_favor(game_details, player_id, target);
         if (v_favor === true) {
-            let card_taken = await card_actions.ask_favor(game_details, player_id, target);
             await game_actions.discard_card(game_details, card_id);
+            let card_taken = await card_actions.ask_favor(game_details, player_id, target);
             stats_storage.set('favors', stats_storage.get('favors') + 1);
             return {trigger: "favor_taken", data: {
                 target_player_id: target, favor_player_name: (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: card_taken.image_loc
@@ -233,9 +238,9 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         if (v_double !== false) {
             let v_favor = await card_actions.verify_favor(game_details, player_id, target);
             if (v_favor === true) {
-                let card_taken = await card_actions.ask_favor(game_details, player_id, target);
                 await game_actions.discard_card(game_details, v_double);
                 await game_actions.discard_card(game_details, card_id);
+                let card_taken = await card_actions.ask_favor(game_details, player_id, target);
                 stats_storage.set('favors', stats_storage.get('favors') + 1);
                 return {trigger: "favor_taken", data: {
                     target_player_id: target, favor_player_name: (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: card_taken.image_loc
@@ -270,8 +275,8 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         let hotpotato_stat = await card_actions.hot_potato(game_details, player_id);
         if (hotpotato_stat === true) {
             await game_actions.discard_card(game_details, card_id);
-            stats_storage.set('hotpotatos', stats_storage.get('hotpotatos') + 1);
-            return {trigger: "hotpotato", data: "true"};
+            stats_storage.set('hot_potatos', stats_storage.get('hot_potatos') + 1);
+            return {trigger: "hotpotato", data: ""};
         } else {
             return hotpotato_stat;
         }
@@ -288,13 +293,32 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
             return v_favor;
         }
     } else if (card_details.action === "scrambledeggs") {
-
+        await card_actions.scrambled_eggs(game_details);
+        await game_actions.discard_card(game_details, card_id);
+        stats_storage.set('scrambled_eggs', stats_storage.get('scrambled_eggs') + 1);
+        return {trigger: "scrambledeggs", data: "true"};
     } else if (card_details.action === "superskip") {
-
+        game_details.turns_remaining = 1;
+        await game_actions.discard_card(game_details, card_id);
+        await game_actions.advance_turn(game_details);
+        stats_storage.set('super_skips', stats_storage.get('super_skips') + 1);
+        return {trigger: "superskip", data: "true"};
     } else if (card_details.action === "safetydraw") {
-
+        await card_actions.safety_draw(game_details, player_id);
+        await game_actions.discard_card(game_details, card_id);
+        await game_actions.advance_turn(game_details);
+        stats_storage.set('safety_draws', stats_storage.get('safety_draws') + 1);
+        return {trigger: "superskip", data: "true"};
     } else if (card_details.action === "drawbottom") {
-
+        // Discard and draw card from draw deck and place in hand
+        await game_actions.discard_card(game_details, card_id);
+        let card_drawn = await game_actions.draw_card(game_details, player_id, "bottom");
+        // Check if card drawn in an ec
+        if (card_drawn.action !== "chicken") {
+            await game_actions.advance_turn(game_details);
+        }
+        stats_storage.set('draw_bottoms', stats_storage.get('draw_bottoms') + 1);
+        return {trigger: "drawbottom", data: "true"};
     } else {
         // Houston, we have a problem
         return {trigger: "error", data: "Invalid card"};

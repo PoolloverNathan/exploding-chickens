@@ -171,6 +171,13 @@ exports.ask_favor = async function (game_details, player_id, target) {
     // Get cards in target and current player's hand
     let target_hand = await card_actions.filter_cards(target, game_details.cards);
     let current_hand = await card_actions.filter_cards(player_id, game_details.cards);
+    // Check if target has favor gator
+    for (let i = 0; i <= target_hand.length - 1; i++) {
+        if (target_hand[i].action === "favorgator") {
+            await game_actions.discard_card(game_details, target_hand[i]._id);
+            return await card_actions.ask_favor(game_details, target, player_id);
+        }
+    }
     // Determine random card
     let rand_pos = Math.floor(Math.random() * (target_hand.length - 1));
     // Update card details
@@ -307,6 +314,94 @@ exports.hot_potato = async function (game_details, player_id) {
         });
     });
     return true;
+}
+
+// Name : card_actions.scrambled_eggs(game_details)
+// Desc : put everyone's cards into a pool and re-deal deck
+// Author(s) : RAk3rman
+exports.scrambled_eggs = async function (game_details) {
+    // Loop through each card to create array
+    let bucket = [];
+    let cards_in_deck = 0;
+    for (let i = 0; i <= game_details.cards.length - 1; i++) {
+        // Get all cards assigned to players ( UUID must be over 20 chars >:) )
+        if (game_details.cards[i].assignment.length > 20) {
+            bucket.push(game_details.cards[i]._id);
+            cards_in_deck++;
+        }
+    }
+    // Loop though each player and get # of cards
+    let player_card_ctn = [];
+    for (let i = 0; i <= game_details.players.length - 1; i++) {
+        let cards = await card_actions.filter_cards(game_details.players[i]._id, game_details.cards);
+        player_card_ctn[i] = cards.length;
+    }
+    // Loop though each player again and re-assign cards
+    for (let i = 0; i <= game_details.players.length - 1; i++) {
+        for (let j = 0; j <= player_card_ctn[i] - 1; j++) {
+            let selected_card_id = rand_bucket(bucket);
+            // Find card and update assignment
+            for (let k = 0; k <= game_details.cards.length - 1; k++) {
+                if (game_details.cards[k]._id === selected_card_id) {
+                    game_details.cards[k].assignment = game_details.players[i]._id;
+                    game_details.cards[k].position = j;
+                    break;
+                }
+            }
+        }
+    }
+    // Save event
+    game_details = await game_actions.log_event(game_details, "scrambled_eggs", "");
+    // Create new promise for game save
+    return await new Promise((resolve, reject) => {
+        //Save updated game
+        game_details.save({}, function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
+// Name : card_actions.safety_draw(game_details)
+// Desc : place the first card that is not an ec into a players hand, if all EC's, skip
+// Author(s) : RAk3rman
+exports.safety_draw = async function (game_details, player_id) {
+    // Filter draw deck
+    let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
+    // Filter player hand
+    let player_hand = await card_actions.filter_cards(player_id, game_details.cards);
+    // Loop through draw_deck and find first non chicken
+    let pos = draw_deck.length-1;
+    for (let i = draw_deck.length-1; i >= 0; i--) {
+        if (draw_deck[i].action !== "chicken") {
+            pos = i;
+            // Find card and update
+            for (let j = 0; j <= game_details.cards.length - 1; j++) {
+                if (game_details.cards[j]._id === draw_deck[i]._id) {
+                    game_details.cards[j].assignment = player_id;
+                    game_details.cards[j].position = player_hand.length;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    // Save event
+    game_details = await game_actions.log_event(game_details, "safety_draw", "");
+    // Create new promise to save game
+    return await new Promise((resolve, reject) => {
+        // Save updated game
+        game_details.save({}, function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(draw_deck[pos]);
+            }
+        });
+    });
 }
 
 // Name : card_actions.filter_cards(assignment, card_array)
