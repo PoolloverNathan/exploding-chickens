@@ -221,13 +221,12 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                             });
                         } else if (action_res.trigger === "hotpotato") {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Hotpotato callback, refreshing all hands`));
-                            // Trigger favor_taken callback
-                            fastify.io.emit(data.slug + "-callback", {
-                                trigger: "hand_refresh",
-                                payload: {
-                                    game_details: await get_game_export(data.slug, "play-card       ", data.player_id)
-                                }
+                            // Update clients
+                            fastify.io.to(socket.id).emit(data.slug + "-play-card", {
+                                card: await card_actions.find_card(data.card_id, game_details["cards"]),
+                                game_details: await get_game_export(data.slug, "play-card       ", data.player_id)
                             });
+                            await update_game_ui(data.slug, "", "play-card-update", socket.id, data.player_id);
                         }  else if (action_res.trigger === "winner") {
                             // Emit reset game event and winner
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Existing game has ended, a player has won`));

@@ -168,9 +168,6 @@ socket.on(window.location.pathname.substr(6) + "-callback", function (data) {
         if (session_user._id === data.payload.target_player_id) {
             itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc);
         }
-    } else if (data.trigger === "hand_refresh") {
-        itr_update_discard(data.payload.game_details);
-        itr_update_hand(data.payload.game_details);
     }
 });
 
