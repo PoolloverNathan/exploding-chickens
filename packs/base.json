@@ -44,6 +44,16 @@
     "action": "chicken"
   },
   {
+    "_id": "chicken-5",
+    "file_name": "chicken.png",
+    "action": "chicken"
+  },
+  {
+    "_id": "chicken-6",
+    "file_name": "chicken.png",
+    "action": "chicken"
+  },
+  {
     "_id": "defuse-1",
     "file_name": "defuse-1.png",
     "action": "defuse"

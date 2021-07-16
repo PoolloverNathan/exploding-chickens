@@ -298,8 +298,11 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         stats_storage.set('scrambled_eggs', stats_storage.get('scrambled_eggs') + 1);
         return {trigger: "scrambledeggs", data: "true"};
     } else if (card_details.action === "superskip") {
-        await game_actions.discard_card(game_details, card_id);
+        let temp_remain = game_details.turns_remaining;
+        game_details.turns_remaining = 1;
         await game_actions.advance_turn(game_details);
+        game_details.turns_remaining = temp_remain;
+        await game_actions.discard_card(game_details, card_id);
         stats_storage.set('super_skips', stats_storage.get('super_skips') + 1);
         return {trigger: "superskip", data: "true"};
     } else if (card_details.action === "safetydraw") {

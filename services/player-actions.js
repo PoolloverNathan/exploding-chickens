@@ -116,7 +116,7 @@ exports.create_hand = async function (game_slug) {
     }
     // Assign remaining 4 cards to each player
     for (let i = 0; i <= game_details.players.length - 1; i++) {
-        //Over 4 cards on the same player
+        // Over 4 cards on the same player
         for (let j = 1; j <= 4; j++) {
             let rand_card_pos = rand_bucket(card_bucket);
             game_details.cards[rand_card_pos].assignment = game_details.players[i]._id;
@@ -124,7 +124,7 @@ exports.create_hand = async function (game_slug) {
         }
     }
     // Assign exploding chickens to deck
-    for (let i = 0; i < game_details.players.length - 1; i++) {
+    for (let i = 0; i < game_details.players.length - 1 || i < 6; i++) {
         // Randomly pick ec
         let rand_card_pos = rand_bucket(exploding_bucket);
         game_details.cards[rand_card_pos].assignment = "draw_deck";
