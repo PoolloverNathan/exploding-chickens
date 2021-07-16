@@ -30,11 +30,12 @@ let session_user = {
 socket.on(window.location.pathname.substr(6) + "-update", function (data) {
     // Check browser session
     setup_session_check(data);
+    console.log(data.trigger);
     // Update elements based on update trigger
     if (data.trigger === "player-connected") { // Existing player connected
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
-        itr_update_hand(data);
+        //itr_update_hand(data);
     } else if (data.trigger === "create-player") { // New player was created
         if (user_prompt_open) {
             setup_update_options(data);
@@ -205,6 +206,12 @@ socket.on(window.location.pathname.substr(6) + "-draw-card", function (data) {
 // Desc : whenever the player plays a card, triggers animation
 socket.on(window.location.pathname.substr(6) + "-play-card", function (data) {
     anm_play_card(data);
+});
+
+// Name : frontend-game.socket.on.{slug}-explode-tick
+// Desc : whenever the player plays a card, triggers animation
+socket.on(window.location.pathname.substr(6) + "-explode-tick", function (data) {
+    itr_trigger_exp(data.count, data.placed_by_name, data.card_url);
 });
 
 // Name : frontend-game.socket.on.connect

@@ -219,15 +219,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                     card_image_loc: action_res.data["card_image_loc"]
                                 }
                             });
-                        } else if (action_res.trigger === "hotpotato") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Hotpotato callback, refreshing all hands`));
-                            // Update clients
-                            fastify.io.to(socket.id).emit(data.slug + "-play-card", {
-                                card: await card_actions.find_card(data.card_id, game_details["cards"]),
-                                game_details: await get_game_export(data.slug, "play-card       ", data.player_id)
-                            });
-                            await update_game_ui(data.slug, "", "play-card-update", socket.id, data.player_id);
-                        }  else if (action_res.trigger === "winner") {
+                        } else if (action_res.trigger === "winner") {
                             // Emit reset game event and winner
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Existing game has ended, a player has won`));
                             await update_game_ui(data.slug, "", "reset-game      ", socket.id, "winner_callback");
@@ -432,6 +424,17 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 fastify.io.to(socket.id).emit(data.slug + "-error", "Game does not exist");
             }
         })
+
+        // Name : socket.on.disconnect
+        // Desc : rebroadcasts tick for exploding player
+        // Author(s) : RAk3rman
+        socket.on('explode-tick', async function (data) {
+            fastify.io.emit(data.slug + "-explode-tick", {
+                count: data.count,
+                placed_by_name: data.placed_by_name,
+                card_url: data.card_url
+            });
+        });
 
         // Name : socket.on.check-slug
         // Desc : runs when we need to see if a slug exists in the db

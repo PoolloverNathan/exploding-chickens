@@ -276,7 +276,7 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         if (hotpotato_stat === true) {
             await game_actions.discard_card(game_details, card_id);
             stats_storage.set('hot_potatos', stats_storage.get('hot_potatos') + 1);
-            return {trigger: "hotpotato", data: ""};
+            return {trigger: "hotpotato", data: "true"};
         } else {
             return hotpotato_stat;
         }

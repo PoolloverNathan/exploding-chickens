@@ -12,7 +12,7 @@ const toast_turn = Swal.mixin({
 });
 // Global variables
 let is_turn = false;
-let exploding_active = false;
+let exp_stop_timer = false;
 let ec_defuse_count = 15;
 
 // Name : frontend-game.itr_update_players(game_details)
@@ -34,7 +34,7 @@ function itr_update_players(game_details) {
             "    </h1>\n" +
             "    <div class=\"flex flex-col items-center -space-y-3\" id=\"itr_stat_player_halo_" + game_details.players[i]._id + "\">\n" +
             "        <img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
-            card_icon(game_details.players[i].status === "dead" ? -1: game_details.players[i].card_num, turns, game_details) +
+            card_icon(game_details.players[i].status === "dead" ? -1 : game_details.players[i].card_num, turns, game_details, game_details.players[i].status === "exploding") +
             "    </div>\n" +
             "</div>";
         // If we are not at the end of the number of players, indicate direction
@@ -81,7 +81,7 @@ function itr_update_pcards(game_details) {
         }
         // Check for dead filter
         let filter = game_details.players[i].status === "dead" ? "filter grayscale" : "";
-        document.getElementById("itr_stat_player_halo_" + game_details.players[i]._id).innerHTML = "<img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" + card_icon(game_details.players[i].status === "dead" ? -1: game_details.players[i].card_num, turns, game_details);
+        document.getElementById("itr_stat_player_halo_" + game_details.players[i]._id).innerHTML = "<img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" + card_icon(game_details.players[i].status === "dead" ? -1: game_details.players[i].card_num, turns, game_details, game_details.players[i].status === "exploding");
     }
 }
 
@@ -115,9 +115,11 @@ function itr_update_hand(game_details) {
                 }
                 // Check if chicken is active
                 if (game_details.players[i].cards[j].action === "chicken") {
-                    if (!exploding_active) {
+                    if (document.getElementById("itr_val_defuse_counter") === null) {
                         ec_defuse_count = 15;
-                        itr_trigger_exp(game_details.players[i].cards[j]._id, true, game_details.placed_by_name);
+                        itr_recur_exp(game_details.players[i].cards[j]._id, game_details.placed_by_name, game_details.discard_deck[game_details.discard_deck.length-1] === undefined ? "public/cards/base/chicken.png" : game_details.discard_deck[game_details.discard_deck.length-1].image_loc, true);
+                    } else {
+                        ec_defuse_count = 15;
                     }
                     session_user.can_draw = false;
                 }
@@ -135,73 +137,76 @@ function itr_update_hand(game_details) {
                 is_turn = false;
                 session_user.can_draw = false;
             }
-        } else {
-            // Check if chicken is active
-            if (!exploding_active && game_details.players[i].status === "exploding") {
-                ec_defuse_count = 15;
-                itr_trigger_exp(false, true, game_details.placed_by_name);
-            } else if (exploding_active && game_details.players[i]._id === game_details.req_player_id && game_details.players[i].status === "exploding") {
-                ec_defuse_count = 15;
-            }
         }
     }
     document.getElementById("itr_ele_player_hand").innerHTML = payload;
 }
 
-// Name : frontend-game.itr_trigger_exp(card_id, setup, placed_nickname)
-// Desc : triggers the exploding chicken ui to appear
-function itr_trigger_exp(card_id, setup, placed_nickname) {
+// Name : frontend-game.itr_recur_exp(card_id, placed_by_name, card_url, first_run)
+// Desc : triggers the exploding chicken ui to appear via socket event
+function itr_recur_exp(card_id, placed_by_name, card_url, first_run) {
     // Check to make sure the element wasn't replaced
-    exploding_active = true;
-    if (document.getElementById("itr_val_defuse_counter") === null && setup === false) {
-        exploding_active = false;
+    if (document.getElementById("itr_val_defuse_counter") === null && !first_run) {
+        socket.emit('explode-tick', {
+            slug: window.location.pathname.substr(6),
+            count: -2,
+            placed_by_name: placed_by_name,
+            card_url: card_url
+        })
         return;
     }
-    // Append html overlay if on first function call
-    if (setup) {
+    // Call program again if auto recur is on, else force play chicken
+    if (ec_defuse_count > -1) {
+        // Emit event and update UI
+        socket.emit('explode-tick', {
+            slug: window.location.pathname.substr(6),
+            count: ec_defuse_count,
+            placed_by_name: placed_by_name,
+            card_url: card_url
+        })
+        // Call program again after 1 sec
+        setTimeout(function(){ itr_recur_exp(card_id, placed_by_name, card_url, false) }, 1000);
+        ec_defuse_count--;
+    } else {
+        // Force play chicken since time expired
+        play_card(card_id);
+    }
+}
+
+// Name : frontend-game.itr_trigger_exp(count, placed_by_name, card_url)
+// Desc : triggers the exploding chicken ui to appear
+function itr_trigger_exp(count, placed_by_name, card_url) {
+    // Append html overlay if element doesn't exist
+    if (document.getElementById("itr_val_defuse_counter") === null) {
         let placed_by_txt = "";
-        if (placed_nickname !== "") {
+        if (placed_by_name !== "") {
             placed_by_txt = "<div class=\"flex items-center justify-center tooltip-box\">\n" +
                 "    <div class=\"tooltip\">\n" +
                 "        <span class=\"triangle\"></span>\n" +
-                "        " + placed_nickname + " placed this card\n" +
+                "        " + placed_by_name + " placed this card\n" +
                 "    </div>\n" +
                 "</div>";
         }
-        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/public/cards/base/chicken.png');\">\n" +
+        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/" + card_url + "');\">\n" +
             "    <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain border-dashed border-4 border-green-500 h-full\" style=\"border-color: rgb(178, 234, 55); color: rgb(178, 234, 55);\">\n" +
             "        <div class=\"flex flex-wrap content-center justify-center h-full w-full\">\n" +
             "            <div class=\"block text-center space-y-2\">\n" +
             "                <h1 class=\"font-extrabold text-xl m-0\">DEFUSE</h1>\n" +
-            "                <h1 class=\"font-bold text-8xl m-0\" id=\"itr_val_defuse_counter\">" + ec_defuse_count + "</h1>\n" +
+            "                <h1 class=\"font-bold text-8xl m-0\" id=\"itr_val_defuse_counter\">" + count + "</h1>\n" +
             "                <h1 class=\"font-extrabold text-xl m-0\">CHICKEN</h1>\n" +
             "            </div>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div>" + placed_by_txt;
     }
-    // Call program again if not placed
-    if (ec_defuse_count > 0 && document.getElementById("itr_val_defuse_counter") !== null) {
-        document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i> " + ec_defuse_count + "</a>";
-        document.getElementById("itr_val_defuse_counter").innerHTML = ec_defuse_count;
-        setTimeout(function(){ itr_trigger_exp(card_id, false, placed_nickname) }, 1000);
-    } else if (ec_defuse_count > -1 && document.getElementById("itr_val_defuse_counter") !== null) {
-        document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i> RIP</a>";
+    // Update counts
+    if (count > 0) {
+        document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i> " + count + "</a>";
+        document.getElementById("itr_val_defuse_counter").innerHTML = count;
+    } else if (count > -1) {
+        document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i></a>";
         document.getElementById("itr_val_defuse_counter").innerHTML = "<i class=\"fas fa-skull-crossbones\"></i>"
-        setTimeout(function(){ itr_trigger_exp(card_id, false, placed_nickname) }, 1000);
-    } else if (card_id !== false) {
-        // Force play chicken since time expired
-        play_card(card_id);
-        exploding_active = false;
-    } else {
-        exploding_active = false;
     }
-    // Check again
-    if (document.getElementById("itr_val_defuse_counter") === null) {
-        exploding_active = false;
-        return;
-    }
-    ec_defuse_count--;
 }
 
 // Name : frontend-game.itr_trigger_stf(top_3)
@@ -354,7 +359,7 @@ function itr_trigger_pselect(game_details, card_id) {
                 "    </h1>\n" +
                 "    <div class=\"flex flex-col items-center -space-y-3\">\n" +
                 "        <img class=\"h-12 w-12 rounded-full\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
-                card_icon(game_details.players[i].status === "dead" ? -1: game_details.players[i].card_num, 0, game_details) +
+                card_icon(game_details.players[i].status === "dead" ? -1: game_details.players[i].card_num, 0, game_details, game_details.players[i].status === "exploding") +
                 "    </div>\n" +
                 "</div>";
         }
@@ -425,9 +430,9 @@ function stat_dot_class(connection, margin) {
     }
 }
 
-// Name : frontend-game.cards_icon(card_num, turns)
+// Name : frontend-game.cards_icon(card_num, turns, game_details, exploding)
 // Desc : returns the html for cards in a players hand (as well as blue card for turns)
-function card_icon(card_num, turns, game_details) {
+function card_icon(card_num, turns, game_details, exploding) {
     // Check to see if target player has any turns remaining
     let turns_payload = "";
     if (turns !== 0 && game_details.status === "in_game") {
@@ -435,31 +440,36 @@ function card_icon(card_num, turns, game_details) {
             "    <h1 class=\"text-white text-sm\">" + turns + "</h1>\n" +
             "</div>\n"
     }
+    // Check if exploding
+    let card1_color = exploding ? "bg-red-500" : "bg-gray-500";
+    let card2_color = exploding ? "bg-red-600" : "bg-gray-600";
+    let card3_color = exploding ? "bg-red-700" : "bg-gray-700";
+    let card4_color = exploding ? "bg-red-800" : "bg-gray-800";
     // Determine number of cards in hand
     if (card_num === -1) {
         return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4\">\n" +
             "    <h1 class=\"text-white text-sm\"><i class=\"fas fa-skull-crossbones\"></i></h1>\n" +
             "</div></div></div>\n"
     } else if (card_num === 2) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-gray-600 shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4 rotate-6\">\n" +
+        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
+            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4 rotate-6\">\n" +
             "    <h1 class=\"text-white text-sm\">" + card_num + "</h1>\n" +
             "</div></div>" +  turns_payload + "</div>\n"
     } else if (card_num === 3) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-gray-700 shadow-md h-5 w-4 -rotate-12\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md bg-gray-600 shadow-md h-5 w-4\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4 rotate-12\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + card_num + "</h1>\n" +
+        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card3_color + " shadow-md h-5 w-4 -rotate-12\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
+            "<div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
+            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4 rotate-12\">\n" +
+            "    <h1 class=\"text-white text-sm \">" + card_num + "</h1>\n" +
             "</div></div>" +  turns_payload + "</div>\n"
     } else if (card_num >= 4) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-gray-800 shadow-md h-5 w-4\" style=\"--tw-rotate: -18deg\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md bg-gray-700 shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md bg-gray-600 shadow-md h-5 w-4 rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4\" style=\"--tw-rotate: 18deg\">\n" +
+        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card4_color + " shadow-md h-5 w-4\" style=\"--tw-rotate: -18deg\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
+            "<div class=\"transform inline-block rounded-md " + card3_color + " shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
+            "<div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4 rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
+            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4\" style=\"--tw-rotate: 18deg\">\n" +
             "    <h1 class=\"text-white text-sm\">" + card_num + "</h1>\n" +
             "</div></div>" +  turns_payload + "</div>\n"
     } else {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-gray-600 shadow-md h-5 w-4\">\n" +
+        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4\">\n" +
             "    <h1 class=\"text-white text-sm\">" + card_num + "</h1>\n" +
             "</div></div>" +  turns_payload + "</div>\n"
     }
