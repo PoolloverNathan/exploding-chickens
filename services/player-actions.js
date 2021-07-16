@@ -124,13 +124,13 @@ exports.create_hand = async function (game_slug) {
         }
     }
     // Assign exploding chickens to deck
-    for (let i = 0; i < game_details.players.length - 1 || i < 6; i++) {
+    for (let i = 0; i < game_details.players.length - 1; i++) {
         // Randomly pick ec
         let rand_card_pos = rand_bucket(exploding_bucket);
         game_details.cards[rand_card_pos].assignment = "draw_deck";
     }
     // Save event
-    game_details = await game_actions.log_event(game_details, "create_hand", "");
+    game_details = await game_actions.log_event(game_details,"create_hand", "");
     // Create new promise
     await new Promise((resolve, reject) => {
         // Save updated game
