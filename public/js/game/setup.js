@@ -20,7 +20,8 @@ function setup_session_check(game_details) {
         }));
         session_user = {
             _id: undefined,
-            is_host: false
+            is_host: false,
+            can_draw: session_user.can_draw
         };
     } else if (JSON.parse(localStorage.getItem('ec_session')).slug !== window.location.pathname.substr(6)) {
         // Reset local storage and session player since slugs don't match
@@ -30,7 +31,8 @@ function setup_session_check(game_details) {
         }));
         session_user = {
             _id: undefined,
-            is_host: false
+            is_host: false,
+            can_draw: session_user.can_draw
         };
     } else {
         // Check to make sure that the player is valid
@@ -47,7 +49,8 @@ function setup_session_check(game_details) {
                 // Update session_user _id and is_host
                 session_user = {
                     _id: game_details.players[i]._id,
-                    is_host: game_details.players[i].type === "host"
+                    is_host: game_details.players[i].type === "host",
+                    can_draw: session_user.can_draw
                 };
                 break;
             }

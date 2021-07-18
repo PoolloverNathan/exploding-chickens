@@ -14,7 +14,8 @@ module.exports = {
       ringOffsetWidth: ['responsive', 'focus-within', 'focus', 'active'],
       ringOpacity: ['responsive', 'dark', 'focus-within', 'focus', 'active'],
       ringWidth: ['responsive', 'focus-within', 'focus', 'active'],
-      outline: ['responsive', 'focus-within', 'focus', 'active']
+      outline: ['responsive', 'focus-within', 'focus', 'active'],
+      zIndex: ['hover', 'active']
     },
   },
   plugins: [],

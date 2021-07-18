@@ -11,7 +11,8 @@ const toast_alert = Swal.mixin({
     position: 'top-end',
     showConfirmButton: false,
     timer: 5000,
-    padding: '0.4rem'
+    padding: '0.4rem',
+    timerProgressBar: true
 });
 // Global variables
 let allow_connect_msg = false;
@@ -30,7 +31,6 @@ let session_user = {
 socket.on(window.location.pathname.substr(6) + "-update", function (data) {
     // Check browser session
     setup_session_check(data);
-    console.log(data.trigger);
     // Update elements based on update trigger
     if (data.trigger === "player-connected") { // Existing player connected
         sbr_update_pstatus(data);
@@ -99,7 +99,8 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
                 // Update session_user _id and is_host
                 session_user = {
                     _id: data.players[i]._id,
-                    is_host: data.players[i].type === "host"
+                    is_host: data.players[i].type === "host",
+                    can_draw: session_user.can_draw
                 };
                 break;
             }

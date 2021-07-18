@@ -123,7 +123,7 @@ function itr_update_hand(game_details) {
                     }
                     session_user.can_draw = false;
                 }
-                payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "')\"></div>";
+                payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-110\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "'); z-index: '" + i + "'\"></div>";
             }
             // Toggle turn banner
             if (game_details.seat_playing === game_details.players[i].seat && !is_turn && game_details.status === "in_game") {
@@ -147,12 +147,6 @@ function itr_update_hand(game_details) {
 function itr_recur_exp(card_id, placed_by_name, card_url, first_run) {
     // Check to make sure the element wasn't replaced
     if (document.getElementById("itr_val_defuse_counter") === null && !first_run) {
-        socket.emit('explode-tick', {
-            slug: window.location.pathname.substr(6),
-            count: -2,
-            placed_by_name: placed_by_name,
-            card_url: card_url
-        })
         return;
     }
     // Call program again if auto recur is on, else force play chicken
@@ -176,10 +170,6 @@ function itr_recur_exp(card_id, placed_by_name, card_url, first_run) {
 // Name : frontend-game.itr_trigger_exp(count, placed_by_name, card_url)
 // Desc : triggers the exploding chicken ui to appear
 function itr_trigger_exp(count, placed_by_name, card_url) {
-    // Check if we are at the end of a count
-    if (count === -2) {
-        return;
-    }
     // Append html overlay if element doesn't exist
     if (document.getElementById("itr_val_defuse_counter") === null) {
         let placed_by_txt = "";
