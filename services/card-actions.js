@@ -162,10 +162,10 @@ exports.verify_double = async function (game_details, card_details, player_id, c
     return false;
 }
 
-// Name : card_actions.ask_favor(game_details, player_id, target, used_gator)
+// Name : card_actions.ask_favor(game_details, player_id, target, used_gator, stats_storage)
 // Desc : takes a random card from target player's hand and places in current player's hand
 // Author(s) : RAk3rman
-exports.ask_favor = async function (game_details, player_id, target, used_gator) {
+exports.ask_favor = async function (game_details, player_id, target, used_gator, stats_storage) {
     // Get cards in target and current player's hand
     let target_hand = await card_actions.filter_cards(target, game_details.cards);
     let current_hand = await card_actions.filter_cards(player_id, game_details.cards);
@@ -173,6 +173,7 @@ exports.ask_favor = async function (game_details, player_id, target, used_gator)
     for (let i = 0; i <= target_hand.length - 1; i++) {
         if (target_hand[i].action === "favorgator" && !used_gator) {
             await game_actions.discard_card(game_details, target_hand[i]._id);
+            stats_storage.set('favorgators', stats_storage.get('favorgators') + 1);
             return await card_actions.ask_favor(game_details, target, player_id, true);
         }
     }

@@ -33,18 +33,18 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Desc : runs when the client receives game data and is hosting a valid player
         // Author(s) : RAk3rman
         socket.on('player-connected', async function (data) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('player-connected')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Updating player status to connected`));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.green('player-online   ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Updating player status to connected`));
             // Verify game and player exists
             if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
                 // Update connection and local player data
                 player_data = data;
                 await player_actions.update_connection(data.slug, data.player_id, "connected");
-                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('player-connected')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player now ${chalk.dim.green('connected')} with player_id: ` + data.player_id));
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.green('player-online   ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player now ${chalk.dim.green('connected')} with player_id: ` + data.player_id));
                 // Update clients
-                await update_game_ui(data.slug, "", "player-connected", socket.id, data.player_id);
+                await update_game_ui(data.slug, "", "player-online   ", socket.id, data.player_id);
             } else {
                 // Emit error event with error
-                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('player-connected')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Target game does not exist`));
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.green('player-online   ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Target game does not exist`));
                 fastify.io.to(socket.id).emit(data.slug + "-error", "Game does not exist");
             }
         })
@@ -76,14 +76,14 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 let raw_game_details = await game_actions.game_details_slug(data.slug);
                 // Determine host assignment
                 let created_player;
-                if (raw_game_details["players"].length === 0) { //Add player as host
+                if (raw_game_details["players"].length === 0) { // Add player as host
                     created_player = await player_actions.modify_player(data.slug, undefined, data.nickname, 0, data.avatar, "host", "idle", "connected");
                 } else { // Add as player
                     created_player = await player_actions.modify_player(data.slug, undefined, data.nickname, raw_game_details["players"].length, data.avatar, "player", "idle", "connected");
                 }
                 // Return player_id to client
                 fastify.io.to(socket.id).emit("player-created", created_player);
-                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-player   ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Created new player with player_id: ` + created_player));
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-player   ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Created new player: ` + created_player));
                 // Update clients
                 await update_game_ui(data.slug, "", "create-player   ", socket.id, created_player);
             } else {
@@ -161,7 +161,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Desc : runs when a card is played on the client
         // Author(s) : RAk3rman
         socket.on('play-card', async function (data) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to play card with card_id: ` + data.card_id));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(data.card_id)} Received request to play card for player_id: ` + data.player_id));
             // Verify game exists
             if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
                 // Get game details
@@ -171,7 +171,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         // Send card id to router
                         let action_res = await game_actions.base_router(game_details, data.player_id, data.card_id, data.target, stats_storage, config_storage, bot);
                         if (action_res.data === "true") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Card action completed successfully, no callbacks`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(data.card_id)} Card action completed successfully, no callbacks`));
                             // Update clients
                             fastify.io.to(socket.id).emit(data.slug + "-play-card", {
                                 card: await card_actions.find_card(data.card_id, game_details["cards"]),
@@ -179,7 +179,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                             });
                             await update_game_ui(data.slug, "", "play-card       ", socket.id, data.player_id);
                         } else if (action_res.trigger === "seethefuture") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Card action completed successfully, seethefuture callback`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Card action completed successfully, seethefuture callback`));
                             // Update clients
                             await update_game_ui(data.slug, "", "play-card       ", socket.id, "seethefuture_callback");
                             // Trigger stf callback
@@ -188,7 +188,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                 payload: await card_actions.filter_cards("draw_deck", game_details["cards"])
                             });
                         } else if (action_res.trigger === "favor_target") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Favor callback, requesting target player`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Favor callback, requesting target player`));
                             // Trigger favor_target callback
                             fastify.io.to(socket.id).emit(data.slug + "-callback", {
                                 trigger: "favor_target",
@@ -198,7 +198,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                 }
                             });
                         } else if (action_res.trigger === "chicken_target") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Chicken placement callback, requesting target position`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Chicken placement callback, requesting target position`));
                             // Trigger favor_target callback
                             fastify.io.to(socket.id).emit(data.slug + "-callback", {
                                 trigger: "chicken_target",
@@ -208,7 +208,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                 }
                             });
                         } else if (action_res.trigger === "favor_taken") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Favor callback, notifying player of card taken`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Favor callback, notifying player of card taken`));
                             // Trigger favor_taken callback
                             fastify.io.emit(data.slug + "-callback", {
                                 trigger: "favor_taken",
@@ -249,7 +249,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         let cooldown = true;
         socket.on('draw-card', async function (data) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('draw-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to draw a new card for player_id: ` + data.player_id));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('draw-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to draw a card for player_id: ` + data.player_id));
             // Verify game exists
             if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
                 // Get game details
@@ -263,9 +263,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         // Check if card drawn in an ec
                         if (card_drawn.action !== "chicken") {
                             await game_actions.advance_turn(game_details);
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('draw-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Drew new card and advanced turn for player_id:` + data.player_id));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('draw-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(card_drawn._id)} Drew card and advanced turn`));
                         } else {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('draw-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player has drawn an ec, player_id:` + data.player_id));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('draw-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(card_drawn._id)} Drew an Exploding Chicken`));
                         }
                         // Update clients
                         await update_game_ui(data.slug, "", "draw-card       ", socket.id, data.player_id);
@@ -288,7 +288,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Desc : kicks a target player from a game
         // Author(s) : RAk3rman
         socket.on('kick-player', async function (data) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('kick-player     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to kick player ` + data.kick_player_id));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('kick-player     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to kick player_id: ` + data.kick_player_id));
             // Verify game exists
             if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
                 // Get game details
@@ -298,7 +298,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     // Kick player
                     await player_actions.kick_player(game_details, data.player_id, data.kick_player_id);
                     // Emit reset game event
-                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('kick-player     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Kicked player ` + data.kick_player_id));
+                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('kick-player     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Kicked player_id: ` + data.kick_player_id));
                     await update_game_ui(data.slug, "", "kick-player     ", socket.id, data.player_id);
                 } else {
                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('kick-player     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to complete host action`));
@@ -324,7 +324,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     // Kick player
                     await player_actions.make_host(game_details, data.player_id, data.suc_player_id);
                     // Emit reset game event
-                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('make-host       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Transfered host role ` + data.player_id + ` -> ` + data.suc_player_id));
+                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('make-host       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Transferred host role ` + data.player_id + ` -> ` + data.suc_player_id));
                     await update_game_ui(data.slug, "", "make-host       ", socket.id, data.player_id);
                 } else {
                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('make-host       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to complete host action`));
@@ -340,7 +340,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Desc : imports a new pack into a game
         // Author(s) : RAk3rman
         socket.on('import-pack', async function (data) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to import card pack ` + data.pack_name));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to import card pack: ` + data.pack_name));
             // Verify game exists
             if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
                 // Get game details
@@ -361,7 +361,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                             // Import pack
                             await game_actions.import_cards(game_details,  data.pack_name);
                             // Emit reset game event
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Imported pack ` + data.pack_name));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Imported card pack: ` + data.pack_name));
                             await update_game_ui(data.slug, "", "import-pack     ", socket.id, data.player_id);
                         } else {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Pack has already been imported`));
@@ -369,7 +369,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         }
                     } else {
                         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Game has already started, packs can only be imported while in lobby`));
-                        fastify.io.to(socket.id).emit(data.slug + "-error", "Packs cannot be imported now");
+                        fastify.io.to(socket.id).emit(data.slug + "-error", "Packs cannot be added now");
                     }
                 } else {
                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('import-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to complete host action`));
@@ -385,7 +385,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Desc : exports a new pack from a game
         // Author(s) : RAk3rman
         socket.on('export-pack', async function (data) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to export card pack ` + data.pack_name));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to export card pack: ` + data.pack_name));
             // Verify game exists
             if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
                 // Get game details
@@ -406,7 +406,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                             // Import pack
                             await game_actions.export_cards(game_details, data.pack_name);
                             // Emit reset game event
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Exported pack ` + data.pack_name));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Exported card pack: ` + data.pack_name));
                             await update_game_ui(data.slug, "", "export-pack     ", socket.id, data.player_id);
                         } else {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Pack has not been imported`));
@@ -414,7 +414,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         }
                     } else {
                         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Game has already started, packs can only be exported while in lobby`));
-                        fastify.io.to(socket.id).emit(data.slug + "-error", "Packs cannot be exported now");
+                        fastify.io.to(socket.id).emit(data.slug + "-error", "Packs cannot be removed now");
                     }
                 } else {
                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('export-pack     ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to complete host action`));
@@ -445,10 +445,11 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             //Check to see if game exists
             if (await game.exists({ slug: data.slug })) {
                 fastify.io.to(socket.id).emit("slug-response", data.slug);
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Game slug is ${chalk.dim.green('valid')}`));
             } else {
                 fastify.io.to(socket.id).emit("slug-response", false);
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Game slug is ${chalk.dim.red('invalid')}`));
             }
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Validity returned for game slug`));
         })
 
         // Name : socket.on.disconnect
@@ -461,9 +462,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (await game.exists({ slug: player_data["slug"] }) && player_data["player_id"] !== "") {
                 // Update connection and local player data
                 await player_actions.update_connection(player_data["slug"], player_data["player_id"], "offline");
-                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.red('disconnect      ')} ` + socket.id + ` ${chalk.dim.yellow(player_data["slug"])} Player now ${chalk.dim.red('offline')} with player_id:` + player_data["player_id"]));
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.red('player-offline  ')} ` + socket.id + ` ${chalk.dim.yellow(player_data["slug"])} Player now ${chalk.dim.red('offline')} with player_id:` + player_data["player_id"]));
                 // Update clients
-                await update_game_ui(player_data["slug"], "", "disconnect      ", socket.id, player_data["player_id"]);
+                await update_game_ui(player_data["slug"], "", "player-offline  ", socket.id, player_data["player_id"]);
             }
         });
     })
