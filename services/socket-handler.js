@@ -216,7 +216,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                     game_details: await get_game_export(data.slug, "play-card       ", data.player_id),
                                     target_player_id: action_res.data["target_player_id"],
                                     favor_player_name: action_res.data["favor_player_name"],
-                                    card_image_loc: action_res.data["card_image_loc"]
+                                    card_image_loc: action_res.data["card_image_loc"],
+                                    used_gator: action_res.data["used_gator"]
                                 }
                             });
                         } else if (action_res.trigger === "winner") {

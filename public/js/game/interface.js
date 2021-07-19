@@ -146,7 +146,7 @@ function itr_update_hand(game_details) {
 // Desc : triggers the exploding chicken ui to appear via socket event
 function itr_recur_exp(card_id, placed_by_name, card_url, first_run) {
     // Check to make sure the element wasn't replaced
-    if (document.getElementById("itr_val_defuse_counter") === null && !first_run) {
+    if ((document.getElementById("itr_val_defuse_counter") === null || just_played) && !first_run) {
         return;
     }
     // Call program again if auto recur is on, else force play chicken
@@ -234,20 +234,21 @@ function itr_trigger_stf(top_3) {
     })
 }
 
-// Name : frontend-game.itr_trigger_taken(player_name, card_url)
+// Name : frontend-game.itr_trigger_taken(player_name, card_url, used_gator)
 // Desc : triggers the card taken ui to appear
-function itr_trigger_taken(player_name, card_url) {
+function itr_trigger_taken(player_name, card_url, used_gator) {
+    let line1 = used_gator ? player_name + " used a <span class=\"text-green-300\">Favor Gator</span>" : player_name + " asked for a Favor";
     // Fire swal
     Swal.fire({
         html:
             "<div class=\"inline-block\">" +
-            "    <h1 class=\"text-3xl font-semibold pb-1 text-white\">" + player_name + " asked for a Favor</h1>" +
-            "    <h1 class=\"text-xl font-semibold pb-5 text-white\">Looks like you got robbed</h1>" +
+            "    <h1 class=\"text-3xl font-semibold pb-1 text-white\">" + line1 + "</h1>" +
+            "    <h1 class=\"text-xl font-semibold pb-5 text-white\">Ouch, looked like you got robbed</h1>" +
             "    <div class=\"-space-x-24 rotate-12 inline-block\">" +
             "       <div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain\" style=\"background-image: url('/" + card_url + "');width: 10.2rem;height: 14.4rem;border-radius: 1.6rem\"></div>\n" +
             "    </div>" +
             "</div>\n",
-        timer: 5000,
+        timer: 10000,
         background: "transparent"
     })
 }
@@ -255,6 +256,23 @@ function itr_trigger_taken(player_name, card_url) {
 // Name : frontend-game.itr_trigger_chicken_target(game_details)
 // Desc : triggers the choose chicken position ui to appear
 function itr_trigger_chicken_target(max_pos, card_id) {
+    // Check if we are at the bottom
+    let choice_btns = max_pos === 0 ? "" : "            <button onclick=\"Swal.close();place_chicken('" + card_id + "', 'random', '" + max_pos + "')\" class=\"mb-2 w-48 h-12 bg-yellow-500 hover:bg-yellow-600 text-white text-lg font-semibold border border-transparent rounded-xl focus:outline-none transition-colors duration-200\">\n" +
+        "                 <i class=\"fas fa-random pr-2\"></i>Place Randomly\n" +
+        "            </button>\n" +
+        "            <div class=\"bg-transparent mb-2\">\n" +
+        "                <div class=\"flex justify-center items-center\">\n" +
+        "                    <div class=\"relative\">\n" +
+        "                        <input type=\"text\" class=\"h-12 w-48 pl-4 pr-20 font-semibold rounded-xl text-lg z-0 text-white bg-transparent border-2 border-gray-500 focus:outline-none\">\n" +
+        "                        <div class=\"absolute top-0 left-0\">\n" +
+        "                            <button class=\"h-12 w-24 text-white text-3xl font-semibold rounded-l-xl bg-green-500 hover:bg-green-600 focus:outline-none\" onclick=\"_itr_dec_chicken_pos('" + max_pos + "')\"><i class=\"fas fa-caret-up\"></i></button>\n" +
+        "                        </div>\n" +
+        "                        <div class=\"absolute top-0 right-0\">\n" +
+        "                            <button class=\"h-12 w-24 text-white text-3xl font-semibold rounded-r-xl bg-red-500 hover:bg-red-600 focus:outline-none\" onclick=\"_itr_inc_chicken_pos('" + max_pos + "')\"><i class=\"fas fa-caret-down\"></i></button>\n" +
+        "                        </div>\n" +
+        "                    </div>\n" +
+        "                </div>\n" +
+        "            </div>";
     // Fire swal
     Swal.fire({
         html:
@@ -263,23 +281,7 @@ function itr_trigger_chicken_target(max_pos, card_id) {
             "    <h1 class=\"text-xl font-semibold pb-5 text-white\">Use the toggles below to rig the deck</h1>" +
             "    <div class=\"inline-block sm:flex items-center justify-center\">\n" +
             "        <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain\" style=\"background-image: url('/public/cards/base/chicken.png');width: 12rem;height: 16.9rem;border-radius: 1.8rem\"></div>\n" +
-            "        <div class=\"mt-2 sm:ml-3\">" +
-            "            <button onclick=\"Swal.close();place_chicken('" + card_id + "', 'random', '" + max_pos + "')\" class=\"mb-2 w-48 h-12 bg-yellow-500 hover:bg-yellow-600 text-white text-lg font-semibold border border-transparent rounded-xl focus:outline-none transition-colors duration-200\">\n" +
-            "                 <i class=\"fas fa-random pr-2\"></i>Place Randomly\n" +
-            "            </button>\n" +
-            "            <div class=\"bg-transparent mb-2\">\n" +
-            "                <div class=\"flex justify-center items-center\">\n" +
-            "                    <div class=\"relative\">\n" +
-            "                        <input type=\"text\" class=\"h-12 w-48 pl-4 pr-20 font-semibold rounded-xl text-lg z-0 text-white bg-transparent border-2 border-gray-500 focus:outline-none\">\n" +
-            "                        <div class=\"absolute top-0 left-0\">\n" +
-            "                            <button class=\"h-12 w-24 text-white text-3xl font-semibold rounded-l-xl bg-green-500 hover:bg-green-600 focus:outline-none\" onclick=\"_itr_dec_chicken_pos('" + max_pos + "')\"><i class=\"fas fa-caret-up\"></i></button>\n" +
-            "                        </div>\n" +
-            "                        <div class=\"absolute top-0 right-0\">\n" +
-            "                            <button class=\"h-12 w-24 text-white text-3xl font-semibold rounded-r-xl bg-red-500 hover:bg-red-600 focus:outline-none\" onclick=\"_itr_inc_chicken_pos('" + max_pos + "')\"><i class=\"fas fa-caret-down\"></i></button>\n" +
-            "                        </div>\n" +
-            "                    </div>\n" +
-            "                </div>\n" +
-            "            </div>" +
+            "        <div class=\"mt-2 sm:ml-3\">" + choice_btns +
             "            <button id=\"custom_chicken_pos\" onclick=\"Swal.close();place_chicken('" + card_id + "', 'custom', '" + max_pos + "')\" class=\"w-48 h-12 bg-purple-500 hover:bg-purple-600 text-white text-lg font-semibold border border-transparent rounded-xl focus:outline-none transition-colors duration-200\">\n" +
             "                 Place on Top\n" +
             "            </button>\n" +

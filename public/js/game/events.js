@@ -16,6 +16,7 @@ const toast_alert = Swal.mixin({
 });
 // Global variables
 let allow_connect_msg = false;
+let just_played = false;
 let session_user = {
     _id: undefined,
     is_host: false,
@@ -170,7 +171,7 @@ socket.on(window.location.pathname.substr(6) + "-callback", function (data) {
         itr_update_discard(data.payload.game_details);
         itr_update_hand(data.payload.game_details);
         if (session_user._id === data.payload.target_player_id) {
-            itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc);
+            itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc, data.payload.used_gator);
         }
     }
 });
@@ -209,6 +210,8 @@ socket.on(window.location.pathname.substr(6) + "-draw-card", function (data) {
 // Desc : whenever the player plays a card, triggers animation
 socket.on(window.location.pathname.substr(6) + "-play-card", function (data) {
     anm_play_card(data);
+    just_played = true;
+    setTimeout(function(){ just_played = false }, 500);
 });
 
 // Name : frontend-game.socket.on.{slug}-explode-tick

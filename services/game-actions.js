@@ -224,10 +224,10 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         let v_favor = await card_actions.verify_favor(game_details, player_id, target);
         if (v_favor === true) {
             await game_actions.discard_card(game_details, card_id);
-            let card_taken = await card_actions.ask_favor(game_details, player_id, target);
+            let favor_data = await card_actions.ask_favor(game_details, player_id, target, false);
             stats_storage.set('favors', stats_storage.get('favors') + 1);
             return {trigger: "favor_taken", data: {
-                target_player_id: target, favor_player_name: (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: card_taken.image_loc
+                target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player(game_details, target)).nickname : (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
             }};
         } else {
             return v_favor;
@@ -240,10 +240,10 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
             if (v_favor === true) {
                 await game_actions.discard_card(game_details, v_double);
                 await game_actions.discard_card(game_details, card_id);
-                let card_taken = await card_actions.ask_favor(game_details, player_id, target);
+                let favor_data = await card_actions.ask_favor(game_details, player_id, target, false);
                 stats_storage.set('favors', stats_storage.get('favors') + 1);
                 return {trigger: "favor_taken", data: {
-                    target_player_id: target, favor_player_name: (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: card_taken.image_loc
+                    target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player(game_details, target)).nickname : (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
                 }};
             } else {
                 return v_favor;
@@ -283,11 +283,11 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
     } else if (card_details.action === "favorgator") {
         let v_favor = await card_actions.verify_favor(game_details, player_id, target);
         if (v_favor === true) {
-            let card_taken = await card_actions.ask_favor(game_details, player_id, target);
+            let favor_data = await card_actions.ask_favor(game_details, player_id, target, false);
             await game_actions.discard_card(game_details, card_id);
             stats_storage.set('favors', stats_storage.get('favors') + 1);
             return {trigger: "favor_taken", data: {
-                    target_player_id: target, favor_player_name: (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: card_taken.image_loc
+                    target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player(game_details, target)).nickname : (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
                 }};
         } else {
             return v_favor;
