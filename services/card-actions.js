@@ -53,6 +53,7 @@ exports.kill_player = async function (game_details, player_id) {
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
         if (game_details.cards[i].assignment === player_id) {
             game_details.cards[i].assignment = "out_of_play";
+            game_details.cards[i].placed_by_id = "";
         }
     }
     // Save event

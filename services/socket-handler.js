@@ -544,15 +544,15 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             // Check if placed_by is active
             let placed_by_name = "";
             for (let i = 0; i < raw_game_details["cards"].length; i++) {
-                if (raw_game_details["cards"][i].placed_by_id !== "") {
+                if (raw_game_details["cards"][i].placed_by_id !== "" && raw_game_details["cards"][i].assignment !== "out_of_play") {
                     // Go through players and find nickname
                     for (let j = 0; j < raw_game_details["players"].length; j++) {
                         if (raw_game_details["cards"][i].placed_by_id === raw_game_details["players"][j]._id) {
                             placed_by_name = raw_game_details["players"][j].nickname;
-                            i = raw_game_details["cards"].length;
-                            j = raw_game_details["players"].length;
+                            break;
                         }
                     }
+                    break;
                 }
             }
             // Prepare pretty game details

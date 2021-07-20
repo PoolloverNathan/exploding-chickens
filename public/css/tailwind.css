@@ -2315,8 +2315,16 @@ video {
     width: 91.666667%;
   }
 
+  .md\:grid-flow-row {
+    grid-auto-flow: row;
+  }
+
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md\:grid-rows-4 {
+    grid-template-rows: repeat(4, minmax(0, 1fr));
   }
 
   .md\:flex-row {

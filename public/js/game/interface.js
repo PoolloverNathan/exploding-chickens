@@ -28,11 +28,11 @@ function itr_update_players(game_details) {
         let turns = game_details.seat_playing === game_details.players[i].seat ? game_details.turns_remaining : 0;
         // Check for dead filter
         let filter = game_details.players[i].status === "dead" ? "filter grayscale" : "";
-        center_payload += "<div class=\"block text-center\">\n" +
+        center_payload += "<div class=\"block text-center mb-3\">\n" +
             "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
             "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].status, game_details.players[i].connection, "", "itr_stat_player_dot_" + game_details.players[i]._id) + "\n" +
             "    </h1>\n" +
-            "    <div class=\"flex flex-col items-center -space-y-3\" id=\"itr_stat_player_halo_" + game_details.players[i]._id + "\">\n" +
+            "    <div class=\"flex flex-col items-center -space-y-3 px-3\" id=\"itr_stat_player_halo_" + game_details.players[i]._id + "\">\n" +
             "        <img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
             card_icon(game_details.players[i].status === "dead" ? -1 : game_details.players[i].card_num, turns, game_details, game_details.players[i].status === "exploding") +
             "    </div>\n" +
@@ -40,13 +40,13 @@ function itr_update_players(game_details) {
         // If we are not at the end of the number of players, indicate direction
         if (i < game_details.players.length - 1) {
             if (game_details.turn_direction === "forward") {
-                center_payload += "<button class=\"mx-2 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white\">\n" +
+                center_payload += "<button class=\"mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white\">\n" +
                     "    <svg class=\"h-3 w-3\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                     "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 5l7 7-7 7M5 5l7 7-7 7\" />\n" +
                     "    </svg>" +
                     "</button>";
             } else {
-                center_payload += "<button class=\"mx-2 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white\">\n" +
+                center_payload += "<button class=\"mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white\">\n" +
                     "    <svg class=\"h-3 w-3\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                     "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M11 19l-7-7 7-7m8 14l-7-7 7-7\" />\n" +
                     "    </svg>\n" +
