@@ -2,16 +2,16 @@
 
 [![Build status](https://travis-ci.org/RAK3RMAN/exploding-chickens.svg?branch=main)](https://travis-ci.org/RAK3RMAN/exploding-chickens) ![Language](https://img.shields.io/badge/Language-Node.js-informational.svg?style=flat) ![License](https://img.shields.io/badge/License-MPL2.0-red.svg)
 
-#### We are seeking artists & graphic designers to help design the upcoming packs of Exploding Chickens! If you have a knack to create awesome card designs and want to give back to the community, drop me a line [here](https://rakerman.com/contact/).
+#### Play the game at [https://chickens.rakerman.com](https://chickens.rakerman.com)
 
 A beautiful, online alternative to the popular kitty-powered version of Russian Roulette, Exploding Kittens. 
 Exploding Chickens is a card game with explosions and of course, chickens — all crafted on the Node.js platform. 
 The rules are simple. Each player takes turns drawing a card or playing a card, rolling the dice of luck so that they can survive for yet another turn. 
 From there, the drawing deck slowly shrinks and the explosions only become more frequent. **So, who will be the last one standing?**
 
-- Supports up to **2-5 players**
-- Utilizes a **51-card** base deck
-- **5 min** average game time
+- Supports up to **2-7 players**
+- Utilizes a **53-card** base deck
+- **6 min** average game time
 
 ![Home UI](public/home_ui.png)
 
@@ -39,7 +39,7 @@ The config file will be populated with the following default values:
 ### Running the project
 The npm package supports multiple ways to run the project.
 - ``npm run start`` Runs the project, plain and simple.
-- ``npm run develop`` Builds the project (see build cmd below), then starts the project and watches for all file changes. Restarts the instance if critical files are updated.
+- ``npm run dev`` Builds the project (see build cmd below), then starts the project and watches for all file changes. Restarts the instance if critical files are updated.
 - ``npm run test`` Runs a test suite built using [mocha](https://mochajs.org/) and [chai assert](https://www.chaijs.com/api/assert/). Tests can be found in path ``/test`` . Travis-CI also runs these tests.
 - ``npm run build`` Builds and compresses the css package, along with any other assets. If something new doesn't look right, give this a shot.
 
@@ -67,10 +67,10 @@ Author(s): RAk3rman
 - Make sure in line comments are clear. Use good coding practices.
 
 ## Contributors
-- **Radison Akerman**
-- **Sengdao Inthavong**
-- **Vincent Do**
-- **Richard Yang**
+- **Radison Akerman** // Creator + Coding Wizard
+- **Sengdao Inthavong** // Graphics Designer
+- **Vincent Do** // Game Content
+- **Richard Yang** // Game Content
 
 *Individual contributions are listed on most functions*
 
