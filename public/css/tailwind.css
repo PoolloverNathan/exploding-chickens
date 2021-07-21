@@ -779,6 +779,10 @@ video {
   margin-right: 0.25rem;
 }
 
+.mr-8 {
+  margin-right: 2rem;
+}
+
 .-mr-1 {
   margin-right: -0.25rem;
 }
@@ -845,6 +849,10 @@ video {
 
 .-ml-8 {
   margin-left: -2rem;
+}
+
+.-ml-12 {
+  margin-left: -3rem;
 }
 
 .block {
@@ -1082,14 +1090,14 @@ video {
   --tw-rotate: -3deg;
 }
 
+.scale-100 {
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+}
+
 .hover\:scale-105:hover {
   --tw-scale-x: 1.05;
   --tw-scale-y: 1.05;
-}
-
-.hover\:scale-110:hover {
-  --tw-scale-x: 1.1;
-  --tw-scale-y: 1.1;
 }
 
 .hover\:scale-125:hover {
