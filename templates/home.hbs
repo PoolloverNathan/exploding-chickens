@@ -38,30 +38,32 @@
 <body class="leading-normal tracking-normal text-indigo-400 bg-cover bg-fixed" style="background-image: url('/public/home_back.jpg');background-color: #0f0f0f;">
 {{! Banner }}
 <div class="bg-indigo-600 hidden" id="banner">
-    <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between flex-wrap">
-            <div class="w-0 flex-1 flex items-center">
+    <div class="px-6">
+        <div class="w-full container mx-auto py-3">
+            <div class="w-full flex items-center justify-between">
+                <div class="w-0 flex-1 flex items-center">
                 <span class="flex p-2 rounded-lg bg-indigo-800">
                     <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                     </svg>
                 </span>
-                <p class="ml-3 font-medium text-white truncate">
+                    <p class="ml-3 font-medium text-white truncate">
                     <span class="md:hidden">
                         New Expansion Pack Released!
                     </span>
-                    <span href="#yolking" class="hidden md:inline">
+                        <span href="#yolking" class="hidden md:inline">
                         We've added the brand new "Yolking Around" Expansion Pack! Learn more below.
                     </span>
-                </p>
-            </div>
-            <div class="order-2 flex-shrink-0 sm:order-3 sm:ml-3">
-                <button type="button" class="-mr-1 flex p-2 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-white sm:-mr-2" onclick="hide_banner()">
-                    <span class="sr-only">Dismiss</span>
-                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                    </p>
+                </div>
+                <div class="order-2 flex-shrink-0 sm:order-3 sm:ml-3">
+                    <button type="button" class="-mr-1 flex p-2 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-white sm:-mr-2" onclick="hide_banner()">
+                        <span class="sr-only">Dismiss</span>
+                        <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -134,7 +136,7 @@
             </p>
         </div>
         {{! How to Play: Game Structure }}
-        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-2 pb-5">
+        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-2 pb-2" id="game-structure">
             <p class="leading-normal text-white opacity-80 text-2xl md:text-3xl text-left">
                 Game Structure
             </p>
@@ -142,28 +144,30 @@
                 Supports 2-7 players. {{ stats_avg_play_time }} min average play time.
             </p>
         </div>
-        <div class="space-y-10 md:space-y-0 md:grid md:grid-flow-row md:grid-cols-2 md:grid-rows-4 md:gap-x-8 md:gap-y-10">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">1</span>
-                    </h1>
-                </div>
-                <div class="ml-4">
-                    <dt class="text-lg text-white opacity-80">
-                        Understanding the Basics
-                    </dt>
-                    <dd class="mt-2 mr-8 text-base text-white opacity-60">
-                        Exploding Chickens is a card game based on both <strong>luck and strategy</strong>. Throughout the game, you draw cards from the deck which can either secure your victory or lead to your explosive demise. <strong>Action cards</strong> help give you an advantage over your opponents. But beware: <i>the deadly Exploding Chicken is also hidden in the mix.</i>
-                    </dd>
+        <div class="space-y-10 md:space-y-0 md:grid md:grid-flow-row md:grid-cols-5 md:grid-rows-4 md:gap-x-8 md:gap-y-10">
+            <div class="flex justify-center items-center md:col-span-3 mt-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
+                            <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">1</span>
+                        </h1>
+                    </div>
+                    <div class="md:ml-4">
+                        <dt class="text-xl text-white opacity-80">
+                            Understanding the Basics
+                        </dt>
+                        <dd class="mt-2 mr-8 text-lg text-white opacity-60">
+                            Exploding Chickens is a card game based on both <strong>luck and strategy</strong>. Throughout the game, you draw cards from the deck which can either secure your victory or lead to your explosive demise. <strong>Action cards</strong> help give you an advantage over your opponents. But beware: <i>the deadly Exploding Chicken is also hidden in the mix.</i>
+                        </dd>
+                    </div>
                 </div>
             </div>
-            <div class="flex justify-center">
+            <div class="flex justify-center items-center md:col-span-2">
                 <div class="flex-shrink-0">
                     <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 transform scale-100 -rotate-12 transition hover:scale-105 duration-500 ease-in-out" 
                     style="background-image: url('/public/cards/base/defuse-3.png');"></div>
                 </div>
-                <div class="flex-shrink-0">
+                <div class="flex-shrink-0 hidden md:block">
                     <div class="rounded-xl shadow-lg center-card bg-center bg-contain -mt-5 -ml-12 transform scale-100 transition hover:scale-105 duration-500 ease-in-out" 
                     style="background-image: url('/public/cards/base/skip-2.png');"></div>
                 </div>
@@ -172,51 +176,72 @@
                     style="background-image: url('/public/cards/base/chicken.png');"></div>
                 </div>
             </div>
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">2</span>
-                    </h1>
-                </div>
-                <div class="ml-4">
-                    <dt class="text-lg text-white opacity-80">
-                        Taking your Turn
-                    </dt>
-                    <dd class="mt-2 mr-8  text-base text-white opacity-60">
-                        At the start of your turn, you can <strong>play as many (or as few) action cards as you’d like</strong>. That is, as long as the circumstances permit. Some unique cards will allow you to skip your turn entirely while others can force you to draw multiple times. Just follow the cards instructions below on how to play each action card. <strong>End your turn by drawing a card from the deck</strong>.
-                    </dd>
-                </div>
-            </div>
-            <div class="flex justify-center">
-                <div class="flex-shrink-0">
-                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 transform scale-100 -rotate-12 transition hover:scale-105 duration-500 ease-in-out" 
-                    style="background-image: url('/public/cards/base/attack-4.png');"></div>
-                </div>
-                <div class="flex-shrink-0">
-                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain -mt-5 -ml-12 transform scale-100 transition hover:scale-105 duration-500 ease-in-out" 
-                    style="background-image: url('/public/cards/base/favor-2.png');"></div>
-                </div>
-                <div class="flex-shrink-0">
-                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain -ml-12 transform scale-100 rotate-12 transition hover:scale-105 duration-500 ease-in-out" 
-                    style="background-image: url('/public/cards/base/seethefuture-2.png');"></div>
+            <div class="flex justify-center items-center md:col-span-3 md:hidden">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
+                            <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">2</span>
+                        </h1>
+                    </div>
+                    <div class="md:ml-4">
+                        <dt class="text-xl text-white opacity-80">
+                            Taking your Turn
+                        </dt>
+                        <dd class="mt-2 mr-8 text-lg text-white opacity-60">
+                            At the start of your turn, you can <strong>play as many (or as few) action cards as you’d like</strong>. That is, as long as the circumstances permit. Some unique cards will allow you to skip your turn entirely while others can force you to draw multiple times. Just follow the cards instructions below on how to play each action card. <strong>End your turn by drawing a card from the deck</strong>.
+                        </dd>
+                    </div>
                 </div>
             </div>
-            <div class="flex">
+            <div class="flex justify-center items-center md:col-span-2">
                 <div class="flex-shrink-0">
-                    <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">3</span>
-                    </h1>
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 transform scale-100 -rotate-12 transition hover:scale-105 duration-500 ease-in-out"
+                         style="background-image: url('/public/cards/base/attack-4.png');"></div>
                 </div>
-                <div class="ml-4">
-                    <dt class="text-lg text-white opacity-80">
-                        Drawing an Exploding Chicken
-                    </dt>
-                    <dd class="mt-2 mr-8  text-base text-white opacity-60">
-                        When you continue drawing card after card in the game, there comes a point where someone will draw an Exploding Chicken. If that’s you, you have two options: <strong>defuse the ticking time bomb</strong> or <strong>say goodbye to your chances of winning</strong>. The number of Exploding Chickens is always <strong>one less</strong> than the number of players alive.
-                    </dd>
+                <div class="flex-shrink-0 hidden md:block">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain -mt-5 -ml-12 transform scale-100 transition hover:scale-105 duration-500 ease-in-out"
+                         style="background-image: url('/public/cards/base/favor-2.png');"></div>
+                </div>
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain -ml-12 transform scale-100 rotate-12 transition hover:scale-105 duration-500 ease-in-out"
+                         style="background-image: url('/public/cards/base/seethefuture-2.png');"></div>
                 </div>
             </div>
-            <div class="flex justify-center">
+            <div class="md:flex justify-center items-center md:col-span-3 hidden">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
+                            <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">2</span>
+                        </h1>
+                    </div>
+                    <div class="md:ml-4">
+                        <dt class="text-xl text-white opacity-80">
+                            Taking your Turn
+                        </dt>
+                        <dd class="mt-2 mr-8 text-lg text-white opacity-60">
+                            At the start of your turn, you can <strong>play as many (or as few) action cards as you’d like</strong>. That is, as long as the circumstances permit. Some unique cards will allow you to skip your turn entirely while others can force you to draw multiple times. Just follow the cards instructions below on how to play each action card. <strong>End your turn by drawing a card from the deck</strong>.
+                        </dd>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center items-center md:col-span-3">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
+                            <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">3</span>
+                        </h1>
+                    </div>
+                    <div class="md:ml-4">
+                        <dt class="text-xl text-white opacity-80">
+                            Drawing an Exploding Chicken
+                        </dt>
+                        <dd class="mt-2 mr-8 text-lg text-white opacity-60">
+                            When you continue drawing card after card in the game, there comes a point where someone will draw an Exploding Chicken. If that’s you, you have two options: <strong>defuse the ticking time bomb</strong> or <strong>say goodbye to your chances of winning</strong>. The number of Exploding Chickens is always <strong>one less</strong> than the number of players alive.
+                        </dd>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center items-center md:col-span-2">
                 <div class="flex-shrink-0">
                     <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
                 </div>
@@ -224,110 +249,142 @@
                     <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/base/chicken.png');"></div>
                 </div>
             </div>
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">4</span>
-                    </h1>
-                </div>
-                <div class="ml-4">
-                    <dt class="text-lg text-white opacity-80">
-                        Winner Winner Chicken Dinner
-                    </dt>
-                    <dd class="mt-2 mr-8 text-base text-white opacity-60">
-                        Winning the game is pretty simple. Use whatever cards at your disposal, combined with your smarts, to be <strong>the last person alive</strong>. After you witness each of your friends fall one by one to the wrath of the Exploding Chicken, congratulations! You’ve claimed the bragging rights to one of the most explosive games on the planet. <i>Don’t let them forget.</i>
-                    </dd>
+            <div class="flex justify-center items-center md:col-span-3 md:hidden">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
+                            <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">4</span>
+                        </h1>
+                    </div>
+                    <div class="md:ml-4">
+                        <dt class="text-xl text-white opacity-80">
+                            Winner Winner Chicken Dinner
+                        </dt>
+                        <dd class="mt-2 mr-8 text-lg text-white opacity-60">
+                            Winning the game is pretty simple. Use whatever cards at your disposal, combined with your smarts, to be <strong>the last person alive</strong>. After you witness each of your friends fall one by one to the wrath of the Exploding Chicken, congratulations! You’ve claimed the bragging rights to one of the most explosive games on the planet. <i>Don’t let them forget.</i>
+                        </dd>
+                    </div>
                 </div>
             </div>
-            <div class="flex flex-wrap justify-center items-center p-2">
-                <div class="block text-center mb-3">
-                    <h1 class="text-white font-medium text-sm">
-                        Sengdao <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-green-500"></span>
-                    </h1>
-                    <div class="flex flex-col items-center -space-y-3 px-3">
-                        <img class="h-12 w-12 rounded-full filter grayscale" src="/public/avatars/puma.png" alt="">
-                        <div class="inline-block">
-                            <div class="-space-x-4 rotate-12 inline-block">
-                                <div class="transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4">
-                                    <h1 class="text-white text-sm"><i class="fas fa-skull-crossbones"></i></h1>
+            <div class="flow-root py-6 md:col-span-2">
+                <div class="flex justify-center items-center">
+                    <div class="block text-center mb-3">
+                        <h1 class="text-white font-medium text-sm">
+                            Sengdao <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-green-500"></span>
+                        </h1>
+                        <div class="flex flex-col items-center -space-y-3 px-3">
+                            <img class="h-12 w-12 rounded-full filter grayscale" src="/public/avatars/puma.png" alt="">
+                            <div class="inline-block">
+                                <div class="-space-x-4 rotate-12 inline-block">
+                                    <div class="transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm"><i class="fas fa-skull-crossbones"></i></h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                    <div class="block text-center mb-3">
+                        <h1 class="text-white font-medium text-sm">
+                            Vincent <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5  align-middle bg-green-500"></span>
+                        </h1>
+                        <div class="flex flex-col items-center -space-y-3 px-3"><img class="h-12 w-12 rounded-full " src="/public/avatars/bull.png" alt="">
+                            <div class="inline-block">
+                                <div class="-space-x-4 rotate-12 inline-block">
+                                    <div class="transform inline-block rounded-md bg-gray-800 shadow-md h-5 w-4" style="--tw-rotate: -18deg"><h1 class="text-gray-700 text-sm">1</h1></div>
+                                    <div class="transform inline-block rounded-md bg-gray-700 shadow-md h-5 w-4 -rotate-6"><h1 class="text-gray-700 text-sm">1</h1></div>
+                                    <div class="transform inline-block rounded-md bg-gray-600 shadow-md h-5 w-4 rotate-6"><h1 class="text-gray-600 text-sm">1</h1></div>
+                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4" style="--tw-rotate: 18deg">
+                                        <h1 class="text-white text-sm">4</h1>
+                                    </div>
+                                </div>
+                                <div class="transform inline-block rounded-md bg-blue-500 shadow-md h-5 w-4 ml-1">
+                                    <h1 class="text-white text-sm">1</h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                    <div class="block text-center mb-3">
+                        <h1 class="text-white font-medium text-sm">
+                            Radison <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5  align-middle bg-green-500"></span>
+                        </h1>
+                        <div class="flex flex-col items-center -space-y-3 px-3"><img class="h-12 w-12 rounded-full filter grayscale" src="/public/avatars/wolf.png" alt="">
+                            <div class="inline-block">
+                                <div class="-space-x-4 rotate-12 inline-block">
+                                    <div class="transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm"><i class="fas fa-skull-crossbones"></i></h1>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button class="mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-                    <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-                <div class="block text-center mb-3">
-                    <h1 class="text-white font-medium text-sm">
-                        Vincent <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5  align-middle bg-green-500"></span>
-                    </h1>
-                    <div class="flex flex-col items-center -space-y-3 px-3"><img class="h-12 w-12 rounded-full " src="/public/avatars/bull.png" alt="">
-                        <div class="inline-block">
-                            <div class="-space-x-4 rotate-12 inline-block">
-                                <div class="transform inline-block rounded-md bg-gray-800 shadow-md h-5 w-4" style="--tw-rotate: -18deg"><h1 class="text-gray-700 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-700 shadow-md h-5 w-4 -rotate-6"><h1 class="text-gray-700 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-600 shadow-md h-5 w-4 rotate-6"><h1 class="text-gray-600 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4" style="--tw-rotate: 18deg">
-                                    <h1 class="text-white text-sm">4</h1>
+                <div class="flex justify-center items-center">
+                    <div class="block text-center">
+                        <h1 class="text-white font-medium text-sm">
+                            Richard <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-green-500"></span>
+                        </h1>
+                        <div class="flex flex-col items-center -space-y-3 px-3">
+                            <img class="h-12 w-12 rounded-full filter grayscale" src="/public/avatars/lion.png" alt="">
+                            <div class="inline-block">
+                                <div class="-space-x-4 rotate-12 inline-block">
+                                    <div class="transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm"><i class="fas fa-skull-crossbones"></i></h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                    <div class="block text-center">
+                        <h1 class="text-white font-medium text-sm">
+                            Nathanael <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5  align-middle bg-green-500"></span>
+                        </h1>
+                        <div class="flex flex-col items-center -space-y-3 px-3"><img class="h-12 w-12 rounded-full filter grayscale" src="/public/avatars/bear.png" alt="">
+                            <div class="inline-block">
+                                <div class="-space-x-4 rotate-12 inline-block">
+                                    <div class="transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm"><i class="fas fa-skull-crossbones"></i></h1>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button class="mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-                    <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-                <div class="block text-center mb-3">
-                    <h1 class="text-white font-medium text-sm">
-                        Radison <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5  align-middle bg-green-500"></span>
-                    </h1>
-                    <div class="flex flex-col items-center -space-y-3 px-3"><img class="h-12 w-12 rounded-full " src="/public/avatars/wolf.png" alt="">
-                        <div class="inline-block">
-                            <div class="-space-x-4 rotate-12 inline-block">
-                                <div class="transform inline-block rounded-md bg-gray-800 shadow-md h-5 w-4" style="--tw-rotate: -18deg"><h1 class="text-gray-700 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-700 shadow-md h-5 w-4 -rotate-6"><h1 class="text-gray-700 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-600 shadow-md h-5 w-4 rotate-6"><h1 class="text-gray-600 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4" style="--tw-rotate: 18deg">
-                                    <h1 class="text-white text-sm">6</h1>
-                                </div>
-                            </div>
-                            <div class="transform inline-block rounded-md bg-blue-500 shadow-md h-5 w-4 ml-1">
-                                <h1 class="text-white text-sm">1</h1>
-                            </div>
-                        </div>
+            </div>
+            <div class="md:flex justify-center items-center md:col-span-3 hidden">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <h1 class="px-6 text-6xl text-white opacity-80 font-bold leading-tight text-left">
+                            <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">4</span>
+                        </h1>
                     </div>
-                </div>
-                <button class="mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-                    <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-                <div class="block text-center mb-3">
-                    <h1 class="text-white font-medium text-sm">
-                        Richard <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-green-500"></span>
-                    </h1>
-                    <div class="flex flex-col items-center -space-y-3 px-3"><img class="h-12 w-12 rounded-full " src="/public/avatars/lion.png" alt="">
-                        <div class="inline-block">
-                            <div class="-space-x-4 rotate-12 inline-block">
-                                <div class="transform inline-block rounded-md bg-gray-800 shadow-md h-5 w-4" style="--tw-rotate: -18deg"><h1 class="text-gray-700 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-700 shadow-md h-5 w-4 -rotate-6"><h1 class="text-gray-700 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-600 shadow-md h-5 w-4 rotate-6"><h1 class="text-gray-600 text-sm">1</h1></div>
-                                <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4" style="--tw-rotate: 18deg">
-                                    <h1 class="text-white text-sm">6</h1>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="md:ml-4">
+                        <dt class="text-xl text-white opacity-80">
+                            Winner Winner Chicken Dinner
+                        </dt>
+                        <dd class="mt-2 mr-8 text-lg text-white opacity-60">
+                            Winning the game is pretty simple. Use whatever cards at your disposal, combined with your smarts, to be <strong>the last person alive</strong>. After you witness each of your friends fall one by one to the wrath of the Exploding Chicken, congratulations! You’ve claimed the bragging rights to one of the most explosive games on the planet. <i>Don’t let them forget.</i>
+                        </dd>
                     </div>
                 </div>
             </div>
         </div>
         {{! How to Play: Base Card Pack }}
-        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-10 pb-5">
+        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-10 pb-5" id="base-pack">
             <p class="leading-normal text-white opacity-80 text-2xl md:text-3xl text-left">
                 Base Pack
             </p>
@@ -454,13 +511,22 @@
                 </div>
             </div>
         </div>
-        {{! How to Play: Expansion Pack 1}}
-        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-10 pb-5">
-            <p class="leading-normal text-white opacity-80 text-2xl md:text-3xl text-left mt-16">
-                Expansion Packs
-            </p>
+        {{! How to Play: Yolking Around }}
+        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-10 pb-5" id="yolking-around-pack">
             <p class="leading-normal text-white opacity-80 text-2xl md:text-3xl text-left mt-6">
-                <a id="yolking" class="font-bold" style="font-family:Satisfy">Yolking Around </a>
+                <a class="font-bold" style="font-family: Satisfy">Yolking Around </a>
+                <span class="uppercase bg-gray-200 text-gray-600 text-xs tracking-wide font-semibold px-2 py-1.5 rounded-md ml-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 pb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  Expansion Pack
+                </span>
+                <span class="uppercase bg-yellow-400 text-white text-xs tracking-wide font-semibold px-2 py-1.5 rounded-md ml-3 sm:inline-block hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 pb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                  New
+                </span>
             </p>
             <p class="leading-normal text-white opacity-60 text-lg md:text-2xl pt-1.5 text-left">
                 Add a little spice to your gameplay. +2 player capacity.
@@ -547,7 +613,7 @@
             </div>
         </div>
         {{! Meet the Team }}
-        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-20">
+        <div class="flex flex-col w-full justify-center overflow-y-hidden pt-20" id="the-team">
             <h1 class="my-4 text-4xl md:text-5xl text-white opacity-80 font-bold leading-tight text-left">
                 Meet the <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-500 to-yellow-500">Team</span>
             </h1>
@@ -558,7 +624,7 @@
         <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-x-8 md:gap-y-10 w-full">
             <div class="flex">
                 <div class="flex-shrink-0">
-                    <div class="w-28 px-1">
+                    <div class="w-28 pr-1">
                         <img src="/public/team/radison.jpg" alt="Member" class="shadow rounded-full max-w-full h-auto align-middle border-none" />
                     </div>
                 </div>
@@ -583,7 +649,7 @@
             </div>
             <div class="flex">
                 <div class="flex-shrink-0">
-                    <div class="w-28 px-1">
+                    <div class="w-28 pr-1">
                         <img src="/public/team/sengdao.jpg" alt="Member" class="shadow rounded-full max-w-full h-auto align-middle border-none" />
                     </div>
                 </div>
@@ -601,14 +667,14 @@
                             Graphic Designer
                         </p>
                         <p class="text-sm opacity-60 md:w-64">
-                            Might get a yellow card in a soccer game for not wearing a number on the back on their goalkeeping jersey
+                            Might get a yellow card in a soccer game for not wearing a number on their goalkeeping jersey
                         </p>
                     </div>
                 </div>
             </div>
             <div class="flex">
                 <div class="flex-shrink-0">
-                    <div class="w-28 px-1">
+                    <div class="w-28 pr-1">
                         <img src="/public/team/vincent.png" alt="Member" class="shadow rounded-full max-w-full h-auto align-middle border-none" />
                     </div>
                 </div>
@@ -628,7 +694,7 @@
             </div>
             <div class="flex">
                 <div class="flex-shrink-0">
-                    <div class="w-28 px-1">
+                    <div class="w-28 pr-1">
                         <img src="/public/avatars/default.png" alt="Member" class="shadow rounded-full max-w-full h-auto align-middle border-none" />
                     </div>
                 </div>
@@ -650,7 +716,7 @@
         {{! Footer }}
         <div class="w-full pt-16 pb-12 text-sm text-center md:text-left fade-in">
             <h1 class="text-white opacity-70 pb-1 md:float-left md:mr-1">Exploding Chickens <script>document.write(new Date().getFullYear())</script>.</h1>
-            <h1 class="text-white opacity-70 pb-1 md:float-left">Made with <i class="fas fa-heart text-red-500"></i> by our <a class="text-blue-400" href="https://github.com/rak3rman/exploding-chickens#contributors" target="_blank">contributors</a>.</h1>
+            <h1 class="text-white opacity-70 pb-1 md:float-left">Made with <i class="fas fa-heart text-red-500"></i> by our <a class="text-blue-400" href="https://github.com/rak3rman/exploding-chickens" target="_blank">contributors</a>.</h1>
             <h1 class="text-white opacity-70 pb-1 md:float-right">Release v{{ version }}</h1>
         </div>
     </div>

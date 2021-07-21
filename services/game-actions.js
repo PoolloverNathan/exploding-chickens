@@ -259,7 +259,7 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         return {trigger: "reverse", data: "true"};
     } else if (card_details.action === "seethefuture") {
         await game_actions.discard_card(game_details, card_id);
-        stats_storage.set('seethefutures', stats_storage.get('seethefutures') + 1);
+        stats_storage.set('see_the_futures', stats_storage.get('see_the_futures') + 1);
         return {trigger: "seethefuture", data: {}};
     } else if (card_details.action === "shuffle") {
         await card_actions.shuffle_draw_deck(game_details);
@@ -275,7 +275,7 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         let hotpotato_stat = await card_actions.hot_potato(game_details, player_id);
         if (hotpotato_stat === true) {
             await game_actions.discard_card(game_details, card_id);
-            stats_storage.set('hot_potatos', stats_storage.get('hot_potatos') + 1);
+            stats_storage.set('hot_potatoes', stats_storage.get('hot_potatoes') + 1);
             return {trigger: "hotpotato", data: "true"};
         } else {
             return hotpotato_stat;
@@ -408,8 +408,12 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
             // Game completed, update game stats
             let print_players = "";
+            let print_packs = "";
             game_details.players.forEach(ele => {
                 print_players += "**'" + ele.nickname + "'** ";
+            });
+            game_details.imported_packs.forEach(ele => {
+                print_packs += "**'" + ele + "'** ";
             })
             // Get draw deck length
             let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
@@ -417,12 +421,13 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             embed.title("**:chicken: Exploding Chickens: Game Completed**");
             embed.url("https://chickens.rakerman.com/game/" + game_details.slug);
             embed.color("3447003");
-            embed.field("Total time", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
+            embed.field("Game duration", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
             embed.field("Cards left", draw_deck.length + "", true);
             embed.field("Chance of EC", Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
             embed.field("Games played", stats_storage.get("games_played") + "", true);
             embed.field("Time played",  moment.duration(stats_storage.get("mins_played"), "minutes").format("h [hrs], m [min]") + "", true);
             embed.field("Connections", stats_storage.get("sockets_active") + "", true);
+            embed.field("Packs used", print_packs, false);
             embed.field("Players in game", print_players, false);
             embed.footer("Release v" + pkg.version);
             let event = new Date();

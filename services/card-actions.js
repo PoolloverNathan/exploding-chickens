@@ -174,7 +174,7 @@ exports.ask_favor = async function (game_details, player_id, target, used_gator,
     for (let i = 0; i <= target_hand.length - 1; i++) {
         if (target_hand[i].action === "favorgator" && !used_gator) {
             await game_actions.discard_card(game_details, target_hand[i]._id);
-            stats_storage.set('favorgators', stats_storage.get('favorgators') + 1);
+            stats_storage.set('favor_gators', stats_storage.get('favor_gators') + 1);
             return await card_actions.ask_favor(game_details, target, player_id, true);
         }
     }
