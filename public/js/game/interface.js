@@ -34,7 +34,7 @@ function itr_update_players(game_details) {
             "    </h1>\n" +
             "    <div class=\"flex flex-col items-center -space-y-3 px-3\" id=\"itr_stat_player_halo_" + game_details.players[i]._id + "\">\n" +
             "        <img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
-            card_icon(game_details.players[i].status === "dead" ? -1 : game_details.players[i].card_num, turns, game_details, game_details.players[i].status === "exploding") +
+            card_icon(game_details, game_details.players[i], turns) +
             "    </div>\n" +
             "</div>";
         // If we are not at the end of the number of players, indicate direction
@@ -81,7 +81,7 @@ function itr_update_pcards(game_details) {
         }
         // Check for dead filter
         let filter = game_details.players[i].status === "dead" ? "filter grayscale" : "";
-        document.getElementById("itr_stat_player_halo_" + game_details.players[i]._id).innerHTML = "<img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" + card_icon(game_details.players[i].status === "dead" ? -1: game_details.players[i].card_num, turns, game_details, game_details.players[i].status === "exploding");
+        document.getElementById("itr_stat_player_halo_" + game_details.players[i]._id).innerHTML = "<img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" + card_icon(game_details, game_details.players[i], turns);
     }
 }
 
@@ -355,7 +355,7 @@ function itr_trigger_pselect(game_details, card_id) {
                 "    </h1>\n" +
                 "    <div class=\"flex flex-col items-center -space-y-3\">\n" +
                 "        <img class=\"h-12 w-12 rounded-full\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
-                card_icon(game_details.players[i].status === "dead" ? -1: game_details.players[i].card_num, 0, game_details, game_details.players[i].status === "exploding") +
+                card_icon(game_details, game_details.players[i], 0) +
                 "    </div>\n" +
                 "</div>";
         }
@@ -426,47 +426,67 @@ function stat_dot_class(connection, margin) {
     }
 }
 
-// Name : frontend-game.cards_icon(card_num, turns, game_details, exploding)
+// Name : frontend-game.cards_icon(game_details, player_details, turns)
 // Desc : returns the html for cards in a players hand (as well as blue card for turns)
-function card_icon(card_num, turns, game_details, exploding) {
-    // Check to see if target player has any turns remaining
+function card_icon(game_details, player_details, turns) {
     let turns_payload = "";
+    // Check to see if we are in lobby
+    if (game_details.status === "in_lobby") {
+        if (player_details.status === "winner") {
+            return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-yellow-500 shadow-md h-5 w-4\">\n" +
+                "    <h1 class=\"text-white text-sm\"><i class=\"fas fa-award\"></i></h1>\n" +
+                "</div></div><div class=\"transform inline-block rounded-md bg-green-500 shadow-md h-5 w-4 ml-1\">\n" +
+                "    <h1 class=\"text-white text-sm\">" + player_details.wins + "</h1>\n" +
+                "</div></div>\n"
+        } else {
+            if (player_details.wins > 0) {
+                return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-green-500 shadow-md h-5 w-4\">\n" +
+                    "    <h1 class=\"text-white text-sm\">" + player_details.wins + "</h1>\n" +
+                    "</div></div></div>\n"
+            } else {
+                return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4\">\n" +
+                    "    <h1 class=\"text-white text-sm\">" + player_details.wins + "</h1>\n" +
+                    "</div></div></div>\n"
+            }
+        }
+    }
+    // Check to see if target player has any turns remaining
     if (turns !== 0 && game_details.status === "in_game") {
         turns_payload = "<div class=\"transform inline-block rounded-md bg-blue-500 shadow-md h-5 w-4 ml-1\">\n" +
             "    <h1 class=\"text-white text-sm\">" + turns + "</h1>\n" +
             "</div>\n"
     }
     // Check if exploding
-    let card1_color = exploding ? "bg-red-500" : "bg-gray-500";
-    let card2_color = exploding ? "bg-red-600" : "bg-gray-600";
-    let card3_color = exploding ? "bg-red-700" : "bg-gray-700";
-    let card4_color = exploding ? "bg-red-800" : "bg-gray-800";
+    let card1_color = player_details.status === "exploding" ? "bg-red-500" : "bg-gray-500";
+    let card2_color = player_details.status === "exploding" ? "bg-red-600" : "bg-gray-600";
+    let card3_color = player_details.status === "exploding" ? "bg-red-700" : "bg-gray-700";
+    let card4_color = player_details.status === "exploding" ? "bg-red-800" : "bg-gray-800";
     // Determine number of cards in hand
-    if (card_num === -1) {
+    if (player_details.status === "dead") {
         return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4\">\n" +
             "    <h1 class=\"text-white text-sm\"><i class=\"fas fa-skull-crossbones\"></i></h1>\n" +
             "</div></div></div>\n"
-    } else if (card_num === 2) {
+    } else if (player_details.card_num === 2) {
         return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
             "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4 rotate-6\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + card_num + "</h1>\n" +
+            "    <h1 class=\"text-white text-sm\">" + player_details.card_num + "</h1>\n" +
             "</div></div>" +  turns_payload + "</div>\n"
-    } else if (card_num === 3) {
+    } else if (player_details.card_num === 3) {
         return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card3_color + " shadow-md h-5 w-4 -rotate-12\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
             "<div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
             "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4 rotate-12\">\n" +
-            "    <h1 class=\"text-white text-sm \">" + card_num + "</h1>\n" +
+            "    <h1 class=\"text-white text-sm \">" + player_details.card_num + "</h1>\n" +
             "</div></div>" +  turns_payload + "</div>\n"
-    } else if (card_num >= 4) {
+    } else if (player_details.card_num >= 4) {
         return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card4_color + " shadow-md h-5 w-4\" style=\"--tw-rotate: -18deg\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
             "<div class=\"transform inline-block rounded-md " + card3_color + " shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
             "<div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4 rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
             "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4\" style=\"--tw-rotate: 18deg\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + card_num + "</h1>\n" +
+            "    <h1 class=\"text-white text-sm\">" + player_details.card_num + "</h1>\n" +
             "</div></div>" +  turns_payload + "</div>\n"
     } else {
         return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + card_num + "</h1>\n" +
+            "    <h1 class=\"text-white text-sm\">" + player_details.card_num + "</h1>\n" +
             "</div></div>" +  turns_payload + "</div>\n"
     }
 }

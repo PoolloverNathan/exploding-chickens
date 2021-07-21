@@ -29,10 +29,10 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.green('new-connection  ')} ` + socket.id ));
         let player_data = {};
 
-        // Name : socket.on.player-connected
+        // Name : socket.on.player-online
         // Desc : runs when the client receives game data and is hosting a valid player
         // Author(s) : RAk3rman
-        socket.on('player-connected', async function (data) {
+        socket.on('player-online', async function (data) {
             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.green('player-online   ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Updating player status to connected`));
             // Verify game and player exists
             if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
@@ -426,7 +426,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             }
         })
 
-        // Name : socket.on.disconnect
+        // Name : socket.on.explode-tick
         // Desc : rebroadcasts tick for exploding player
         // Author(s) : RAk3rman
         socket.on('explode-tick', async function (data) {
@@ -593,7 +593,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     status: raw_game_details["players"][i].status,
                     connection: raw_game_details["players"][i].connection,
                     nickname: raw_game_details["players"][i].nickname,
-                    seat: raw_game_details["players"][i].seat
+                    seat: raw_game_details["players"][i].seat,
+                    wins: raw_game_details["players"][i].wins
                 });
             }
             // Get discard deck

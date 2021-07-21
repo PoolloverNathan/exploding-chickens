@@ -41,7 +41,7 @@ function setup_session_check(game_details) {
             if (game_details.players[i]._id === JSON.parse(localStorage.getItem('ec_session')).player_id) {
                 if (session_user._id === undefined) {
                     // Tell server that a valid player connected
-                    socket.emit('player-connected', {
+                    socket.emit('player-online', {
                         slug: window.location.pathname.substr(6),
                         player_id: game_details.players[i]._id
                     })

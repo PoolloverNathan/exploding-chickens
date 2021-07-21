@@ -37,5 +37,9 @@ module.exports = mongoose.Schema({
     connection: {
         type: String,
         default: "online"
-    }
+    },
+    wins: {
+        type: Number,
+        default: 0
+    },
 });

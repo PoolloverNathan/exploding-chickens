@@ -441,7 +441,7 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
         await new Promise((resolve, reject) => {
             game.findOneAndUpdate(
                 { slug: game_details.slug, "players._id": player_id },
-                {"$set": { "players.$.status": "winner" }},
+                {"$set": { "players.$.status": "winner" }, "$inc": { "players.$.wins": 1 }},
                 function (err) {
                     if (err) {
                         reject(err);
@@ -510,9 +510,7 @@ exports.delete_game = async function (game_id) {
 // Desc : deletes all games that are over 7 days old
 // Author(s) : RAk3rman
 exports.game_purge = async function (debug) {
-    if (debug !== false) {
-        console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all games older than ` + config_storage.get('game_purge_age_hrs') + ` hours`));
-    }
+    console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all games older than ` + config_storage.get('game_purge_age_hrs') + ` hours`));
     await new Promise((resolve, reject) => {
         game.find({}, function (err, found_games) {
             if (err) {
@@ -526,7 +524,7 @@ exports.game_purge = async function (debug) {
                         // Delete game
                         game_actions.delete_game(found_games[i]._id).then(() => {
                             if (debug !== false) {
-                                console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Deleted game with id:` + found_games[i]._id));
+                                console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(found_games[i].slug)} Deleted game created on ` + moment(found_games[i].created).format('MM/DD/YY-HH:mm:ss')));
                             }
                         });
                     }

@@ -30,15 +30,16 @@ let session_user = {
 // Name : frontend-game.socket.on.{slug}-update
 // Desc : whenever an event occurs containing a game update
 socket.on(window.location.pathname.substr(6) + "-update", function (data) {
+    console.log(data.trigger);
     // Check browser session
     setup_session_check(data);
     // Update elements based on update trigger
-    if (data.trigger === "player-connected") { // Existing player connected
+    if (data.trigger === "player-online") { // Existing player connected
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
-        if (data.req_player_id === session_user._id) {
-            itr_update_hand(data);
-        }
+        // if (data.req_player_id === session_user._id) {
+        //     itr_update_hand(data);
+        // }
     } else if (data.trigger === "create-player") { // New player was created
         if (user_prompt_open) {
             setup_update_options(data);
@@ -141,7 +142,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
             icon: 'success',
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was removed</h1>'
         });
-    } else if (data.trigger === "disconnect") { // Existing player disconnected
+    } else if (data.trigger === "player-offline") { // Existing player disconnected
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
     } else { // Update entire ui
