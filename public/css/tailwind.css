@@ -759,8 +759,20 @@ video {
   margin-top: 1rem;
 }
 
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+.mt-16 {
+  margin-top: 4rem;
+}
+
 .-mt-1 {
   margin-top: -0.25rem;
+}
+
+.-mt-5 {
+  margin-top: -1.25rem;
 }
 
 .mr-1 {
@@ -1073,6 +1085,11 @@ video {
 .hover\:scale-105:hover {
   --tw-scale-x: 1.05;
   --tw-scale-y: 1.05;
+}
+
+.hover\:scale-110:hover {
+  --tw-scale-x: 1.1;
+  --tw-scale-y: 1.1;
 }
 
 .hover\:scale-125:hover {

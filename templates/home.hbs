@@ -9,6 +9,7 @@
     <link href="/public/css/tailwind.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
         integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <meta name="description" content="A beautiful, online alternative to the popular Exploding Kittens card game (just with chickens). Who will be the last one standing?" />
@@ -49,7 +50,7 @@
                     <span class="md:hidden">
                         New Expansion Pack Released!
                     </span>
-                    <span class="hidden md:inline">
+                    <span href="#yolking" class="hidden md:inline">
                         We've added the brand new "Yolking Around" Expansion Pack! Learn more below.
                     </span>
                 </p>
@@ -159,10 +160,16 @@
             </div>
             <div class="flex justify-center">
                 <div class="flex-shrink-0">
-                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 transform -rotate-12 transition hover:scale-110 duration-500 ease-in-out" 
+                    style="background-image: url('/public/cards/base/defuse-3.png');"></div>
                 </div>
                 <div class="flex-shrink-0">
-                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/base/chicken.png');"></div>
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain -mt-5 -ml-8 transform transition hover:scale-110 duration-500 ease-in-out" 
+                    style="background-image: url('/public/cards/base/skip-2.png');"></div>
+                </div>
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain -ml-8 transform rotate-12 transition hover:scale-110 duration-500 ease-in-out" 
+                    style="background-image: url('/public/cards/base/chicken.png');"></div>
                 </div>
             </div>
             <div class="flex">
@@ -182,10 +189,16 @@
             </div>
             <div class="flex justify-center">
                 <div class="flex-shrink-0">
-                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/card_back.png');"></div>
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 transform -rotate-12 transition hover:scale-110 duration-500 ease-in-out" 
+                    style="background-image: url('/public/cards/base/attack-4.png');"></div>
                 </div>
                 <div class="flex-shrink-0">
-                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1" style="background-image: url('/public/cards/base/chicken.png');"></div>
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain -mt-5 -ml-8 transform transition hover:scale-110 duration-500 ease-in-out" 
+                    style="background-image: url('/public/cards/base/favor-2.png');"></div>
+                </div>
+                <div class="flex-shrink-0">
+                    <div class="rounded-xl shadow-lg center-card bg-center bg-contain -ml-8 transform rotate-12 transition hover:scale-110 duration-500 ease-in-out" 
+                    style="background-image: url('/public/cards/base/seethefuture-2.png');"></div>
                 </div>
             </div>
             <div class="flex">
@@ -443,8 +456,11 @@
         </div>
         {{! How to Play: Expansion Pack 1}}
         <div class="flex flex-col w-full justify-center overflow-y-hidden pt-10 pb-5">
-            <p class="leading-normal text-white opacity-80 text-2xl md:text-3xl text-left">
-                "Yolking Around" Pack
+            <p class="leading-normal text-white opacity-80 text-2xl md:text-3xl text-left mt-16">
+                Expansion Packs
+            </p>
+            <p class="leading-normal text-white opacity-80 text-2xl md:text-3xl text-left mt-6">
+                <a id="yolking" class="font-bold" style="font-family:Satisfy">Yolking Around </a>
             </p>
             <p class="leading-normal text-white opacity-60 text-lg md:text-2xl pt-1.5 text-left">
                 Add a little spice to your gameplay. +2 player capacity.
@@ -582,10 +598,10 @@
                             </a>
                         </p>
                         <p class="text-lg text-blue-400 opacity-70">
-                            Game Graphics + Content
+                            Graphic Designer
                         </p>
                         <p class="text-sm opacity-60 md:w-64">
-                            Might design a simple rendition of a card game if he enjoys it enough
+                            Might get a yellow card in a soccer game for not wearing a number on the back on their goalkeeping jersey
                         </p>
                     </div>
                 </div>
