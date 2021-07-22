@@ -142,6 +142,31 @@ function itr_update_hand(game_details) {
     document.getElementById("itr_ele_player_hand").innerHTML = payload;
 }
 
+// Name : frontend-game.itr_deal_hand(game_details)
+// Desc : deals users hand
+function itr_deal_hand(game_details, payload, pos) {
+    // Find current player
+    for (let i = 0; i < game_details.players.length; i++) {
+        if (game_details.players[i]._id === session_user._id) {
+            session_user.can_draw = true;
+            // Add cards to hand, recursively
+            let play_card_funct = "";
+            // Allow to play if seat is playing AND if the card is a defuse or hotpotato allow play while exploding, else don't allow
+            if (game_details.seat_playing === game_details.players[i].seat &&
+                (game_details.players[i].cards[pos].action === "defuse" || game_details.players[i].cards[pos].action === "hotpotato" || game_details.players[i].status !== "exploding")) {
+                play_card_funct = "play_card('" + game_details.players[i].cards[pos]._id + "', '')";
+            }
+            payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[pos]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[pos].image_loc + "');\"></div>";
+            document.getElementById("itr_ele_player_hand").innerHTML = payload;
+            anm_draw_card(game_details.players[i].cards[pos]);
+            pos += 1;
+            if (pos < game_details.players[i].cards.length) {
+                setTimeout(function(){ itr_deal_hand(game_details, payload, pos) }, 400);
+            }
+        }
+    }
+}
+
 // Name : frontend-game.itr_recur_exp(card_id, placed_by_name, card_url, first_run)
 // Desc : triggers the exploding chicken ui to appear via socket event
 function itr_recur_exp(card_id, placed_by_name, card_url, first_run) {

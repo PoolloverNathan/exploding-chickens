@@ -54,7 +54,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
         itr_update_players(data);
         itr_update_pcards(data);
         itr_update_discard(data);
-        itr_update_hand(data);
+        itr_deal_hand(data, "", 0);
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Game has started</h1>'
@@ -204,7 +204,7 @@ socket.on(window.location.pathname.substr(6) + "-error", function (data) {
 // Name : frontend-game.socket.on.{slug}-draw-card
 // Desc : whenever the player draws a card, triggers animation
 socket.on(window.location.pathname.substr(6) + "-draw-card", function (data) {
-    anm_draw_card(data, false);
+    anm_draw_card(data);
 });
 
 // Name : frontend-game.socket.on.{slug}-play-card
