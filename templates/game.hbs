@@ -7,6 +7,7 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/tailwind.css" rel="stylesheet">
+    <link href="/public/css/game.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
@@ -27,70 +28,6 @@
     <meta property="og:image:width" content="800" />
     <meta property="og:image:height" content="440" />
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
-    <style>
-        .bottom-card {
-            width: 12.75rem;
-            height: 18rem;
-            border-radius: 2rem;
-        }
-        .center-card {
-            width: 10.2rem;
-            height: 14.4rem;
-            border-radius: 1.6rem;
-        }
-        .tooltip {
-            width: 10.2rem;
-            background: #333;
-            color: #ffffff;
-            text-align: center;
-            padding: 9px 20px 10px 20px;
-            border-radius: 10px;
-            top: calc(100% + 11px);
-            left: 50%;
-            transform: translate-x(-50%);
-            font-size: 14px;
-        }
-        @media (min-width: 640px) {
-            .center-card {
-                width: 12.75rem;
-                height: 18rem;
-                border-radius: 2rem;
-            }
-            .tooltip {
-                width: 12.75rem;
-                background: #333;
-                color: #ffffff;
-                text-align: center;
-                padding: 9px 20px 10px 20px;
-                border-radius: 10px;
-                top: calc(100% + 11px);
-                left: 50%;
-                transform: translate-x(-50%);
-                font-size: 14px;
-            }
-        }
-        .center-card-text {
-            height: 14.4rem;
-        }
-        @media (min-width: 640px) {
-            .center-card-text {
-                height: 18rem;
-            }
-        }
-        .tooltip-box {
-            position: relative;
-            padding-top: 6px;
-        }
-        .triangle {
-            border-width: 0 6px 6px;
-            border-color: transparent;
-            border-bottom-color: #333;
-            position: absolute;
-            top: 0;
-            left: 48%;
-            transform: translate-x(-50%)
-        }
-    </style>
 </head>
 <body class='flex flex-col h-full' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
 {{! Banner }}

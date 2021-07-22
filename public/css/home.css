@@ -1,0 +1,18 @@
+/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+Filename : exploding-chickens/public/css/home.css
+Desc     : css file for home assets
+\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+
+.center-card {
+    width: 9.2rem;
+    height: 13rem;
+    border-radius: 1.6rem;
+}
+
+@media (min-width: 640px) {
+    .center-card {
+        width: 10.2rem;
+        height: 14.4rem;
+        border-radius: 1.6rem;
+    }
+}
