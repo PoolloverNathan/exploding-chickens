@@ -23,7 +23,7 @@ function itr_update_players(game_details) {
     // Loop through each player and append to payload
     for (let i = 0; i < game_details.players.length; i++) {
         // Construct top player payload
-        top_payload += "<img class=\"inline-block h-6 w-6 rounded-full ring-2 ring-white\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">";
+        top_payload += "<img class=\"inline-block h-6 w-6 rounded-full\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">";
         // Construct center player payload
         let turns = game_details.seat_playing === game_details.players[i].seat ? game_details.turns_remaining : 0;
         // Check for dead filter
@@ -161,7 +161,7 @@ function itr_deal_hand(game_details, payload, pos) {
             anm_draw_card(game_details.players[i].cards[pos]);
             pos += 1;
             if (pos < game_details.players[i].cards.length) {
-                setTimeout(function(){ itr_deal_hand(game_details, payload, pos) }, 400);
+                setTimeout(function(){ itr_deal_hand(game_details, payload, pos) }, 500);
             }
         }
     }

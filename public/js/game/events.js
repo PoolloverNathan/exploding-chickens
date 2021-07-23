@@ -10,7 +10,7 @@ const toast_alert = Swal.mixin({
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
-    timer: 5000,
+    timer: 3000,
     padding: '0.4rem',
     timerProgressBar: true
 });
@@ -224,6 +224,8 @@ socket.on(window.location.pathname.substr(6) + "-explode-tick", function (data) 
 // Name : frontend-game.socket.on.connect
 // Desc : whenever we connect to the backend
 socket.on("connect", function (data) {
+    // Update _id to mark as online
+    session_user._id = undefined;
     // Request game update
     socket.emit('retrieve-game', {
         slug: window.location.pathname.substr(6)
