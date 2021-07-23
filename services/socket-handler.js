@@ -73,13 +73,15 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             // Verify game exists
             if (await game.exists({ slug: data.slug })) {
                 // Get game details
-                let raw_game_details = await game_actions.game_details_slug(data.slug);
+                let game_details = await game_actions.game_details_slug(data.slug);
                 // Determine host assignment
                 let created_player;
-                if (raw_game_details["players"].length === 0) { // Add player as host
+                if (game_details.players.length === 0) { // Add player as host
                     created_player = await player_actions.modify_player(data.slug, undefined, data.nickname, 0, data.avatar, "host", "idle", "connected");
+                } else if (game_details.players.length >= game_details.player_cap) { // Make sure we aren't over player cap
+                    fastify.io.to(socket.id).emit(data.slug + "-error", "Player cap has been reached");
                 } else { // Add as player
-                    created_player = await player_actions.modify_player(data.slug, undefined, data.nickname, raw_game_details["players"].length, data.avatar, "player", "idle", "connected");
+                    created_player = await player_actions.modify_player(data.slug, undefined, data.nickname, game_details.players.length, data.avatar, "player", "idle", "connected");
                 }
                 // Return player_id to client
                 fastify.io.to(socket.id).emit("player-created", created_player);
@@ -570,7 +572,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 req_player_id: player_id,
                 trigger: source.trim(),
                 placed_by_name: placed_by_name,
-                imported_packs: raw_game_details["imported_packs"]
+                imported_packs: raw_game_details["imported_packs"],
+                player_cap: raw_game_details["player_cap"]
             }
             // Sort and add players to json array
             raw_game_details["players"].sort(function(a, b) {
