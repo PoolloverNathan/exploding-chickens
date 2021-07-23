@@ -36,7 +36,7 @@ module.exports = mongoose.Schema({
     },
     connection: {
         type: String,
-        default: "online"
+        default: "connected"
     },
     wins: {
         type: Number,
