@@ -9,41 +9,21 @@ let mongoose = require('mongoose');
 
 // Event schema
 module.exports = mongoose.Schema({
-    event: {
+    action: {
         type: String,
         required: true
     },
-    player_id: {
+    desc: {
+        type: String,
+        default: ""
+    },
+    req_player: {
         type: String,
         required: true
     },
-    seat_playing: {
-        type: Number,
-        required: true
-    },
-    turn_direction: {
+    target_player: {
         type: String,
-        required: true
-    },
-    turns_remaining: {
-        type: Number,
-        required: true
-    },
-    status: {
-        type: String,
-        required: true
-    },
-    start_time: {
-        type: Date,
-        required: true
-    },
-    players: {
-        type: Array,
-        required: true
-    },
-    cards: {
-        type: Array,
-        required: true
+        default: ""
     },
     created: {
         type: Date,

@@ -15,7 +15,7 @@ let player_actions = require('./player-actions.js');
 // Author(s) : RAk3rman
 exports.attack = async function (game_details) {
     // Advance to the next seat
-    game_details.seat_playing = await player_actions.next_seat(game_details)
+    game_details.seat_playing = await player_actions.next_seat(game_details);
     // Check how many turns we have left
     if (game_details.turns_remaining <= 1) { // Only one turn left, equal to two turns
         // Make sure the number of turns remaining is not 0
@@ -23,8 +23,6 @@ exports.attack = async function (game_details) {
     } else { // Multiple turns left, turns_remaining
         game_details.turns_remaining += 2;
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "attack", "");
     // Create new promise for game save
     return await new Promise((resolve, reject) => {
         // Save updated game
@@ -56,8 +54,6 @@ exports.kill_player = async function (game_details, player_id) {
             game_details.cards[i].placed_by_id = "";
         }
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "kill_player", "");
     // Create new promise for game save
     return await new Promise((resolve, reject) => {
         // Save updated game
@@ -115,8 +111,6 @@ exports.defuse = async function (game_details, player_id, target, card_id) {
             i = game_details.players.length;
         }
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "defuse", "");
     // Create new promise for game save
     await new Promise((resolve, reject) => {
         // Save updated game
@@ -228,8 +222,6 @@ exports.shuffle_draw_deck = async function (game_details) {
             game_details.cards[i].placed_by_id = "";
         }
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "shuffle_draw_deck", "");
     // Create new promise for game save
     return await new Promise((resolve, reject) => {
         //Save updated game
@@ -253,8 +245,6 @@ exports.reverse = async function (game_details) {
     } else if (game_details.turn_direction === "backward") {
         game_details.turn_direction = "forward";
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "reverse", "");
     // Create new promise for game save
     await new Promise((resolve, reject) => {
         //Save updated game
@@ -303,8 +293,6 @@ exports.hot_potato = async function (game_details, player_id) {
             break;
         }
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "hot_potato", "");
     // Create new promise for game save
     await new Promise((resolve, reject) => {
         // Save updated game
@@ -353,8 +341,6 @@ exports.scrambled_eggs = async function (game_details) {
             }
         }
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "scrambled_eggs", "");
     // Create new promise for game save
     return await new Promise((resolve, reject) => {
         //Save updated game
@@ -392,8 +378,6 @@ exports.safety_draw = async function (game_details, player_id) {
             break;
         }
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "safety_draw", "");
     // Create new promise to save game
     return await new Promise((resolve, reject) => {
         // Save updated game

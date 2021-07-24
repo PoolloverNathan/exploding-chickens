@@ -79,6 +79,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         callback(true, `Player cap has been reached`, req_data.slug, action, socket_id);
                     } else { // Add new player
                         let new_player_id = await player_actions.create_player(game_details, req_data.nickname, req_data.avatar);
+                        await game_actions.log_event(game_details, action.trim(), "", (await player_actions.get_player(game_details, new_player_id)).nickname, "");
                         fastify.io.to(socket_id).emit("player-created", new_player_id);
                         await update_game_ui(req_data.slug, "", action, socket_id, new_player_id);
                         callback(false, `Successfully created new player: ` + new_player_id, req_data.slug, action, socket_id);
@@ -103,6 +104,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         await game_actions.reset_game(game_details, "playing", "in_game");
                         await player_actions.create_hand(game_details);
                         await player_actions.randomize_seats(game_details);
+                        await game_actions.log_event(game_details, action.trim(), "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                         await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
                         callback(false, `Game has started successfully`, req_data.slug, action, socket_id);
                     } else {
@@ -124,6 +126,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 wf_validate_host, // Validate req player is host
                 async function(game_details, req_data, action, socket_id, callback) { // Reset game
                     await game_actions.reset_game(game_details, "idle", "in_lobby");
+                    await game_actions.log_event(game_details, action.trim(), "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
                     callback(false, `Game has been reset successfully`, req_data.slug, action, socket_id);
                 }
@@ -133,6 +136,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Name : socket.on.play-card
         // Desc : runs when a card is played on the client
         // Author(s) : RAk3rman
+        // TODO : Redesign play card structure
         socket.on('play-card', async function (data) {
             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(data.card_id)} Received request to play card for player_id: ` + data.player_id));
             // Verify game exists
@@ -146,14 +150,18 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         if (action_res.data === "true") {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(data.card_id)} Card action completed successfully, no callbacks`));
                             // Update clients
+                            let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
+                            await game_actions.log_event(game_details, "play-card", card_details.action, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
                             fastify.io.to(socket.id).emit(data.slug + "-play-card", {
-                                card: await card_actions.find_card(data.card_id, game_details["cards"]),
+                                card: card_details,
                                 game_details: await get_game_export(data.slug, "play-card       ", data.player_id)
                             });
                             await update_game_ui(data.slug, "", "play-card       ", socket.id, data.player_id);
                         } else if (action_res.trigger === "seethefuture") {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Card action completed successfully, seethefuture callback`));
                             // Update clients
+                            let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
+                            await game_actions.log_event(game_details, "play-card", card_details.action, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
                             await update_game_ui(data.slug, "", "play-card       ", socket.id, "seethefuture_callback");
                             // Trigger stf callback
                             fastify.io.to(socket.id).emit(data.slug + "-callback", {
@@ -183,6 +191,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         } else if (action_res.trigger === "favor_taken") {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Favor callback, notifying player of card taken`));
                             // Trigger favor_taken callback
+                            let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
+                            await game_actions.log_event(game_details, "play-card", card_details.action, (await player_actions.get_player(game_details, data.player_id)).nickname, data.target !== "" ? (await player_actions.get_player(game_details, data.target)).nickname : "");
                             fastify.io.emit(data.slug + "-callback", {
                                 trigger: "favor_taken",
                                 payload: {
@@ -249,6 +259,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         if (card_drawn.action !== "chicken") {
                             await game_actions.advance_turn(game_details);
                         }
+                        await game_actions.log_event(game_details, action.trim(), card_drawn.action, (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                         await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
                         fastify.io.to(socket_id).emit(req_data.slug + "-draw-card", card_drawn);
                         callback(false, `${chalk.dim.magenta(card_drawn._id)} Drew new card for player: ` + req_data.player_id, req_data.slug, action, socket_id);
@@ -270,6 +281,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 wf_get_game, // Get game_details
                 wf_validate_host, // Validate req player is host
                 async function(game_details, req_data, action, socket_id, callback) { // Kick player
+                    await game_actions.log_event(game_details, action.trim(), "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, (await player_actions.get_player(game_details, req_data.kick_player_id)).nickname);
                     await player_actions.kick_player(game_details, req_data.player_id, req_data.kick_player_id);
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
                     callback(false, `Successfully kicked player: ` + req_data.kick_player_id, req_data.slug, action, socket_id);
@@ -289,6 +301,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 wf_validate_host, // Validate req player is host
                 async function(game_details, req_data, action, socket_id, callback) { // Make host
                     await player_actions.make_host(game_details, req_data.player_id, req_data.suc_player_id);
+                    await game_actions.log_event(game_details, action.trim(), "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, (await player_actions.get_player(game_details, req_data.suc_player_id)).nickname);
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
                     callback(false, `Successfully transferred host role from: ` + req_data.player_id + ` -> ` + req_data.suc_player_id, req_data.slug, action, socket_id);
                 }
@@ -316,6 +329,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 async function(game_details, req_data, action, socket_id, callback) { // Make sure pack exists
                     if (req_data.pack_name === "yolking_around") {
                         game_details.player_cap += 2;
+                        await game_actions.log_event(game_details, action.trim(), "Yolking Around", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                         callback(false, game_details, req_data, action, socket_id);
                     } else {
                         callback(true, `Pack does not exist`, req_data.slug, action, socket_id);
@@ -350,6 +364,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 async function(game_details, req_data, action, socket_id, callback) { // Make sure pack exists
                     if (req_data.pack_name === "yolking_around") {
                         game_details.player_cap -= 2;
+                        await game_actions.log_event(game_details, action.trim(), "Yolking Around", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                         callback(false, game_details, req_data, action, socket_id);
                     } else {
                         callback(true, `Pack does not exist`, req_data.slug, action, socket_id);
@@ -457,7 +472,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (game_details.status === "in_lobby") {
             callback(false, game_details, req_data, action, socket_id);
         } else {
-            callback(true, "Game must be started first", req_data.slug, action, socket_id);
+            callback(true, "Game must be stopped first", req_data.slug, action, socket_id);
         }
     }
 
@@ -469,7 +484,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (game_details.status === "in_game") {
             callback(false, game_details, req_data, action, socket_id);
         } else {
-            callback(true, "Game must be stopped first", req_data.slug, action, socket_id);
+            callback(true, "Game must be started first", req_data.slug, action, socket_id);
         }
     }
 
@@ -552,6 +567,11 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     break;
                 }
             }
+            // Prepare events payload
+            let parsed_events = [];
+            for (let i = raw_game_details["events"].length - 1; i >= 0 && i >= (raw_game_details["events"].length - 19); i--) {
+                parsed_events.push(await parse_event(raw_game_details, raw_game_details["events"][i]));
+            }
             // Prepare pretty game details
             let pretty_game_details = {
                 players: [],
@@ -568,7 +588,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 trigger: source.trim(),
                 placed_by_name: placed_by_name,
                 imported_packs: raw_game_details["imported_packs"],
-                player_cap: raw_game_details["player_cap"]
+                player_cap: raw_game_details["player_cap"],
+                events: parsed_events
             }
             // Sort and add players to json array
             raw_game_details["players"].sort(function(a, b) {
@@ -601,6 +622,121 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             return pretty_game_details;
         } else {
             return {};
+        }
+    }
+
+    // Name : parse_event(game_details, event_obj)
+    // Desc : parses an event into readable html
+    // Author(s) : RAk3rman
+    async function parse_event(game_details, event_obj) {
+        if (event_obj.action === "create-player") {
+            return {
+                icon_path: "<path d=\"M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z\"/>",
+                icon_color: "text-purple-500",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> joined the lobby",
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "start-game") {
+            return {
+                icon_path: "<path fill-rule=\"evenodd\" d=\"M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z\" clip-rule=\"evenodd\"/>",
+                icon_color: "text-green-500",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> started the game",
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "reset-game") {
+            return {
+                icon_path: "<path fill-rule=\"evenodd\" d=\"M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z\" clip-rule=\"evenodd\"/>",
+                icon_color: "text-yellow-400",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> reset the game",
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "play-card") {
+            let desc = "";
+            // Determine which card was played
+            if (event_obj.desc === "attack") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played an attack card";
+            } else if (event_obj.desc === "chicken") {
+                return;
+            } else if (event_obj.desc === "defuse") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a defuse card";
+            } else if (event_obj.desc === "favor" || event_obj.desc === "randchick-1" || event_obj.desc === "randchick-2" ||
+                event_obj.desc === "randchick-3" || event_obj.desc === "randchick-4" || event_obj.desc === "favorgator") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> asked for a favor from <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong>";
+            } else if (event_obj.desc === "reverse") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a reverse card";
+            } else if (event_obj.desc === "seethefuture") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> saw the future";
+            } else if (event_obj.desc === "shuffle") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> shuffled the deck";
+            } else if (event_obj.desc === "skip") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> skipped their turn";
+            } else if (event_obj.desc === "hotpotato") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> used a hot potato";
+            } else if (event_obj.desc === "scrambledeggs") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> scrambled all hands in play";
+            } else if (event_obj.desc === "superskip") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> used a super skip";
+            } else if (event_obj.desc === "safetydraw") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a safety draw card";
+            } else if (event_obj.desc === "drawbottom") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> drew from the bottom";
+            }
+            return {
+                icon_path: "<path fill-rule=\"evenodd\" d=\"M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z\" clip-rule=\"evenodd\"/>",
+                icon_color: "text-blue-500",
+                desc: desc,
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "draw-card") {
+            return {
+                icon_path: "<path fill-rule=\"evenodd\" d=\"M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"/>\n" +
+                    "            <path fill-rule=\"evenodd\" d=\"M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"/>",
+                icon_color: "text-green-500",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> drew a new card",
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "kick-player") {
+            return {
+                icon_path: "<path d=\"M11 6a3 3 0 11-6 0 3 3 0 016 0zM14 17a6 6 0 00-12 0h12zM13 8a1 1 0 100 2h4a1 1 0 100-2h-4z\"/>",
+                icon_color: "text-red-500",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> kicked <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong> from the game",
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "make-host") {
+            return {
+                icon_path: "<path d=\"M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z\"/>",
+                icon_color: "text-purple-500",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> made <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong> the host",
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "import-pack") {
+            return {
+                icon_path: "<path fill-rule=\"evenodd\" d=\"M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z\" clip-rule=\"evenodd\"/>",
+                icon_color: "text-green-500",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> added the <strong class=\"text-gray-700\">" + event_obj.desc + "</strong> card pack",
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "export-pack") {
+            return {
+                icon_path: "<path fill-rule=\"evenodd\" d=\"M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm1 8a1 1 0 100 2h6a1 1 0 100-2H7z\" clip-rule=\"evenodd\"/>",
+                icon_color: "text-red-500",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> removed the <strong class=\"text-gray-700\">" + event_obj.desc + "</strong> card pack",
+                created: moment(event_obj.created).format()
+            };
+        } else if (event_obj.action === "game-won") {
+            return {
+                icon_path: "<path fill-rule=\"evenodd\" d=\"M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm1 8a1 1 0 100 2h6a1 1 0 100-2H7z\" clip-rule=\"evenodd\"/>",
+                icon_color: "text-red-500",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> removed the <strong class=\"text-gray-700\">" + event_obj.desc + "</strong> card pack",
+                created: moment(event_obj.created).format()
+            };
+        } else {
+            return {
+                icon_path: "<path fill-rule=\"evenodd\" d=\"M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z\" clip-rule=\"evenodd\"/>",
+                icon_color: "text-red-500",
+                desc: "Invalid event action",
+                created: moment(event_obj.created).format()
+            };
         }
     }
 };

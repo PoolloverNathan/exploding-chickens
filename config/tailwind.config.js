@@ -1,7 +1,8 @@
 module.exports = {
   purge: [
       '../../templates/*.hbs',
-      '../js/game/*.js'
+      '../js/game/*.js',
+      '../services/socket-handler.js'
   ],
   darkMode: false, // or 'media' or 'class'
   theme: {

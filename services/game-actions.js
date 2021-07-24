@@ -90,8 +90,6 @@ exports.import_cards = async function (game_details, pack_name) {
     }
     // Add pack to array of imported_packs
     game_details.imported_packs.push(pack_array[0].pack_name);
-    // Save event
-    game_details = await game_actions.log_event(game_details, "import_cards", "");
     // Create new promise
     return await new Promise((resolve, reject) => {
         // Save existing game
@@ -124,8 +122,6 @@ exports.export_cards = async function (game_details, pack_name) {
     if (index > -1) {
         game_details.imported_packs.splice(index, 1);
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "export_cards", "");
     // Create new promise
     return await new Promise((resolve, reject) => {
         // Save existing game
@@ -172,8 +168,6 @@ exports.draw_card = async function (game_details, player_id, location) {
             break;
         }
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "draw_card", "");
     // Create new promise to save game
     return await new Promise((resolve, reject) => {
         // Save updated game
@@ -370,8 +364,6 @@ exports.advance_turn = async function (game_details) {
     } else { // Multiple turns left, player seat remains the same and turns_remaining decreases by one
         game_details.turns_remaining--;
     }
-    // Save event
-    game_details = await game_actions.log_event(game_details, "advance_turn", "");
     // Create new promise to save game
     return await new Promise((resolve, reject) => {
         // Save updated game
@@ -435,6 +427,8 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             embed.send();
             console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.greenBright('game-won        ')} Sent game summary message`));
         }
+        // Log event
+        await game_actions.log_event(game_details, "game-won", "", (await player_actions.get_player(game_details, player_id)).nickname, "");
         // Reset game
         await game_actions.reset_game(game_details, "idle", "in_lobby");
         // Create new promise to save game
@@ -475,8 +469,6 @@ exports.reset_game = async function (game_details, player_status, game_status) {
     game_details.seat_playing = 0;
     game_details.turns_remaining = 1;
     game_details.status = game_status;
-    // Save event
-    game_details = await game_actions.log_event(game_details, "reset_game", "");
     // Create new promise for game save
     await new Promise((resolve, reject) => {
         //Save updated game
@@ -535,20 +527,26 @@ exports.game_purge = async function (debug) {
     })
 }
 
-// Name : game_actions.log_event(game_details, event, player_id)
-// Desc : creates a new event and returns the game details, unsaved
+// Name : game_actions.log_event(game_details, action, desc, req_player, target_player)
+// Desc : creates a new event
 // Author(s) : RAk3rman
-exports.log_event = async function (game_details, event, player_id) {
-    // game_details.events.push({
-    //     event: event,
-    //     player_id: player_id === "" ? "unknown" : player_id,
-    //     seat_playing: game_details.seat_playing,
-    //     turn_direction: game_details.turn_direction,
-    //     turns_remaining: game_details.turns_remaining,
-    //     status: game_details.status,
-    //     start_time: game_details.start_time,
-    //     players: game_details.players,
-    //     cards: game_details.cards
-    // });
-    return game_details;
+exports.log_event = async function (game_details, action, desc, req_player, target_player) {
+    game_details.events.push({
+        action: action,
+        desc: desc,
+        req_player: req_player,
+        target_player: target_player
+    });
+    // Create new promise to save game
+    return await new Promise((resolve, reject) => {
+        // Save updated game
+        game_details.save({}, function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
 }
+

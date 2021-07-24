@@ -139,6 +139,22 @@ function sbr_update_players(game_details) {
     }
 }
 
+// Name : frontend-game.sbr_update_pstatus(game_details)
+// Desc : updates only the status symbol of players
+function sbr_update_pstatus(game_details) {
+    // Loop through each player and update status
+    for (let i = 0; i < game_details.players.length; i++) {
+        // Check if we found current user, append to top
+        if (game_details.players[i]._id === session_user._id) {
+            document.getElementById("sbr_stat_usertop_" + game_details.players[i]._id).className = stat_dot_class(game_details.players[i].connection, "mx-1.5");
+        }
+        // Update status for players element
+        document.getElementById("sbr_stat_player_dot_" + game_details.players[i]._id).className = stat_dot_class(game_details.players[i].connection, "mx-0.5");
+        document.getElementById("sbr_stat_player_details_" + game_details.players[i]._id).innerHTML = game_details.players[i].status.charAt(0).toUpperCase() + game_details.players[i].status.slice(1) + ", " + game_details.players[i].connection;
+    }
+}
+
+
 // Name : frontend-game.sbr_update_packs(game_details)
 // Desc : updates which card packs are marked as imported
 function sbr_update_packs(game_details) {
@@ -166,19 +182,49 @@ function sbr_update_packs(game_details) {
     }
 }
 
-// Name : frontend-game.sbr_update_pstatus(game_details)
-// Desc : updates only the status symbol of players
-function sbr_update_pstatus(game_details) {
-    // Loop through each player and update status
-    for (let i = 0; i < game_details.players.length; i++) {
-        // Check if we found current user, append to top
-        if (game_details.players[i]._id === session_user._id) {
-            document.getElementById("sbr_stat_usertop_" + game_details.players[i]._id).className = stat_dot_class(game_details.players[i].connection, "mx-1.5");
-        }
-        // Update status for players element
-        document.getElementById("sbr_stat_player_dot_" + game_details.players[i]._id).className = stat_dot_class(game_details.players[i].connection, "mx-0.5");
-        document.getElementById("sbr_stat_player_details_" + game_details.players[i]._id).innerHTML = game_details.players[i].status.charAt(0).toUpperCase() + game_details.players[i].status.slice(1) + ", " + game_details.players[i].connection;
+// Name : frontend-game.moment.updateLocale()
+// Desc : updates the moment locale for durations
+moment.updateLocale('en', {
+    relativeTime : {
+        future: "in %s",
+        past:   "%s",
+        s  : '%ds',
+        ss : '%ds',
+        m:  "%dm",
+        mm: "%dm",
+        h:  "%dh",
+        hh: "%dh"
     }
+});
+
+// Name : frontend-game.sbr_update_log(game_details)
+// Desc : updates the game log list
+setInterval(sbr_update_log, 1000);
+function sbr_update_log() {
+    // Loop through each event and print
+    let payload = "";
+    for (let i = 0; i < events_data.length; i++) {
+        let blur = "";
+        if (i === 15) {
+            blur = "filter: blur(0.3px);";
+        } else if (i === 16) {
+            blur = "filter: blur(1.5px);";
+        } else if (i === 17) {
+            blur = "filter: blur(2px);";
+        } else if (i === 18) {
+            blur = "filter: blur(3px);";
+        }
+        payload += "<li class=\"flex items-start\" style=\"" + blur + "\">\n" +
+            "    <span class=\"h-6 flex items-center " + events_data[i].icon_color + "\">\n" +
+            "        <svg class=\"flex-shrink-0 h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\">\n" + events_data[i].icon_path +
+            "        </svg>\n" +
+            "    </span>\n" +
+            "    <p class=\"ml-2 pr-2 w-full\">\n" +
+            "        <a class=\"float-right text-sm pt-0.5\">" + moment(events_data[i].created).fromNow(true) + "</a><a class='pr-10'>" + events_data[i].desc + "</a>\n" +
+            "    </p>\n" +
+            "</li>"
+    }
+    document.getElementById("sbr_game_log").innerHTML = payload;
 }
 
 // Name : frontend-game.sbr_copy_url()

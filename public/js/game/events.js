@@ -17,6 +17,7 @@ const toast_alert = Swal.mixin({
 // Global variables
 let allow_connect_msg = false;
 let just_played = false;
+let events_data = {};
 let session_user = {
     _id: undefined,
     is_host: false,
@@ -31,8 +32,10 @@ let session_user = {
 // Desc : whenever an event occurs containing a game update
 socket.on(window.location.pathname.substr(6) + "-update", function (data) {
     console.log(data.trigger);
-    // Check browser session
+    // Check browser session and update log
     setup_session_check(data);
+    events_data = data.events;
+    sbr_update_log();
     // Update elements based on update trigger
     if (data.trigger === "player-online") { // Existing player connected
         sbr_update_pstatus(data);
@@ -171,6 +174,8 @@ socket.on(window.location.pathname.substr(6) + "-callback", function (data) {
         itr_update_pcards(data.payload.game_details);
         itr_update_discard(data.payload.game_details);
         itr_update_hand(data.payload.game_details);
+        events_data = data.payload.game_details.events;
+        sbr_update_log();
         if (session_user._id === data.payload.target_player_id) {
             itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc, data.payload.used_gator);
         }
