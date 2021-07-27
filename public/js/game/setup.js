@@ -123,7 +123,8 @@ function setup_user_prompt(game_details, err, nickname) {
                     socket.emit('create-player', {
                         slug: window.location.pathname.substr(6),
                         nickname: selected_nickname,
-                        avatar: selected_avatar
+                        avatar: selected_avatar,
+                        player_id: "spectator"
                     })
                 }
             }
