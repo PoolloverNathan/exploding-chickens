@@ -9,11 +9,15 @@ let mongoose = require('mongoose');
 
 // Event schema
 module.exports = mongoose.Schema({
-    action: {
+    event_name: {
         type: String,
         required: true
     },
-    desc: {
+    card_action: {
+        type: String,
+        default: ""
+    },
+    rel_id: {
         type: String,
         default: ""
     },

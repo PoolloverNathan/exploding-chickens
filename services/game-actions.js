@@ -428,7 +428,7 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.greenBright('game-won        ')} Sent game summary message`));
         }
         // Log event
-        await game_actions.log_event(game_details, "game-won", "", (await player_actions.get_player(game_details, player_id)).nickname, "");
+        await game_actions.log_event(game_details, "game-won", "", "", (await player_actions.get_player(game_details, player_id)).nickname, "");
         // Reset game
         await game_actions.reset_game(game_details, "idle", "in_lobby");
         // Create new promise to save game
@@ -527,13 +527,14 @@ exports.game_purge = async function (debug) {
     })
 }
 
-// Name : game_actions.log_event(game_details, action, desc, req_player, target_player)
+// Name : game_actions.log_event(game_details, event_name, card_action, rel_id, req_player, target_player)
 // Desc : creates a new event
 // Author(s) : RAk3rman
-exports.log_event = async function (game_details, action, desc, req_player, target_player) {
+exports.log_event = async function (game_details, event_name, card_action, rel_id, req_player, target_player) {
     game_details.events.push({
-        action: action,
-        desc: desc,
+        event_name: event_name,
+        card_action: card_action,
+        rel_id: rel_id,
         req_player: req_player,
         target_player: target_player
     });
@@ -544,6 +545,7 @@ exports.log_event = async function (game_details, action, desc, req_player, targ
             if (err) {
                 reject(err);
             } else {
+                console.log(wipe(`${chalk.bold.green('Event')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('new-event       ')} ${chalk.dim.yellow(game_details.slug)} ${chalk.bold('event_name:')} '` + event_name + `', ${chalk.bold('rel_id:')} '` + rel_id + `', ${chalk.bold('card_action:')} '` + card_action + `', ${chalk.bold('req_player:')} '` + req_player + `', ${chalk.bold('target_player:')} '` + target_player + `'`));
                 resolve();
             }
         });
