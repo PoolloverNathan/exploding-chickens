@@ -204,17 +204,7 @@ function sbr_update_log() {
     // Loop through each event and print
     let payload = "";
     for (let i = 0; i < events_data.length; i++) {
-        let blur = "";
-        if (i === 15) {
-            blur = "filter: blur(0.3px);";
-        } else if (i === 16) {
-            blur = "filter: blur(1.5px);";
-        } else if (i === 17) {
-            blur = "filter: blur(2px);";
-        } else if (i === 18) {
-            blur = "filter: blur(3px);";
-        }
-        payload += "<li class=\"flex items-start\" style=\"" + blur + "\">\n" +
+        payload += "<li class=\"flex items-start\">\n" +
             "    <span class=\"h-6 flex items-center " + events_data[i].icon_color + "\">\n" +
             "        <svg class=\"flex-shrink-0 h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\">\n" + events_data[i].icon_path +
             "        </svg>\n" +

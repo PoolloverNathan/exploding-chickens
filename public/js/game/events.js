@@ -34,6 +34,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
     console.log(data.trigger);
     // Check browser session and update log
     setup_session_check(data);
+    console.log(data.events);
     events_data = data.events;
     sbr_update_log();
     // Update elements based on update trigger
