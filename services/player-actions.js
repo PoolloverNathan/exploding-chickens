@@ -190,15 +190,17 @@ exports.kick_player = async function (game_details, host_player_id, kick_player_
     if (host_player_id === kick_player_id) {
         return;
     }
-    // Check if chicken is in hand
+    // Check if chicken is in hand and find # of players in play
     let is_exploding = false;
+    let in_play_ctn = 0;
     for (let i = 0; i < game_details.players.length; i++) {
         if (game_details.players[i]._id === kick_player_id) {
             // Check if player is exploding
             if (game_details.players[i].status === "exploding") {
                 is_exploding = true;
+            } else if (game_details.players[i].status === "in_game") {
+                in_play_ctn++;
             }
-            break;
         }
     }
     // Remove player from game and release cards
@@ -216,7 +218,7 @@ exports.kick_player = async function (game_details, host_player_id, kick_player_
         }
     }
     // Reset game if we have 1 player left
-    if (game_details.players.length <= 1) {
+    if (game_details.players.length <= 1 || in_play_ctn <= 1) {
         await game_actions.reset_game(game_details, "idle", "in_lobby");
     } else {
         // Remove an ec from the deck

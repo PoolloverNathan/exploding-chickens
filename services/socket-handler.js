@@ -569,7 +569,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             }
             // Prepare events payload
             let parsed_events = [];
-            for (let i = raw_game_details["events"].length - 1; i >= 0 && i >= (raw_game_details["events"].length - 30); i--) {
+            for (let i = raw_game_details["events"].length - 1; i >= 0 && i >= (raw_game_details["events"].length - 20); i--) {
                 parsed_events.push(await parse_event(raw_game_details, raw_game_details["events"][i]));
             }
             // Prepare pretty game details
