@@ -28,7 +28,7 @@ function itr_update_players(game_details) {
         let turns = game_details.seat_playing === game_details.players[i].seat ? game_details.turns_remaining : 0;
         // Check for dead filter
         let filter = game_details.players[i].status === "dead" ? "filter grayscale" : "";
-        center_payload += "<div class=\"block text-center mb-3\">\n" +
+        center_payload += "<div class=\"block text-center mb-1\">\n" +
             "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
             "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].status, game_details.players[i].connection, "", "itr_stat_player_dot_" + game_details.players[i]._id) + "\n" +
             "    </h1>\n" +
