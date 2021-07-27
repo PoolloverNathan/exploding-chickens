@@ -253,7 +253,7 @@ function itr_trigger_stf(top_3) {
             card_payload +
             "    </div>" +
             "</div>\n",
-        // timer: 5000,
+        timer: 10000,
         background: "transparent",
         padding: '0'
     })

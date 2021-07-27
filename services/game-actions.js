@@ -545,7 +545,7 @@ exports.log_event = async function (game_details, event_name, card_action, rel_i
             if (err) {
                 reject(err);
             } else {
-                console.log(wipe(`${chalk.bold.green('Event')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('new-event       ')} ${chalk.dim.yellow(game_details.slug)} ${chalk.bold('event_name:')} '` + event_name + `', ${chalk.bold('rel_id:')} '` + rel_id + `', ${chalk.bold('card_action:')} '` + card_action + `', ${chalk.bold('req_player:')} '` + req_player + `', ${chalk.bold('target_player:')} '` + target_player + `'`));
+                // console.log(wipe(`${chalk.bold.green('Event')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('new-event       ')} ${chalk.dim.yellow(game_details.slug)} ${chalk.bold('event_name:')} '` + event_name + `', ${chalk.bold('rel_id:')} '` + rel_id + `', ${chalk.bold('card_action:')} '` + card_action + `', ${chalk.bold('req_player:')} '` + req_player + `', ${chalk.bold('target_player:')} '` + target_player + `'`));
                 resolve();
             }
         });

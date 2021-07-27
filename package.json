@@ -46,6 +46,7 @@
     "moment-duration-format": "^2.3.2",
     "mongoose": "^5.7.12",
     "morgan": "^1.9.1",
+    "nanoid": "^3.1.23",
     "nodemon": "^2.0.6",
     "point-of-view": "^4.7.0",
     "postcss": "^8.2.10",

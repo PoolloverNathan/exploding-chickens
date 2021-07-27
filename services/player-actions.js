@@ -7,7 +7,7 @@ Author(s): RAk3rman, SengdowJones
 
 //Packages
 let game = require('../models/game.js');
-const { v4: uuidv4 } = require('uuid');
+const { nanoid } = require('nanoid');
 
 //Services
 let card_actions = require('../services/card-actions.js');
@@ -21,7 +21,7 @@ exports.create_player = async function (game_details, p_nickname, p_avatar) {
     // Create new promise and return player id after saved
     return await new Promise((resolve, reject) => {
         // Push new player into existing game
-        game_details.players.push({ _id: uuidv4(), nickname: p_nickname, avatar: p_avatar, seat: game_details.players.length, type: game_details.players.length === 0 ? "host" : "player" });
+        game_details.players.push({ _id: nanoid(10), nickname: p_nickname, avatar: p_avatar, seat: game_details.players.length, type: game_details.players.length === 0 ? "host" : "player" });
         // Save existing game and return player_id
         game_details.save(function (err) {
             if (err) {

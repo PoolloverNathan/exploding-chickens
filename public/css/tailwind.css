@@ -2329,10 +2329,6 @@ video {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
-.blur {
-  --tw-blur: blur(8px);
-}
-
 .grayscale {
   --tw-grayscale: grayscale(100%);
 }

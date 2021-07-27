@@ -26,7 +26,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
     // Desc : runs when a new connection is created through socket.io
     // Author(s) : RAk3rman
     fastify.io.on('connection', function (socket) {
-        console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.green('new-connection  ')} ` + socket.id ));
+        console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.green('new-connection  ')} ${chalk.dim.blue(socket.id)}`));
         stats_storage.set('sockets_active', stats_storage.get('sockets_active') + 1);
         let player_data = {};
         let draw_cooldown = false;
@@ -36,7 +36,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('player-online', async function (data) {
             let action = "player-online   ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to mark existing player as online`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to mark existing player as online`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
@@ -44,7 +44,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     player_data = req_data;
                     await player_actions.update_connection(req_data.slug, req_data.player_id, "connected");
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                    callback(false, `Player now ${chalk.dim.green('connected')}: ` + req_data.player_id, req_data.slug, action, socket_id);
+                    callback(false, `Player now ${chalk.dim.green('connected')}`, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })
@@ -54,13 +54,13 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('retrieve-game', async function (data) {
             let action = "retrieve-game   ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to retrieve game data`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to retrieve game data`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
                 async function(game_details, req_data, action, socket_id, callback) { // Send game data
-                    await update_game_ui(req_data.slug, socket_id, action, socket_id, "unknown");
-                    callback(false, `Successfully retrieved and sent game data`, req_data.slug, action, socket_id);
+                    await update_game_ui(req_data.slug, socket_id, action, socket_id, req_data.player_id);
+                    callback(false, `Retrieved and sent game data`, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })
@@ -70,19 +70,19 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('create-player', async function (data) {
             let action = "create-player   ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to create new player`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to create new player`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
                 async function(game_details, req_data, action, socket_id, callback) { // Create player
                     if (game_details.players.length >= game_details.player_cap) { // Make sure we aren't over player cap
-                        callback(true, `Player cap has been reached`, req_data.slug, action, socket_id);
+                        callback(true, `Player cap has been reached`, req_data.slug, action, socket_id, req_data.player_id);
                     } else { // Add new player
                         let new_player_id = await player_actions.create_player(game_details, req_data.nickname, req_data.avatar);
                         await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, new_player_id)).nickname, "");
                         fastify.io.to(socket_id).emit("player-created", new_player_id);
                         await update_game_ui(req_data.slug, "", action, socket_id, new_player_id);
-                        callback(false, `Successfully created new player: ` + new_player_id, req_data.slug, action, socket_id);
+                        callback(false, `Successfully created new player: ` + new_player_id, req_data.slug, action, socket_id, req_data.player_id);
                     }
                 }
             ], wf_final_callback);
@@ -93,7 +93,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('start-game', async function (data) {
             let action = "start-game      ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to start game`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to start game`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
@@ -106,9 +106,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         await player_actions.randomize_seats(game_details);
                         await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                         await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                        callback(false, `Game has started successfully`, req_data.slug, action, socket_id);
+                        callback(false, `Game has been started`, req_data.slug, action, socket_id, req_data.player_id);
                     } else {
-                        callback(true, `You must have 2-` + game_details.player_cap + ` players`, req_data.slug, action, socket_id);
+                        callback(true, `You must have 2-` + game_details.player_cap + ` players`, req_data.slug, action, socket_id, req_data.player_id);
                     }
                 }
             ], wf_final_callback);
@@ -119,7 +119,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('reset-game', async function (data) {
             let action = "reset-game      ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to reset game`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to reset game`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
@@ -128,7 +128,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     await game_actions.reset_game(game_details, "idle", "in_lobby");
                     await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                    callback(false, `Game has been reset successfully`, req_data.slug, action, socket_id);
+                    callback(false, `Game has been reset successfully`, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })
@@ -138,7 +138,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         // TODO : Redesign play card structure
         socket.on('play-card', async function (data) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(data.card_id)} Received request to play card for player_id: ` + data.player_id));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.green(data.card_id)} Received request to play card`));
             // Verify game exists
             if (await game.exists({ slug: data.slug, "players._id": data.player_id })) {
                 // Get game details
@@ -148,7 +148,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         // Send card id to router
                         let action_res = await game_actions.base_router(game_details, data.player_id, data.card_id, data.target, stats_storage, config_storage, bot);
                         if (action_res.data === "true") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(data.card_id)} Card action completed successfully, no callbacks`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.greenBright(data.card_id)} Card action completed, no callbacks`));
                             // Update clients
                             let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
                             await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
@@ -158,7 +158,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                             });
                             await update_game_ui(data.slug, "", "play-card       ", socket.id, data.player_id);
                         } else if (action_res.trigger === "seethefuture") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Card action completed successfully, seethefuture callback`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.greenBright(action_res.trigger)} Card action completed, seethefuture callback`));
                             // Update clients
                             let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
                             await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
@@ -169,7 +169,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                 payload: await card_actions.filter_cards("draw_deck", game_details["cards"])
                             });
                         } else if (action_res.trigger === "favor_target") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Favor callback, requesting target player`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.greenBright(action_res.trigger)} Favor callback, requesting target player`));
                             // Trigger favor_target callback
                             fastify.io.to(socket.id).emit(data.slug + "-callback", {
                                 trigger: "favor_target",
@@ -179,7 +179,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                 }
                             });
                         } else if (action_res.trigger === "chicken_target") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Chicken placement callback, requesting target position`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.greenBright(action_res.trigger)} Chicken placement callback, requesting target position`));
                             // Trigger favor_target callback
                             fastify.io.to(socket.id).emit(data.slug + "-callback", {
                                 trigger: "chicken_target",
@@ -189,7 +189,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                 }
                             });
                         } else if (action_res.trigger === "favor_taken") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} ${chalk.dim.magenta(action_res.trigger)} Favor callback, notifying player of card taken`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.greenBright(action_res.trigger)} Favor callback, notifying player of card taken`));
                             // Trigger favor_taken callback
                             let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
                             await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, data.target !== "" ? (await player_actions.get_player(game_details, data.target)).nickname : "");
@@ -205,24 +205,24 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                             });
                         } else if (action_res.trigger === "winner") {
                             // Emit reset game event and winner
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Existing game has ended, a player has won`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Game has ended, a player has won`));
                             await update_game_ui(data.slug, "", "reset-game      ", socket.id, "winner_callback");
                         } else if (action_res.trigger === "error") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Error while playing card: ` + action_res.data));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.red('game-error')} ` + action_res.data));
                             fastify.io.to(socket.id).emit(data.slug + "-error", action_res.data);
                         } else {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Invalid error when playing card`));
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Invalid error when playing card`));
                         }
                     } else {
-                        console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to play card while game is in lobby`));
+                        console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Player attempted to play card while game is in lobby`));
                         fastify.io.to(socket.id).emit(data.slug + "-error", "Game has not started");
                     }
                 } else {
-                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Player attempted to play a card when it is not their turn`));
+                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Player attempted to play a card when it is not their turn`));
                     fastify.io.to(socket.id).emit(data.slug + "-error", "Please wait your turn");
                 }
             } else {
-                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Target game does not exist`));
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Target game does not exist`));
                 fastify.io.to(socket.id).emit(data.slug + "-error", "Game does not exist");
             }
         })
@@ -232,7 +232,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('draw-card', async function (data) {
             let action = "draw-card       ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to draw card`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to draw card`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
@@ -244,7 +244,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                             if (game_details.players[i].status !== "exploding") {
                                 callback(false, game_details, req_data, action, socket_id);
                             } else {
-                                callback(true, `You cannot draw a card now`, req_data.slug, action, socket_id);
+                                callback(true, `You cannot draw a card now`, req_data.slug, action, socket_id, req_data.player_id);
                             }
                         }
                     }
@@ -262,9 +262,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         await game_actions.log_event(game_details, action.trim(), card_drawn.action, card_drawn._id, (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                         await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
                         fastify.io.to(socket_id).emit(req_data.slug + "-draw-card", card_drawn);
-                        callback(false, `${chalk.dim.magenta(card_drawn._id)} Drew new card for player: ` + req_data.player_id, req_data.slug, action, socket_id);
+                        callback(false, `${chalk.greenBright(card_drawn._id)} Drew new card`, req_data.slug, action, socket_id, req_data.player_id);
                     } else {
-                        callback(true, `You cannot draw a card now`, req_data.slug, action, socket_id);
+                        callback(true, `You cannot draw a card now`, req_data.slug, action, socket_id, req_data.player_id);
                     }
                 }
             ], wf_final_callback);
@@ -275,7 +275,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('kick-player', async function (data) {
             let action = "kick-player     ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to kick player`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to kick player`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
@@ -284,7 +284,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, (await player_actions.get_player(game_details, req_data.kick_player_id)).nickname);
                     await player_actions.kick_player(game_details, req_data.player_id, req_data.kick_player_id);
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                    callback(false, `Successfully kicked player: ` + req_data.kick_player_id, req_data.slug, action, socket_id);
+                    callback(false, `Successfully kicked player: ` + req_data.kick_player_id, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })
@@ -294,7 +294,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('make-host', async function (data) {
             let action = "make-host       ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to transfer host role`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to transfer host role`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
@@ -303,7 +303,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     await player_actions.make_host(game_details, req_data.player_id, req_data.suc_player_id);
                     await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, (await player_actions.get_player(game_details, req_data.suc_player_id)).nickname);
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                    callback(false, `Successfully transferred host role from: ` + req_data.player_id + ` -> ` + req_data.suc_player_id, req_data.slug, action, socket_id);
+                    callback(false, `Successfully transferred host role from: ` + req_data.player_id + ` -> ` + req_data.suc_player_id, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })
@@ -313,7 +313,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('import-pack', async function (data) {
             let action = "import-pack     ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to import card pack`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to import card pack`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
@@ -323,7 +323,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     if (!game_details.imported_packs.includes(req_data.pack_name)) {
                         callback(false, game_details, req_data, action, socket_id);
                     } else {
-                        callback(true, `Pack has already been imported`, req_data.slug, action, socket_id);
+                        callback(true, `Pack has already been imported`, req_data.slug, action, socket_id, req_data.player_id);
                     }
                 },
                 async function(game_details, req_data, action, socket_id, callback) { // Make sure pack exists
@@ -331,14 +331,14 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         game_details.player_cap += 2;
                         callback(false, game_details, req_data, action, socket_id);
                     } else {
-                        callback(true, `Pack does not exist`, req_data.slug, action, socket_id);
+                        callback(true, `Pack does not exist`, req_data.slug, action, socket_id, req_data.player_id);
                     }
                 },
                 async function(game_details, req_data, action, socket_id, callback) { // Import card pack
                     await game_actions.import_cards(game_details, req_data.pack_name);
                     await game_actions.log_event(game_details, action.trim(), "", req_data.pack_name, (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                    callback(false, `Imported new card pack: ` + req_data.pack_name, req_data.slug, action, socket_id);
+                    callback(false, `Imported card pack: ` + req_data.pack_name, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })
@@ -348,7 +348,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('export-pack', async function (data) {
             let action = "export-pack     ";
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to export card pack`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to export card pack`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
@@ -358,7 +358,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     if (game_details.imported_packs.includes(req_data.pack_name)) {
                         callback(false, game_details, req_data, action, socket_id);
                     } else {
-                        callback(true, `Pack was never imported`, req_data.slug, action, socket_id);
+                        callback(true, `Pack was never imported`, req_data.slug, action, socket_id, req_data.player_id);
                     }
                 },
                 async function(game_details, req_data, action, socket_id, callback) { // Make sure pack exists
@@ -366,14 +366,14 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         game_details.player_cap -= 2;
                         callback(false, game_details, req_data, action, socket_id);
                     } else {
-                        callback(true, `Pack does not exist`, req_data.slug, action, socket_id);
+                        callback(true, `Pack does not exist`, req_data.slug, action, socket_id, req_data.player_id);
                     }
                 },
                 async function(game_details, req_data, action, socket_id, callback) { // Export card pack
                     await game_actions.export_cards(game_details, req_data.pack_name);
                     await game_actions.log_event(game_details, action.trim(), "", req_data.pack_name, (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                    callback(false, `Imported new card pack: ` + req_data.pack_name, req_data.slug, action, socket_id);
+                    callback(false, `Exported card pack: ` + req_data.pack_name, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })
@@ -393,14 +393,14 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Desc : runs when we need to see if a slug exists in the db
         // Author(s) : RAk3rman
         socket.on('check-slug', async function (data) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Received request to verify game slug`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to verify game slug`));
             // Check to see if game exists
             if (await game.exists({ slug: data.slug })) {
                 fastify.io.to(socket.id).emit("slug-response", data.slug);
-                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Game slug is ${chalk.dim.green('valid')}`));
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Game slug is ${chalk.dim.green('valid')}`));
             } else {
                 fastify.io.to(socket.id).emit("slug-response", false);
-                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ` + socket.id + ` ${chalk.dim.yellow(data.slug)} Game slug is ${chalk.dim.red('invalid')}`));
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-slug      ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Game slug is ${chalk.dim.red('invalid')}`));
             }
         })
 
@@ -409,27 +409,27 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('disconnect', async function () {
             stats_storage.set('sockets_active', stats_storage.get('sockets_active') - 1);
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.red('new-disconnect  ')} ` + socket.id));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.red('new-disconnect  ')} ${chalk.dim.blue(socket.id)}`));
             // Mark player as disconnected if active
             if (await game.exists({ slug: player_data["slug"] }) && player_data["player_id"] !== "") {
                 // Update connection and local player data
                 await player_actions.update_connection(player_data["slug"], player_data["player_id"], "offline");
-                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.red('player-offline  ')} ` + socket.id + ` ${chalk.dim.yellow(player_data["slug"])} Player now ${chalk.dim.red('offline')} with player_id:` + player_data["player_id"]));
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.red('player-offline  ')} ${chalk.dim.yellow(player_data["slug"])} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(player_data["player_id"])} Player now ${chalk.dim.red('offline')}`));
                 // Update clients
                 await update_game_ui(player_data["slug"], "", "player-offline  ", socket.id, player_data["player_id"]);
             }
         });
     })
 
-    // Name : wf_final_callback(err, msg, slug, action, socket_id)
+    // Name : wf_final_callback(err, msg, slug, action, socket_id, player_id)
     // Desc : final callback from waterfall, handles error if triggered
     // Author(s) : RAk3rman
-    async function wf_final_callback(err, msg, slug, action, socket_id) {
+    async function wf_final_callback(err, msg, slug, action, socket_id, player_id) {
         if (err) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket_id + ` ${chalk.dim.yellow(slug)} ` + msg));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} ${chalk.dim.red('game-error')} ` + msg));
             fastify.io.to(socket_id).emit(slug + "-error", msg);
         } else {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ` + socket_id + ` ${chalk.dim.yellow(slug)} ` + msg));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} ` + msg));
         }
     }
 
@@ -438,12 +438,12 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
     // Author(s) : RAk3rman
     async function wf_get_game(req_data, action, socket_id, callback) {
         // Determine if we should filter by slug and player_id
-        let filter = req_data.player_id === undefined ? { slug: req_data.slug } : { slug: req_data.slug, "players._id": req_data.player_id };
+        let filter = req_data.player_id === "spectator" ? { slug: req_data.slug } : { slug: req_data.slug, "players._id": req_data.player_id };
         // Determine if game exists
         if (await game.exists(filter)) {
             callback(false, await game_actions.game_details_slug(req_data.slug), req_data, action, socket_id);
         } else {
-            callback(true, "Game does not exist", req_data.slug, action, socket_id);
+            callback(true, "Game does not exist", req_data.slug, action, socket_id, req_data.player_id);
         }
     }
 
@@ -458,7 +458,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 if (game_details.players[i].type === "host") {
                     callback(false, game_details, req_data, action, socket_id);
                 } else {
-                    callback(true, "You are not the host", req_data.slug, action, socket_id);
+                    callback(true, "You are not the host", req_data.slug, action, socket_id, req_data.player_id);
                 }
             }
         }
@@ -472,7 +472,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (game_details.status === "in_lobby") {
             callback(false, game_details, req_data, action, socket_id);
         } else {
-            callback(true, "Game must be stopped first", req_data.slug, action, socket_id);
+            callback(true, "Game must be stopped first", req_data.slug, action, socket_id, req_data.player_id);
         }
     }
 
@@ -484,7 +484,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (game_details.status === "in_game") {
             callback(false, game_details, req_data, action, socket_id);
         } else {
-            callback(true, "Game must be started first", req_data.slug, action, socket_id);
+            callback(true, "Game must be started first", req_data.slug, action, socket_id, req_data.player_id);
         }
     }
 
@@ -499,7 +499,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 if (game_details.players[i].seat === game_details.seat_playing) {
                     callback(false, game_details, req_data, action, socket_id);
                 } else {
-                    callback(true, "It is not your turn", req_data.slug, action, socket_id);
+                    callback(true, "It is not your turn", req_data.slug, action, socket_id, req_data.player_id);
                 }
             }
         }
@@ -530,9 +530,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             } else {
                 fastify.io.to(target).emit(slug + "-update", pretty_game_details);
             }
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ` + socket_id + ` ${chalk.dim.yellow(slug)} Emitted game update event`));
-        } else {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ` + socket_id + ` ${chalk.dim.yellow(slug)} Target game does not exist`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} Emitted game update event`));
         }
     }
 
@@ -665,7 +663,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             } else if (event_obj.card_action === "defuse") {
                 desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a defuse card";
             } else if (event_obj.card_action === "favor" || event_obj.card_action === "randchick-1" || event_obj.card_action === "randchick-2" ||
-                event_obj.card_action === "randchick-3" || event_obj.card_action === "randchick-4" || event_obj.card_action === "favorgator") {
+                event_obj.card_action === "randchick-3" || event_obj.card_action === "randchick-4") {
                 desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> asked for a favor from <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong>";
             } else if (event_obj.card_action === "reverse") {
                 desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a reverse card";
@@ -685,6 +683,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a safety draw card";
             } else if (event_obj.card_action === "drawbottom") {
                 desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> drew from the bottom";
+            } else if (event_obj.card_action === "favorgator") {
+                desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> used a favor gator on <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong>";
             }
             return {
                 icon_path: "<path fill-rule=\"evenodd\" d=\"M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z\" clip-rule=\"evenodd\"/>",
@@ -738,9 +738,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             };
         } else if (event_obj.event_name === "game-won") {
             return {
-                icon_path: "<path fill-rule=\"evenodd\" d=\"M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm1 8a1 1 0 100 2h6a1 1 0 100-2H7z\" clip-rule=\"evenodd\"/>",
-                icon_color: "text-red-500",
-                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> removed the <strong class=\"text-gray-700\">" + event_obj.card_action + "</strong> card pack",
+                icon_path: "<path d=\"M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z\"/>",
+                icon_color: "text-yellow-400",
+                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> won the game",
                 created: moment(event_obj.created).format()
             };
         } else {

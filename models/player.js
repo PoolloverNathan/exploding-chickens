@@ -6,13 +6,13 @@ Author(s): RAk3rman
 
 // Packages
 let mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
+const { nanoid } = require('nanoid');
 
 // Player schema
 module.exports = mongoose.Schema({
     _id: {
         type: String,
-        default: uuidv4()
+        default: nanoid(10)
     },
     nickname: {
         type: String,

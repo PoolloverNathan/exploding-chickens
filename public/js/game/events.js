@@ -234,7 +234,8 @@ socket.on("connect", function (data) {
     session_user._id = undefined;
     // Request game update
     socket.emit('retrieve-game', {
-        slug: window.location.pathname.substr(6)
+        slug: window.location.pathname.substr(6),
+        player_id: "spectator"
     })
     // Update status dot
     document.getElementById("status_ping").innerHTML = "<span class=\"animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75\"></span>\n" +

@@ -83,11 +83,13 @@ function sbr_update_widgets(game_details) {
 // Desc : updates players, add host actions if able
 function sbr_update_players(game_details) {
     let payload = "";
+    let found_player = false;
     // Loop through each player and append to payload
     for (let i = 0; i < game_details.players.length; i++) {
         // Check if we found current user, append to top
         if (game_details.players[i]._id === session_user._id) {
             document.getElementById("sbr_ele_usertop").innerHTML = game_details.players[i].nickname + create_stat_dot(game_details.players[i].status, game_details.players[i].connection, "mx-1.5", "sbr_stat_usertop_" + game_details.players[i]._id);
+            found_player = true;
         }
         // If host, add make host and kick options to each player
         let actions = "";
@@ -136,6 +138,10 @@ function sbr_update_players(game_details) {
     // Update with new player data
     if (payload !== "") {
         document.getElementById("sbr_ele_players").innerHTML = payload;
+    }
+    // If the user is a spectator, update title name
+    if (!found_player) {
+        document.getElementById("sbr_ele_usertop").innerHTML = "Spectator <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 ml-0.5 align-middle bg-gray-500\"></span>";
     }
 }
 
