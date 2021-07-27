@@ -146,7 +146,7 @@ mongoose.set('useFindAndModify', false);
 function mongoose_connected() {
     console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at ` + config_storage.get('mongodb_url')));
     // Start purge game cycle
-    if (config_storage.get('game_purge_age_hrs') !== "-1") {
+    if (config_storage.get('game_purge_age_hrs') !== -1) {
         game_actions.game_purge().then(function () {});
         setInterval(game_actions.game_purge, 3600000*2);
     }
