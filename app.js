@@ -146,8 +146,10 @@ mongoose.set('useFindAndModify', false);
 function mongoose_connected() {
     console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at ` + config_storage.get('mongodb_url')));
     // Start purge game cycle
-    game_actions.game_purge().then(function () {});
-    setInterval(game_actions.game_purge, 3600000*2);
+    if (config_storage.get('game_purge_age_hrs') !== "-1") {
+        game_actions.game_purge().then(function () {});
+        setInterval(game_actions.game_purge, 3600000*2);
+    }
     // Start webserver using config values
     console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to start http webserver on port ` + config_storage.get('webserver_port')));
     fastify.listen(config_storage.get('webserver_port'), function (err) {

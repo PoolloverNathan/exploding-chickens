@@ -11,7 +11,7 @@ From there, the drawing deck slowly shrinks and the explosions only become more 
 
 - Supports up to **2-7 players**
 - Utilizes a **53-card** base deck
-- **6 min** average game time
+- **3-10 min** average game time
 
 ![Home UI](public/home_ui.png)
 
@@ -32,7 +32,9 @@ This file stores all the environment variables needed for the project, which can
 The config file will be populated with the following default values:
 - ``"webserver_port": 3000`` Port where the webserver will accept incoming connections, of type int
 - ``"mongodb_url": "mongodb://localhost:27017/exploding-chickens"`` The url of your mongodb instance (make sure to add "/exploding-chickens" at the end of the url), of type string
-- ``"game_purge_age_hrs": 12`` How old should a game be (in hours) before it is deleted
+- ``"game_purge_age_hrs": 12`` How old should a game be (in hours) before it is deleted, set to -1 to disable
+- ``"discord_bot_token": ""`` Authentication token for the Discord Bot found on Discord Developer Portal, leave blank to disable feature
+- ``"discord_bot_channel": ""`` What Discord channel the bot should send updates to, leave blank to disable feature
 
 **NOTE:** Make sure to stop the instance of exploding-chickens before changing any of these values. If the file is modified while an instance is active, the changes will be overridden.
 
