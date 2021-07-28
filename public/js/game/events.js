@@ -218,7 +218,7 @@ socket.on(window.location.pathname.substr(6) + "-draw-card", function (data) {
 socket.on(window.location.pathname.substr(6) + "-play-card", function (data) {
     anm_play_card(data);
     just_played = true;
-    setTimeout(function(){ just_played = false }, 500);
+    setTimeout(function(){ just_played = false }, 1000);
 });
 
 // Name : frontend-game.socket.on.{slug}-explode-tick

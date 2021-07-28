@@ -82,7 +82,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, new_player_id)).nickname, "");
                         fastify.io.to(socket_id).emit("player-created", new_player_id);
                         await update_game_ui(req_data.slug, "", action, socket_id, new_player_id);
-                        callback(false, `Successfully created new player: ` + new_player_id, req_data.slug, action, socket_id, req_data.player_id);
+                        callback(false, `Created new player`, req_data.slug, action, socket_id, new_player_id);
                     }
                 }
             ], wf_final_callback);
@@ -128,7 +128,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     await game_actions.reset_game(game_details, "idle", "in_lobby");
                     await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                    callback(false, `Game has been reset successfully`, req_data.slug, action, socket_id, req_data.player_id);
+                    callback(false, `Game has been reset`, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })
@@ -303,7 +303,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     await player_actions.make_host(game_details, req_data.player_id, req_data.suc_player_id);
                     await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, (await player_actions.get_player(game_details, req_data.suc_player_id)).nickname);
                     await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                    callback(false, `Successfully transferred host role from: ` + req_data.player_id + ` -> ` + req_data.suc_player_id, req_data.slug, action, socket_id, req_data.player_id);
+                    callback(false, `Transferred host role from: ` + req_data.player_id + ` -> ` + req_data.suc_player_id, req_data.slug, action, socket_id, req_data.player_id);
                 }
             ], wf_final_callback);
         })

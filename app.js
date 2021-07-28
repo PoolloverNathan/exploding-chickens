@@ -52,7 +52,7 @@ if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_t
         // Send update to console
         console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Bot is now connected to Discord API`));
         if (send_startup_msg) {
-            bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens: System Online**");
+            bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens " + pkg.version + ": Service Online**");
             send_startup_msg = false;
         }
     });
@@ -118,7 +118,7 @@ fastify.get('/game/:_id', {
     }
 }, async function (req, reply) {
     // Make sure game exists
-    if (await game.exists({ slug: req.params._id })) {
+    if (await game.exists({ slug: req.params._id, created: { $gte: moment().subtract(12, "hours").toISOString() } })) {
         reply.view('/templates/game.hbs', { slug_1: req.params._id, slug_2: req.params._id, slug_3: req.params._id, version: pkg.version })
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.green('200')} Game exists, rendering game page`));
     } else {

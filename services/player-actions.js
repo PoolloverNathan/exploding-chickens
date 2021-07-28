@@ -290,7 +290,7 @@ exports.sort_hand = async function (game_details, player_id) {
     }
 }
 
-//PRIVATE FUNCTIONS
+// PRIVATE FUNCTIONS
 
 // Name : rand_bucket(bucket)
 // Desc : returns a random array position from a given bucket

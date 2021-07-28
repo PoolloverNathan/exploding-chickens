@@ -105,14 +105,9 @@ function itr_update_hand(game_details) {
     for (let i = 0; i < game_details.players.length; i++) {
         if (game_details.players[i]._id === session_user._id) {
             session_user.can_draw = true;
-            // Add cards to hand
+            let chicken_active = false;
+            // Check if chicken is in players hand
             for (let j = 0; j < game_details.players[i].cards.length; j++) {
-                let play_card_funct = "";
-                // Allow to play if seat is playing AND if the card is a defuse or hotpotato allow play while exploding, else don't allow
-                if (game_details.seat_playing === game_details.players[i].seat &&
-                    (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato" || game_details.players[i].status !== "exploding")) {
-                    play_card_funct = "play_card('" + game_details.players[i].cards[j]._id + "', '')";
-                }
                 // Check if chicken is active
                 if (game_details.players[i].cards[j].action === "chicken") {
                     if (document.getElementById("itr_val_defuse_counter") === null) {
@@ -122,8 +117,23 @@ function itr_update_hand(game_details) {
                         ec_defuse_count = 15;
                     }
                     session_user.can_draw = false;
+                    chicken_active = true;
+                    break;
                 }
-                payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "');\"></div>";
+            }
+            // Add cards to hand
+            for (let j = 0; j < game_details.players[i].cards.length; j++) {
+                let play_card_funct = "";
+                // Allow to play if seat is playing AND if the card is a defuse or hotpotato allow play while exploding, else don't allow
+                if (game_details.seat_playing === game_details.players[i].seat &&
+                    (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato" || game_details.players[i].status !== "exploding")) {
+                    play_card_funct = "play_card('" + game_details.players[i].cards[j]._id + "', '')";
+                }
+                if (chicken_active && game_details.players[i].cards[j].action === "defuse") {
+                    payload = "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "');\"></div>" + payload;
+                } else {
+                    payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "');\"></div>";
+                }
             }
             // Toggle turn banner
             if (game_details.seat_playing === game_details.players[i].seat && !is_turn && game_details.status === "in_game") {
@@ -137,6 +147,7 @@ function itr_update_hand(game_details) {
                 is_turn = false;
                 session_user.can_draw = false;
             }
+            break;
         }
     }
     document.getElementById("itr_ele_player_hand").innerHTML = payload;
