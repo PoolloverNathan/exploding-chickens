@@ -50,9 +50,9 @@ if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_t
         // Set bot status
         bot.editStatus("online");
         // Send update to console
-        console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Bot is now connected to Discord API`));
+        console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.blueBright('bot-connect     ')} Bot is now connected to Discord API`));
         if (send_startup_msg) {
-            bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens " + pkg.version + ": Service Online**");
+            bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens v" + pkg.version + ": Service Online**");
             send_startup_msg = false;
         }
     });
@@ -144,7 +144,7 @@ mongoose.set('useFindAndModify', false);
 
 // When mongoose establishes a connection with mongodb
 function mongoose_connected() {
-    console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at ` + config_storage.get('mongodb_url')));
+    console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at "` + config_storage.get('mongodb_url') + `"`));
     // Start purge game cycle
     if (config_storage.get('game_purge_age_hrs') !== -1) {
         game_actions.game_purge().then(function () {});
