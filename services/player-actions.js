@@ -198,9 +198,11 @@ exports.kick_player = async function (game_details, host_player_id, kick_player_
             // Check if player is exploding
             if (game_details.players[i].status === "exploding") {
                 is_exploding = true;
-            } else if (game_details.players[i].status === "in_game") {
-                in_play_ctn++;
             }
+        }
+        // Get number of players in game
+        if (game_details.players[i].status !== "dead") {
+            in_play_ctn++;
         }
     }
     // Remove player from game and release cards
@@ -218,7 +220,7 @@ exports.kick_player = async function (game_details, host_player_id, kick_player_
         }
     }
     // Reset game if we have 1 player left
-    if (game_details.players.length <= 1 || in_play_ctn <= 1) {
+    if (game_details.players.length <= 1 || in_play_ctn < 3) {
         await game_actions.reset_game(game_details, "idle", "in_lobby");
     } else {
         // Remove an ec from the deck
