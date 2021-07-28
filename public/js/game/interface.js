@@ -12,8 +12,6 @@ const toast_turn = Swal.mixin({
 });
 // Global variables
 let is_turn = false;
-let exp_stop_timer = false;
-let ec_defuse_count = 15;
 
 // Name : frontend-game.itr_update_players(game_details)
 // Desc : updates players
@@ -110,12 +108,6 @@ function itr_update_hand(game_details) {
             for (let j = 0; j < game_details.players[i].cards.length; j++) {
                 // Check if chicken is active
                 if (game_details.players[i].cards[j].action === "chicken") {
-                    if (document.getElementById("itr_val_defuse_counter") === null) {
-                        ec_defuse_count = 15;
-                        itr_recur_exp(game_details.players[i].cards[j]._id, game_details.placed_by_name, game_details.discard_deck[game_details.discard_deck.length-1] === undefined ? "public/cards/base/chicken.png" : game_details.discard_deck[game_details.discard_deck.length-1].image_loc, true);
-                    } else {
-                        ec_defuse_count = 15;
-                    }
                     session_user.can_draw = false;
                     chicken_active = true;
                     break;
@@ -129,7 +121,7 @@ function itr_update_hand(game_details) {
                     (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato" || game_details.players[i].status !== "exploding")) {
                     play_card_funct = "play_card('" + game_details.players[i].cards[j]._id + "', '')";
                 }
-                if (chicken_active && game_details.players[i].cards[j].action === "defuse") {
+                if (chicken_active && (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato")) {
                     payload = "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "');\"></div>" + payload;
                 } else {
                     payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "');\"></div>";
@@ -175,31 +167,6 @@ function itr_deal_hand(game_details, payload, pos) {
                 setTimeout(function(){ itr_deal_hand(game_details, payload, pos) }, 500);
             }
         }
-    }
-}
-
-// Name : frontend-game.itr_recur_exp(card_id, placed_by_name, card_url, first_run)
-// Desc : triggers the exploding chicken ui to appear via socket event
-function itr_recur_exp(card_id, placed_by_name, card_url, first_run) {
-    // Check to make sure the element wasn't replaced
-    if ((document.getElementById("itr_val_defuse_counter") === null || just_played) && !first_run) {
-        return;
-    }
-    // Call program again if auto recur is on, else force play chicken
-    if (ec_defuse_count > -1) {
-        // Emit event and update UI
-        socket.emit('explode-tick', {
-            slug: window.location.pathname.substr(6),
-            count: ec_defuse_count,
-            placed_by_name: placed_by_name,
-            card_url: card_url
-        })
-        // Call program again after 1 sec
-        setTimeout(function(){ itr_recur_exp(card_id, placed_by_name, card_url, false) }, 1000);
-        ec_defuse_count--;
-    } else {
-        // Force play chicken since time expired
-        play_card(card_id);
     }
 }
 

@@ -16,7 +16,6 @@ const toast_alert = Swal.mixin({
 });
 // Global variables
 let allow_connect_msg = false;
-let just_played = false;
 let events_data = {};
 let session_user = {
     _id: undefined,
@@ -34,7 +33,6 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
     console.log(data.trigger);
     // Check browser session and update log
     setup_session_check(data);
-    console.log(data.events);
     events_data = data.events;
     sbr_update_log();
     // Update elements based on update trigger
@@ -217,13 +215,12 @@ socket.on(window.location.pathname.substr(6) + "-draw-card", function (data) {
 // Desc : whenever the player plays a card, triggers animation
 socket.on(window.location.pathname.substr(6) + "-play-card", function (data) {
     anm_play_card(data);
-    just_played = true;
-    setTimeout(function(){ just_played = false }, 1000);
 });
 
 // Name : frontend-game.socket.on.{slug}-explode-tick
 // Desc : whenever the player plays a card, triggers animation
 socket.on(window.location.pathname.substr(6) + "-explode-tick", function (data) {
+    console.log("explode-tick");
     itr_trigger_exp(data.count, data.placed_by_name, data.card_url);
 });
 

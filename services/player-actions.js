@@ -56,7 +56,6 @@ exports.update_connection = async function (game_slug, player_id, p_connection) 
 exports.get_player = async function (game_details, player_id) {
     // Find player and return details
     for (let i = 0; i < game_details.players.length; i++) {
-        // If the card is assigned to this player, add to hand
         if (game_details.players[i]._id === player_id) {
             return game_details.players[i];
         }

@@ -288,9 +288,11 @@ exports.hot_potato = async function (game_details, player_id) {
         }
     }
     // Assign chicken to next player
+    let chicken_id = "";
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
         if (game_details.cards[i].assignment === player_id && game_details.cards[i].action === "chicken") {
             game_details.cards[i].assignment = next_player_id;
+            chicken_id = game_details.cards[i]._id;
             break;
         }
     }
@@ -305,7 +307,13 @@ exports.hot_potato = async function (game_details, player_id) {
             }
         });
     });
-    return true;
+    return {
+        trigger: "success",
+        data: {
+            next_player_id: next_player_id,
+            chicken_id: chicken_id
+        }
+    };
 }
 
 // Name : card_actions.scrambled_eggs(game_details)
