@@ -16,6 +16,7 @@ const toast_alert = Swal.mixin({
 });
 // Global variables
 let allow_connect_msg = false;
+let cooldown = false;
 let events_data = {};
 let session_user = {
     _id: undefined,
@@ -209,12 +210,14 @@ socket.on(window.location.pathname.substr(6) + "-error", function (data) {
 // Desc : whenever the player draws a card, triggers animation
 socket.on(window.location.pathname.substr(6) + "-draw-card", function (data) {
     anm_draw_card(data);
+    cooldown = false;
 });
 
 // Name : frontend-game.socket.on.{slug}-play-card
 // Desc : whenever the player plays a card, triggers animation
 socket.on(window.location.pathname.substr(6) + "-play-card", function (data) {
     anm_play_card(data);
+    cooldown = false;
 });
 
 // Name : frontend-game.socket.on.{slug}-explode-tick
@@ -287,21 +290,29 @@ function reset_game() {
 // Name : frontend-game.play_card(card_id, target)
 // Desc : emits the play-card event when a card in the players hand is clicked
 function play_card(card_id, target) {
-    socket.emit('play-card', {
-        slug: window.location.pathname.substr(6),
-        player_id: session_user._id,
-        card_id: card_id,
-        target: target
-    })
+    if (!cooldown) {
+        cooldown = true;
+        setTimeout(function () {cooldown = false;}, 1000);
+        socket.emit('play-card', {
+            slug: window.location.pathname.substr(6),
+            player_id: session_user._id,
+            card_id: card_id,
+            target: target
+        })
+    } else {
+        toast_alert.fire({
+            icon: 'error',
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">You cannot draw a card now</h1>'
+        });
+    }
 }
 
 // Name : frontend-game.draw_card()
 // Desc : emits the draw-card event when the draw deck is clicked
-let draw_cooldown = true;
 function draw_card() {
-    if (session_user.can_draw && draw_cooldown) {
-        draw_cooldown = false;
-        setTimeout(function () {draw_cooldown = true;}, 300);
+    if (session_user.can_draw && !cooldown) {
+        cooldown = true;
+        setTimeout(function () {cooldown = false;}, 1000);
         socket.emit('draw-card', {
             slug: window.location.pathname.substr(6),
             player_id: session_user._id
@@ -309,7 +320,7 @@ function draw_card() {
     } else {
         toast_alert.fire({
             icon: 'error',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">You cannot draw a card</h1>'
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">You cannot draw a card now</h1>'
         });
     }
 }
