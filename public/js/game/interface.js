@@ -173,33 +173,30 @@ function itr_deal_hand(game_details, payload, pos) {
 // Name : frontend-game.itr_trigger_exp(count, placed_by_name, card_url)
 // Desc : triggers the exploding chicken ui to appear
 function itr_trigger_exp(count, placed_by_name, card_url) {
-    // Append html overlay if element doesn't exist
-    if (document.getElementById("itr_val_defuse_counter") === null) {
-        let placed_by_txt = "";
-        if (placed_by_name !== "") {
-            placed_by_txt = "<div class=\"flex items-center justify-center tooltip-box\">\n" +
-                "    <div class=\"tooltip\">\n" +
-                "        <span class=\"triangle\"></span>\n" +
-                "        " + placed_by_name + " placed this card\n" +
-                "    </div>\n" +
-                "</div>";
-        }
-        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/" + card_url + "');\">\n" +
-            "    <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain border-dashed border-4 border-green-500 h-full\" style=\"border-color: rgb(178, 234, 55); color: rgb(178, 234, 55);\">\n" +
-            "        <div class=\"flex flex-wrap content-center justify-center h-full w-full\">\n" +
-            "            <div class=\"block text-center space-y-2\">\n" +
-            "                <h1 class=\"font-extrabold text-xl m-0\">DEFUSE</h1>\n" +
-            "                <h1 class=\"font-bold text-8xl m-0\" id=\"itr_val_defuse_counter\">" + count + "</h1>\n" +
-            "                <h1 class=\"font-extrabold text-xl m-0\">CHICKEN</h1>\n" +
-            "            </div>\n" +
-            "        </div>\n" +
+    // Append html overlay
+    let placed_by_txt = "";
+    if (placed_by_name !== "") {
+        placed_by_txt = "<div class=\"flex items-center justify-center tooltip-box\">\n" +
+            "    <div class=\"tooltip\">\n" +
+            "        <span class=\"triangle\"></span>\n" +
+            "        " + placed_by_name + " placed this card\n" +
             "    </div>\n" +
-            "</div>" + placed_by_txt;
+            "</div>";
     }
+    document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/" + card_url + "');\">\n" +
+        "    <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain border-dashed border-4 border-green-500 h-full\" style=\"border-color: rgb(178, 234, 55); color: rgb(178, 234, 55);\">\n" +
+        "        <div class=\"flex flex-wrap content-center justify-center h-full w-full\">\n" +
+        "            <div class=\"block text-center space-y-2\">\n" +
+        "                <h1 class=\"font-extrabold text-xl m-0\">DEFUSE</h1>\n" +
+        "                <h1 class=\"font-bold text-8xl m-0\" id=\"itr_val_defuse_counter\">" + count + "</h1>\n" +
+        "                <h1 class=\"font-extrabold text-xl m-0\">CHICKEN</h1>\n" +
+        "            </div>\n" +
+        "        </div>\n" +
+        "    </div>\n" +
+        "</div>" + placed_by_txt;
     // Update counts
     if (count > 0) {
         document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i> " + count + "</a>";
-        document.getElementById("itr_val_defuse_counter").innerHTML = count;
     } else if (count > -1) {
         document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i></a>";
         document.getElementById("itr_val_defuse_counter").innerHTML = "<i class=\"fas fa-skull-crossbones\"></i>"

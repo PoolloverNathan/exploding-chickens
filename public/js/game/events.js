@@ -161,6 +161,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
 // Name : frontend-game.socket.on.{slug}-callback
 // Desc : whenever an event occurs related to an error
 socket.on(window.location.pathname.substr(6) + "-callback", function (data) {
+    cooldown = false;
     // See the future callback
     if (data.trigger === "seethefuture") {
         itr_trigger_stf(data.payload);
@@ -196,6 +197,7 @@ socket.on("player-created", function (data) {
 // Name : frontend-game.socket.on.{slug}-error
 // Desc : whenever an event occurs related to an error
 socket.on(window.location.pathname.substr(6) + "-error", function (data) {
+    cooldown = false;
     if (data === "Game does not exist") {
         window.location.href = "/";
     } else {
@@ -302,7 +304,7 @@ function play_card(card_id, target) {
     } else {
         toast_alert.fire({
             icon: 'error',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">You cannot draw a card now</h1>'
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">You cannot play a card now</h1>'
         });
     }
 }
