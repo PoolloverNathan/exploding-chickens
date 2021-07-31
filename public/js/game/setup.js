@@ -114,9 +114,7 @@ function setup_user_prompt(game_details, err, nickname) {
             if (result.isConfirmed) {
                 // Validate input
                 let selected_nickname = document.getElementById("nickname_swal").value;
-                if (selected_nickname === "" || !/^[a-zA-Z]/.test(selected_nickname) || selected_nickname.length > 12) {
-                    setup_user_prompt(game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please enter a valid nickname (letters only)", "");
-                } else if (selected_avatar === "default.png") {
+                if (selected_avatar === "default.png") {
                     setup_user_prompt(game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please select an avatar", selected_nickname);
                 } else {
                     // Create new player
@@ -149,14 +147,14 @@ function setup_update_options(game_details) {
             }
         }
         // Append to payload
-        if (found_match) { //Grayed out
+        if (found_match) { // Grayed out
             options_payload += "<div class=\"flex-none block text-center m-2\">\n" +
                 "    <img class=\"h-16 w-16 rounded-full ring-2 ring-offset-2 ring-yellow-400 opacity-30\" src=\"/public/avatars/" + options[i] + "\" alt=\"\">\n" +
                 "</div>\n";
             if (selected_avatar === options[i]) {
                 selected_avatar = "default.png";
             }
-        } else if (selected_avatar === options[i]) { //Current selection, green halo
+        } else if (selected_avatar === options[i]) { // Current selection, green halo
             options_payload += "<div class=\"flex-none block text-center m-2\" onclick=\"setup_select_option('" + options[i] + "')\">\n" +
                 "    <img class=\"h-16 w-16 rounded-full ring-2 ring-offset-2 ring-green-500\" src=\"/public/avatars/" + options[i] + "\" id=\"" + options[i] + "\" alt=\"\">\n" +
                 "</div>\n";

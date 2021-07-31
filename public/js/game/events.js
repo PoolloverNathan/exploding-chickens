@@ -198,12 +198,16 @@ socket.on("player-created", function (data) {
 // Desc : whenever an event occurs related to an error
 socket.on(window.location.pathname.substr(6) + "-error", function (data) {
     cooldown = false;
-    if (data === "Game does not exist") {
+    if (data.msg === "GAME-DNE") {
         window.location.href = "/";
+    } else if (data.msg === "PLYR-NAME") {
+        setup_user_prompt(data.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please enter a valid nickname (letters only)", "");
+    } else if (data.msg === "PLYR-AVTR") {
+        setup_user_prompt(data.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please select an avatar", "");
     } else {
         toast_alert.fire({
             icon: 'error',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">' + data + '</h1>'
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">' + data.msg + '</h1>'
         });
     }
 });

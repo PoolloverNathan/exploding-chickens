@@ -22,7 +22,8 @@ function join_game() {
     // Input validation
     if (passed_slug !== "" && /^[a-z-]+$/.test(passed_slug)) {
         socket.emit('check-slug', {
-            slug: passed_slug
+            slug: passed_slug,
+            player_id: "spectator"
         });
     } else {
         invalid_game_slug();

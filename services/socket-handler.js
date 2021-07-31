@@ -11,6 +11,7 @@ const chalk = require('chalk');
 const wipe = chalk.white;
 const moment = require('moment');
 const waterfall = require('async-waterfall');
+const Filter = require('bad-words'), filter = new Filter();
 
 // Services
 let card_actions = require('../services/card-actions.js');
@@ -74,16 +75,24 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
-                async function(game_details, req_data, action, socket_id, callback) { // Create player
+                async function(game_details, req_data, action, socket_id, callback) { // Validation checks
+                    let options = ["bear.png", "bull.png", "cat.png", "dog.png", "elephant.png", "flamingo.png", "fox.png", "lion.png", "mandrill.png", "meerkat.png", "monkey.png", "panda.png", "puma.png", "raccoon.png", "wolf.png"];
                     if (game_details.players.length >= game_details.player_cap) { // Make sure we aren't over player cap
                         callback(true, `Player cap has been reached`, req_data.slug, action, socket_id, req_data.player_id);
-                    } else { // Add new player
-                        let new_player_id = await player_actions.create_player(game_details, req_data.nickname, req_data.avatar);
-                        await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, new_player_id)).nickname, "");
-                        fastify.io.to(socket_id).emit("player-created", new_player_id);
-                        await update_game_ui(req_data.slug, "", action, socket_id, new_player_id);
-                        callback(false, `Created new player`, req_data.slug, action, socket_id, new_player_id);
+                    } else if (req_data.nickname === "" || !/^[a-zA-Z]/.test(req_data.nickname) || req_data.nickname.length > 12 || filter.isProfane(req_data.nickname)) { // Make sure nickname matches filters
+                        callback(true, `PLYR-NAME`, req_data.slug, action, socket_id, req_data.player_id);
+                    } else if (req_data.avatar === "default.png" && options.includes(req_data.avatar)) { // Make sure a valid avatar was chosen
+                        callback(true, `PLYR-AVTR`, req_data.slug, action, socket_id, req_data.player_id);
+                    } else {
+                        callback(false, game_details, req_data, action, socket_id);
                     }
+                },
+                async function(game_details, req_data, action, socket_id, callback) { // Create player
+                    let new_player_id = await player_actions.create_player(game_details, req_data.nickname, req_data.avatar);
+                    await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, new_player_id)).nickname, "");
+                    fastify.io.to(socket_id).emit("player-created", new_player_id);
+                    await update_game_ui(req_data.slug, "", action, socket_id, new_player_id);
+                    callback(false, `Created new player`, req_data.slug, action, socket_id, new_player_id);
                 }
             ], wf_final_callback);
         })
@@ -224,7 +233,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 }
             } else {
                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Target game does not exist`));
-                fastify.io.to(socket.id).emit(data.slug + "-error", "Game does not exist");
+                fastify.io.to(socket.id).emit(data.slug + "-error", "GAME-DNE");
             }
         })
 
@@ -416,7 +425,10 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
     async function wf_final_callback(err, msg, slug, action, socket_id, player_id) {
         if (err) {
             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} ${chalk.dim.red('game-error')} ` + msg));
-            fastify.io.to(socket_id).emit(slug + "-error", msg);
+            fastify.io.to(socket_id).emit(slug + "-error", {
+                msg: msg,
+                game_details: await game_actions.get_game_export(slug, action, player_id)
+            });
         } else {
             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} ` + msg));
         }
@@ -432,7 +444,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (await game.exists(filter)) {
             callback(false, await game_actions.game_details_slug(req_data.slug), req_data, action, socket_id);
         } else {
-            callback(true, "Game does not exist", req_data.slug, action, socket_id, req_data.player_id);
+            callback(true, "GAME-DNE", req_data.slug, action, socket_id, req_data.player_id);
         }
     }
 
