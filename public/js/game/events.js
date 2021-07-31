@@ -73,7 +73,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
         let winner = false;
         for (let i = 0; i < data.players.length; i++) {
             if (data.players[i].status === "winner") {
-                itr_display_winner(data.players[i].nickname, 0);
+                itr_display_winner(data, data.players[i].nickname, 0);
                 winner = true;
                 break;
             }

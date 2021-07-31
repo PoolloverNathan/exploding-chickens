@@ -183,21 +183,24 @@ function itr_trigger_exp(count, placed_by_name, card_url) {
             "    </div>\n" +
             "</div>";
     }
-    document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/" + card_url + "');\">\n" +
-        "    <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain border-dashed border-4 border-green-500 h-full\" style=\"border-color: rgb(178, 234, 55); color: rgb(178, 234, 55);\">\n" +
-        "        <div class=\"flex flex-wrap content-center justify-center h-full w-full\">\n" +
-        "            <div class=\"block text-center space-y-2\">\n" +
-        "                <h1 class=\"font-extrabold text-xl m-0\">DEFUSE</h1>\n" +
-        "                <h1 class=\"font-bold text-8xl m-0\" id=\"itr_val_defuse_counter\">" + count + "</h1>\n" +
-        "                <h1 class=\"font-extrabold text-xl m-0\">CHICKEN</h1>\n" +
-        "            </div>\n" +
-        "        </div>\n" +
-        "    </div>\n" +
-        "</div>" + placed_by_txt;
+    if (count === 15 || document.getElementById("itr_val_defuse_counter") === null) {
+        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/" + card_url + "');\">\n" +
+            "    <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain border-dashed border-4 border-green-500 h-full\" style=\"border-color: rgb(178, 234, 55); color: rgb(178, 234, 55);\">\n" +
+            "        <div class=\"flex flex-wrap content-center justify-center h-full w-full\">\n" +
+            "            <div class=\"block text-center space-y-2\">\n" +
+            "                <h1 class=\"font-extrabold text-xl m-0\">DEFUSE</h1>\n" +
+            "                <h1 class=\"font-bold text-8xl m-0\" id=\"itr_val_defuse_counter\">" + count + "</h1>\n" +
+            "                <h1 class=\"font-extrabold text-xl m-0\">CHICKEN</h1>\n" +
+            "            </div>\n" +
+            "        </div>\n" +
+            "    </div>\n" +
+            "</div>" + placed_by_txt;
+    }
     // Update counts
     if (count > 0) {
         document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i> " + count + "</a>";
-    } else if (count > -1) {
+        document.getElementById("itr_val_defuse_counter").innerHTML = count;
+    } else if (count < 1) {
         document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i></a>";
         document.getElementById("itr_val_defuse_counter").innerHTML = "<i class=\"fas fa-skull-crossbones\"></i>"
     }
@@ -375,25 +378,45 @@ function itr_trigger_pselect(game_details, card_id) {
     })
 }
 
-// Name : frontend-game.itr_display_winner(name, count)
+// Name : frontend-game.itr_display_winner(game_details, name, count)
 // Desc : displays the winner graphic
-function itr_display_winner(name, count) {
+function itr_display_winner(game_details, name, count) {
     // Fire swal once and repeat
     if (count === 0) {
-        Swal.fire({
-            html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-yellow-400\">CHICKEN</a> DINNER</h1>\n" +
-                "<h1 class=\"text-xl text-gray-700 mt-1 font-bold\">" + name + "</h1>\n" +
-                "<h1 class=\"text-md text-gray-700 mt-2\">After the smoke has cleared, it appears that " + name + " was the last one standing. Test your odds again by staying in the lobby.</h1>\n",
-            showConfirmButton: false,
-            showCancelButton: true,
-            backdrop: "transparent",
-            background: "#F8F8F8",
-            cancelButtonColor: '#374151',
-            cancelButtonText: 'Return to Lobby'
-        })
+        if (!allow_user_prompt && session_user._id === undefined) {
+            Swal.fire({
+                html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-yellow-400\">CHICKEN</a> DINNER</h1>\n" +
+                    "<h1 class=\"text-xl text-gray-700 mt-1 font-bold\">" + name + "</h1>\n" +
+                    "<h1 class=\"text-md text-gray-700 mt-2\">After the smoke has cleared, it appears that " + name + " was the last one standing. Give them a challenge by joining the lobby.</h1>\n",
+                backdrop: "transparent",
+                background: "#F8F8F8",
+                showCancelButton: true,
+                confirmButtonColor: '#fbbf24',
+                cancelButtonColor: '#374151',
+                cancelButtonText: 'Return to Lobby',
+                confirmButtonText: 'Join Game',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    setup_user_prompt(game_details, "", "");
+                    allow_user_prompt = false;
+                }
+            })
+        } else {
+            Swal.fire({
+                html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-yellow-400\">CHICKEN</a> DINNER</h1>\n" +
+                    "<h1 class=\"text-xl text-gray-700 mt-1 font-bold\">" + name + "</h1>\n" +
+                    "<h1 class=\"text-md text-gray-700 mt-2\">After the smoke has cleared, it appears that " + name + " was the last one standing. Test your odds again by staying in the lobby.</h1>\n",
+                showConfirmButton: false,
+                showCancelButton: true,
+                backdrop: "transparent",
+                background: "#F8F8F8",
+                cancelButtonColor: '#374151',
+                cancelButtonText: 'Return to Lobby'
+            })
+        }
     }
     if (count < 7) {
-        setTimeout(() => {  itr_display_winner(name, count + 1); }, 500);
+        setTimeout(() => {  itr_display_winner(game_details, name, count + 1); }, 500);
     }
     // Call confetti function
     confetti({

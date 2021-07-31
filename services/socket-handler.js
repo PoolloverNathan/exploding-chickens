@@ -75,6 +75,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
+                wf_validate_in_lobby, // Validate we are in lobby
                 async function(game_details, req_data, action, socket_id, callback) { // Validation checks
                     let options = ["bear.png", "bull.png", "cat.png", "dog.png", "elephant.png", "flamingo.png", "fox.png", "lion.png", "mandrill.png", "meerkat.png", "monkey.png", "panda.png", "puma.png", "raccoon.png", "wolf.png"];
                     if (game_details.players.length >= game_details.player_cap) { // Make sure we aren't over player cap
