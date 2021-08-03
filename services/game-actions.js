@@ -303,7 +303,7 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
         if (card_drawn.action !== "chicken") await game_actions.advance_turn(game_details);
         if (card_drawn.action === "chicken") await game_actions.explode_tick(game_details.slug, 15, player_id, card_drawn._id, "public/cards/base/chicken.png", socket_id, fastify, config_storage, stats_storage, bot);
         stats_storage.set('draw_bottoms', stats_storage.get('draw_bottoms') + 1);
-        return {trigger: "drawbottom", data: {}};
+        return {trigger: "drawbottom", data: card_drawn};
     } else {
         // Houston, we have a problem
         return {trigger: "error", data: "Invalid card"};

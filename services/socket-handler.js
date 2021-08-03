@@ -213,11 +213,17 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                                     used_gator: action_res.data["used_gator"]
                                 }
                             });
-                        } else if (action_res.trigger === "hotpotato" || action_res.trigger === "drawbottom") {
-                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Hot Potato callback, no callbacks`));
+                        } else if (action_res.trigger === "hotpotato") {
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Hot Potato callback`));
                             let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
                             await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
                             await update_game_ui(data.slug, "", "draw-card", socket.id, data.player_id);
+                        } else if (action_res.trigger === "drawbottom") {
+                            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Draw from the Bottom callback`));
+                            let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
+                            await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
+                            await update_game_ui(data.slug, "", "play-card", socket.id, "drawbottom");
+                            fastify.io.to(socket.id).emit(data.slug + "-draw-card", action_res.data);
                         } else if (action_res.trigger === "error") {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.red('game-error')} ` + action_res.data));
                             fastify.io.to(socket.id).emit(data.slug + "-error", action_res.data);
