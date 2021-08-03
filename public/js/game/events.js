@@ -14,6 +14,8 @@ const toast_alert = Swal.mixin({
     padding: '0.4rem',
     timerProgressBar: true
 });
+// Set localStorage timeout
+lscache.setExpiryMilliseconds(3600000);
 // Global variables
 let allow_connect_msg = false;
 let cooldown = false;
@@ -100,7 +102,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
         // Update host designation in session_user
         for (let i = 0; i < data.players.length; i++) {
             // Check if individual player exists
-            if (data.players[i]._id === JSON.parse(localStorage.getItem('ec_session')).player_id) {
+            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(6))).player_id) {
                 // Update session_user _id and is_host
                 session_user = {
                     _id: data.players[i]._id,
@@ -188,10 +190,10 @@ socket.on(window.location.pathname.substr(6) + "-callback", function (data) {
 socket.on("player-created", function (data) {
     // Update player_id
     session_user._id = data;
-    localStorage.setItem('ec_session', JSON.stringify({
+    lscache.set('ec_session_' + window.location.pathname.substr(6), JSON.stringify({
         slug: window.location.pathname.substr(6),
         player_id: data
-    }));
+    }), 12);
 });
 
 // Name : frontend-game.socket.on.{slug}-error

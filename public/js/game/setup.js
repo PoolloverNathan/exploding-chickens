@@ -11,24 +11,25 @@ let user_prompt_open = false;
 // Name : frontend-game.setup_session_check(game_details)
 // Desc : check local user configuration on browser
 function setup_session_check(game_details) {
+    lscache.flushExpired();
     // Get browser session details
-    if (!localStorage.getItem('ec_session')) {
+    if (!lscache.get('ec_session_' + window.location.pathname.substr(6))) {
         // Reset local storage and session player since game data doesn't exist
-        localStorage.setItem('ec_session', JSON.stringify({
+        lscache.set('ec_session_' + window.location.pathname.substr(6), JSON.stringify({
             slug: window.location.pathname.substr(6),
             player_id: undefined
-        }));
+        }), 12);
         session_user = {
             _id: undefined,
             is_host: false,
             can_draw: session_user.can_draw
         };
-    } else if (JSON.parse(localStorage.getItem('ec_session')).slug !== window.location.pathname.substr(6)) {
+    } else if (JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(6))).slug !== window.location.pathname.substr(6)) {
         // Reset local storage and session player since slugs don't match
-        localStorage.setItem('ec_session', JSON.stringify({
+        lscache.set('ec_session_' + window.location.pathname.substr(6), JSON.stringify({
             slug: window.location.pathname.substr(6),
             player_id: undefined
-        }));
+        }), 12);
         session_user = {
             _id: undefined,
             is_host: false,
@@ -38,7 +39,7 @@ function setup_session_check(game_details) {
         // Check to make sure that the player is valid
         for (let i = 0; i < game_details.players.length; i++) {
             // Check if individual player exists
-            if (game_details.players[i]._id === JSON.parse(localStorage.getItem('ec_session')).player_id) {
+            if (game_details.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(6))).player_id) {
                 if (session_user._id === undefined) {
                     // Tell server that a valid player connected
                     socket.emit('player-online', {
