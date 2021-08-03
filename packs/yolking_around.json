@@ -4,6 +4,16 @@
     "type": "expansion"
   },
   {
+    "_id": "defuse-7",
+    "file_name": "defuse-7.png",
+    "action": "defuse"
+  },
+  {
+    "_id": "defuse-8",
+    "file_name": "defuse-8.png",
+    "action": "defuse"
+  },
+  {
     "_id": "hotpotato-1",
     "file_name": "hotpotato-1.png",
     "action": "hotpotato"

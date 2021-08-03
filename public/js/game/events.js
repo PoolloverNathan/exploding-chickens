@@ -423,6 +423,8 @@ preload (
     "/public/cards/base/skip-2.png",
     "/public/cards/base/skip-3.png",
     "/public/cards/base/skip-4.png",
+    "/public/cards/yolking_around/defuse-7.png",
+    "/public/cards/yolking_around/defuse-8.png",
     "/public/cards/yolking_around/drawbottom-1.png",
     "/public/cards/yolking_around/drawbottom-2.png",
     "/public/cards/yolking_around/drawbottom-3.png",
