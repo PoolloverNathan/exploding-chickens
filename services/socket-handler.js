@@ -226,21 +226,21 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                             fastify.io.to(socket.id).emit(data.slug + "-draw-card", action_res.data);
                         } else if (action_res.trigger === "error") {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.red('game-error')} ` + action_res.data));
-                            fastify.io.to(socket.id).emit(data.slug + "-error", action_res.data);
+                            fastify.io.to(socket.id).emit(data.slug + "-error", { msg: action_res.data });
                         } else {
                             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Invalid error when playing card`));
                         }
                     } else {
                         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Player attempted to play card while game is in lobby`));
-                        fastify.io.to(socket.id).emit(data.slug + "-error", "Game has not started");
+                        fastify.io.to(socket.id).emit(data.slug + "-error", { msg: "Game has not started" });
                     }
                 } else {
                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Player attempted to play a card when it is not their turn`));
-                    fastify.io.to(socket.id).emit(data.slug + "-error", "Please wait your turn");
+                    fastify.io.to(socket.id).emit(data.slug + "-error", { msg: "Please wait your turn" });
                 }
             } else {
                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Target game does not exist`));
-                fastify.io.to(socket.id).emit(data.slug + "-error", "GAME-DNE");
+                fastify.io.to(socket.id).emit(data.slug + "-error", { msg: "GAME-DNE" });
             }
         })
 

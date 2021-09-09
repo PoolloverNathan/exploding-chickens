@@ -200,6 +200,7 @@ socket.on("player-created", function (data) {
 // Desc : whenever an event occurs related to an error
 socket.on(window.location.pathname.substr(6) + "-error", function (data) {
     cooldown = false;
+    console.log(data);
     if (data.msg === "GAME-DNE") {
         window.location.href = "/";
     } else if (data.msg === "PLYR-NAME") {

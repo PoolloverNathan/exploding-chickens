@@ -21,7 +21,6 @@
   "homepage": "https://github.com/rak3rman/exploding-chickens#readme",
   "dependencies": {
     "async-waterfall": "^0.1.5",
-    "autoprefixer": "^10.1.0",
     "bad-words": "^3.0.4",
     "body-parser": "^1.18.3",
     "chai": "^4.3.0",
@@ -50,10 +49,13 @@
     "nanoid": "^3.1.23",
     "nodemon": "^2.0.6",
     "point-of-view": "^4.7.0",
-    "postcss": "^8.2.10",
     "sweetalert2": "^10.16.2",
-    "tailwindcss": "^2.0.2",
     "unique-names-generator": "^4.3.1",
     "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.3.4",
+    "postcss": "^8.3.6",
+    "tailwindcss": "^2.2.14"
   }
 }
