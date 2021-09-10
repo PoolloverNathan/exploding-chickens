@@ -28,7 +28,7 @@ exports.create_game = async function () {
     // Create new promise and return created_game after saved
     return await new Promise((resolve, reject) => {
         game.create({
-           slug: uniqueNamesGenerator({dictionaries: [adjectives, animals, colors], separator: '-', length: 2})
+            slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2})
         }, function (err, created_game) {
             if (err) {
                 reject(err);
@@ -457,14 +457,15 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             embed.title("**:chicken: Exploding Chickens: Game Completed**");
             embed.url("https://chickens.rakerman.com/game/" + game_details.slug);
             embed.color("3447003");
-            embed.field("Game duration", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
-            embed.field("Cards left", draw_deck.length + "", true);
-            embed.field("Chance of EC", Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
-            embed.field("Games played", stats_storage.get("games_played") + "", true);
-            embed.field("Time played",  moment.duration(stats_storage.get("mins_played"), "minutes").format("h [hrs], m [min]") + "", true);
-            embed.field("Connections", stats_storage.get("sockets_active") + "", true);
-            embed.field("Packs used", print_packs, false);
-            embed.field("Players in game", print_players, false);
+            embed.field(":bug: Slug", game_details.slug + "", true);
+            embed.field(":timer: Duration", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
+            embed.field(":black_joker: Cards left", draw_deck.length + "", true);
+            embed.field(":fire: EC %", Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
+            // embed.field("Games played", stats_storage.get("games_played") + "", true);
+            // embed.field("Time played",  moment.duration(stats_storage.get("mins_played"), "minutes").format("h [hrs], m [min]") + "", true);
+            embed.field(":link: Connections", stats_storage.get("sockets_active") + "", true);
+            embed.field(":card_box: Packs", print_packs, false);
+            embed.field(":busts_in_silhouette: Players", print_players, false);
             embed.footer("Release v" + pkg.version);
             let event = new Date();
             embed.timestamp(event.toISOString());
