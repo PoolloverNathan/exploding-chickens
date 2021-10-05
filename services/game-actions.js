@@ -445,8 +445,10 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             // Game completed, update game stats
             let print_players = "";
             let print_packs = "";
+            let win_count = 0;
             game_details.players.forEach(ele => {
                 print_players += "**'" + ele.nickname + "'** ";
+                win_count += ele.wins;
             });
             game_details.imported_packs.forEach(ele => {
                 print_packs += "**'" + ele + "'** ";
@@ -457,15 +459,13 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             embed.title("**:chicken: Exploding Chickens: Game Completed**");
             embed.url("https://chickens.rakerman.com/game/" + game_details.slug);
             embed.color("3447003");
-            embed.field(":bug: Slug", game_details.slug + "", true);
-            embed.field(":timer: Duration", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
-            embed.field(":black_joker: Cards left", draw_deck.length + "", true);
-            embed.field(":fire: EC %", Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
-            // embed.field("Games played", stats_storage.get("games_played") + "", true);
-            // embed.field("Time played",  moment.duration(stats_storage.get("mins_played"), "minutes").format("h [hrs], m [min]") + "", true);
-            embed.field(":link: Connections", stats_storage.get("sockets_active") + "", true);
-            embed.field(":card_box: Packs", print_packs, false);
-            embed.field(":busts_in_silhouette: Players", print_players, false);
+            embed.field("Slug :bug:", game_details.slug + "", true);
+            embed.field("Duration :timer:", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
+            embed.field("EC chance :fire:", "1 EC / " + draw_deck.length + " card(s) -> " + Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
+            embed.field("Lobby games :receipt:", win_count + " played", true);
+            embed.field("Connections :link:", stats_storage.get("sockets_active") + " socket(s) active", true);
+            embed.field("Packs :card_box:", print_packs, true);
+            embed.field("Players :busts_in_silhouette:", print_players, false);
             embed.footer("Release v" + pkg.version);
             let event = new Date();
             embed.timestamp(event.toISOString());
