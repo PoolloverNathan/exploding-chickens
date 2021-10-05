@@ -41,7 +41,7 @@ before(done => {
         done();
     });
     mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
-    mongoose.set('useFindAndModify', false);
+    //mongoose.set('useFindAndModify', false);
 });
 
 // Name : test.game_creation

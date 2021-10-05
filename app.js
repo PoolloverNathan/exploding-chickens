@@ -140,7 +140,7 @@ mongoose.connection.on('disconnected', function () {console.log(wipe(`${chalk.bo
 // Connect to mongodb using mongoose
 console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_storage.get('mongodb_url') + `"`));
 mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
-mongoose.set('useFindAndModify', false);
+//mongoose.set('useFindAndModify', false);
 
 // When mongoose establishes a connection with mongodb
 function mongoose_connected() {
