@@ -220,6 +220,19 @@ function sbr_update_log() {
             "    </p>\n" +
             "</li>"
     }
+    // Add remaining events text if over 20
+    if (events_length > 20) {
+        payload += "<li class=\"flex items-start text-gray-500\">\n" +
+            "    <span class=\"h-6 flex items-center\">\n" +
+            "        <svg class=\"flex-shrink-0 h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\">\n" +
+            "            <path d=\"M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z\" />\n" +
+            "        </svg>\n" +
+            "    </span>\n" +
+            "    <p class=\"ml-2 pr-2 w-full\">\n" +
+            "        <a class='pr-10'>" + (events_length - 20) + " more events...</a>\n" +
+            "    </p>\n" +
+            "</li>"
+    }
     document.getElementById("sbr_game_log").innerHTML = payload;
 }
 

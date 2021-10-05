@@ -533,7 +533,8 @@ exports.get_game_export = async function (slug, source, player_id) {
             trigger: source.trim(),
             imported_packs: raw_game_details["imported_packs"],
             player_cap: raw_game_details["player_cap"],
-            events: parsed_events
+            events: parsed_events,
+            events_length: raw_game_details["events"].length
         }
         // Sort and add players to json array
         raw_game_details["players"].sort(function(a, b) {

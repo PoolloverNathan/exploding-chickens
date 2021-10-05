@@ -103,7 +103,7 @@ fastify.get('/', (req, reply) => {
         version: pkg.version,
         stat_games_played: stats_storage.get('games_played').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
         stat_explosions: stats_storage.get('explosions').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
-        stats_avg_play_time: Math.round(stats_storage.get('mins_played') / stats_storage.get('games_played'))
+        stats_avg_play_time: Math.round(stats_storage.get('mins_played') / stats_storage.get('games_played')) || 0
     })
     console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET /')} ${chalk.bold.green('200')} Rendering home page`));
 })
