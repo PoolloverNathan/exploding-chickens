@@ -233,7 +233,9 @@ function sbr_update_log() {
             "    </p>\n" +
             "</li>"
     }
-    document.getElementById("sbr_game_log").innerHTML = payload;
+    if (events_length !== 0) {
+        document.getElementById("sbr_game_log").innerHTML = payload;
+    }
 }
 
 // Name : frontend-game.sbr_copy_url()
