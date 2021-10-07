@@ -447,11 +447,11 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             let print_packs = "";
             let win_count = 0;
             game_details.players.forEach(ele => {
-                print_players += "**'" + ele.nickname + "'** ";
+                print_players += "'" + ele.nickname + "' ";
                 win_count += ele.wins;
             });
             game_details.imported_packs.forEach(ele => {
-                print_packs += "**'" + ele + "'** ";
+                print_packs += "'" + ele + "' ";
             })
             // Get draw deck length
             let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
@@ -461,9 +461,9 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             embed.color("3447003");
             embed.field("Slug :bug:", game_details.slug + "", true);
             embed.field("Duration :timer:", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
-            embed.field("EC chance :fire:", "1 EC / " + draw_deck.length + " card(s) -> " + Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
-            embed.field("Lobby games :receipt:", win_count + " played", true);
-            embed.field("Connections :link:", stats_storage.get("sockets_active") + " socket(s) active", true);
+            embed.field("EC chance :fire:", "1 EC / " + draw_deck.length + " cards -> " + Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
+            embed.field("Lobby games :receipt:", (win_count + 1) + " played", true);
+            embed.field("Connections :link:", stats_storage.get("sockets_active") + " sockets active", true);
             embed.field("Packs :card_box:", print_packs, true);
             embed.field("Players :busts_in_silhouette:", print_players, false);
             embed.footer("Release v" + pkg.version);

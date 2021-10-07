@@ -507,7 +507,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 if (game_details.players[i].seat === game_details.seat_playing) {
                     callback(false, game_details, req_data, action, socket_id);
                 } else {
-                    callback(true, "It is not your turn", req_data.slug, action, socket_id, req_data.player_id);
+                    callback(true, "Please wait your turn", req_data.slug, action, socket_id, req_data.player_id);
                 }
             }
         }
