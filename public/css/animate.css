@@ -1,0 +1,35 @@
+/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+Filename : exploding-chickens/public/css/animate.css
+Desc     : css file for animation assets
+\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.anim-scene,
+.anim-ele {
+    animation-delay: 0.25s;
+    animation-duration: 0.25s;
+    transition-timing-function: ease-in;
+    animation-fill-mode: both;
+}
+.anim-ele-fadein {
+    animation-name: fadeIn;
+}
+.anim-ele-fadeout {
+    animation-name: fadeOut;
+}

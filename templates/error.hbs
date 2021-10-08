@@ -4,13 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/tailwind.css" rel="stylesheet">
+    <link href="/public/css/animate.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 </head>
 <!-- Exploding Chickens, error page // RAk3rman -->
-<body class='flex flex-col h-full'>
+<body class='flex flex-col h-full anim-scene'>
 {{! Navigation bar }}
-<nav class="">
+<nav class="anim-ele anim-ele-fadein">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             {{! Exploding Chickens header }}
@@ -23,7 +24,7 @@
     </div>
 </nav>
 {{! Error message }}
-<div class="flex flex-col items-center justify-center h-screen pb-10">
+<div class="flex flex-col items-center justify-center h-screen pb-10 anim-ele anim-ele-fadein">
     <h1 class="text-9xl text-gray-700 font-bold pb-2">{{ error_code }}</h1>
     <h3 class="text-3xl text-gray-700 pb-3 text-center">{{ title }}</h3>
     <h3 class="text-md text-gray-700 px-2 text-center">{{ desc_1 }}</h3>

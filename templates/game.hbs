@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/tailwind.css" rel="stylesheet">
     <link href="/public/css/game.css" rel="stylesheet">
+    <link href="/public/css/animate.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
@@ -29,9 +30,9 @@
     <meta property="og:image:height" content="440" />
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
-<body class='flex flex-col h-full' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
+<body class='flex flex-col h-full anim-scene' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
 {{! Banner }}
-<div class="bg-indigo-600 hidden" id="banner">
+<div class="bg-indigo-600 hidden anim-ele anim-ele-fadein" id="banner">
     <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between flex-wrap">
             <div class="w-0 flex-1 flex items-center">
@@ -61,7 +62,7 @@
     </div>
 </div>
 {{! Navigation bar }}
-<nav class="">
+<nav class="anim-ele anim-ele-fadein">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             {{! Exploding Chickens header }}
@@ -95,7 +96,7 @@
     </div>
 </nav>
 {{! Draw and discard deck }}
-<div class="flex flex-col items-center justify-center h-screen mb-28">
+<div class="flex flex-col items-center justify-center h-screen mb-28 anim-ele anim-ele-fadein">
     <div class="flex align-top mb-6 lg:mb-10 mt-10">
         <div class="flex flex-wrap justify-center items-center p-2" id="itr_ele_players_center">
             {{! Host player when no one has joined }}
@@ -125,7 +126,7 @@
     </div>
 </div>
 {{! Card hand }}
-<div class="w-full h-28 text-center py-2">
+<div class="w-full h-28 text-center py-2 anim-ele anim-ele-fadein">
     <div class="-my-24 overflow-x-auto">
         <div class="align-middle inline-block min-w-full sm:px-0 lg:px-8 pt-6">
             <div class="flex items-center" id="itr_ele_player_hand"></div>
@@ -133,7 +134,7 @@
     </div>
 </div>
 {{! Sidebar }}
-<div class="fixed inset-0 overflow-hidden z-10" x-show="sidebar_open">
+<div class="fixed inset-0 overflow-hidden z-10 anim-ele anim-ele-fadein" x-show="sidebar_open">
     <div class="absolute inset-0 overflow-hidden" x-show="sidebar_open">
         <div x-show="sidebar_open" x-description="Background overlay, show/hide based on slide-over state." x-transition:enter="ease-in-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in-out duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
         <section @click.away="sidebar_open = false" class="absolute inset-y-0 right-0 pl-10 max-w-full flex" aria-labelledby="slide-over-heading">
@@ -157,7 +158,7 @@
                                 </h2>
                             </div>
                             <div class="flex mt-0 ml-4">
-                                <button type="button" onclick="window.location.href = '/'" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" onclick="window.location.href = '/'">
                                     <svg class="-ml-1 mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                                     </svg>
@@ -381,8 +382,9 @@
 </div>
 {{! JS scripts }}
 <script src="/socket.io/socket.io.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.2.2/cdn.js" defer></script>
+<script src="//embed.typeform.com/next/embed.js"></script>
 <script src="/public/js/lscache.js"></script>
 <script src="/public/js/moment.js"></script>
 <script src="/public/js/game/animation.js"></script>
@@ -391,6 +393,5 @@
 <script src="/public/js/game/setup.js"></script>
 <script src="/public/js/game/sidebar.js"></script>
 <script src="/public/js/banner.js"></script>
-<script src="//embed.typeform.com/next/embed.js"></script>
 </body>
 </html>

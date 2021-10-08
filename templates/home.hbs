@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/tailwind.css" rel="stylesheet">
     <link href="/public/css/home.css" rel="stylesheet">
+    <link href="/public/css/animate.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
@@ -30,9 +31,9 @@
     <meta property="og:image:height" content="440" />
 </head>
 
-<body class="leading-normal tracking-normal text-indigo-400 bg-cover bg-fixed" style="background-image: url('/public/home_back.jpg');background-color: #0f0f0f;">
+<body class="leading-normal tracking-normal text-indigo-400 bg-cover bg-fixed anim-scene" style="background-image: url('/public/home_back.jpg');background-color: #0f0f0f;">
 {{! Banner }}
-<div class="bg-indigo-600 hidden" id="banner">
+<div class="bg-indigo-600 hidden anim-ele anim-ele-fadein" id="banner">
     <div class="px-6">
         <div class="w-full container mx-auto py-3">
             <div class="w-full flex items-center justify-between">
@@ -65,7 +66,7 @@
 </div>
 <div class="h-full m-6">
     {{! Header }}
-    <div class="w-full container mx-auto">
+    <div class="w-full container mx-auto anim-ele anim-ele-fadein">
         <div class="w-full flex items-center justify-between">
             <div class="flex-shrink-0">
                 <h1 class="h-8 text-4xl text-white opacity-80" style="font-family: Bebas Neue"><a class="text-yellow-400">EXPLODING</a> CHICKENS</h1>
@@ -78,7 +79,7 @@
         </div>
     </div>
     {{! Landing Text }}
-    <div class="container pt-24 md:pt-56 mx-auto flex flex-wrap flex-col md:flex-row items-center">
+    <div class="container pt-24 md:pt-56 mx-auto flex flex-wrap flex-col md:flex-row items-center anim-ele anim-ele-fadein">
         <div class="flex flex-col w-full xl:w-2/5 justify-center lg:items-start overflow-y-hidden">
             <h1 class="my-4 text-4xl md:text-5xl text-white opacity-80 font-bold leading-tight text-left">
                 Ba-da bing!
@@ -786,19 +787,18 @@
             <h1 class="text-white opacity-70 pb-1 md:float-right">Release v{{ version }}</h1>
         </div>
     </div>
-</div>
-<div class="container">
-    <div x-data="scrollProgress" class="fixed inset-x-0 top-0 z-50">
-        <div class="h-1 bg-yellow-500" :style="`width: ${percent}%`"></div>
+    <div class="container anim-ele anim-ele-fadein">
+        <div x-data="scrollProgress" class="fixed inset-x-0 top-0 z-50">
+            <div class="h-1 bg-yellow-500" :style="`width: ${percent}%`"></div>
+        </div>
     </div>
 </div>
 <div data-tf-popover="qWPf6y4Z" data-tf-button-color="#dc2626" data-tf-button-text="Feedback" data-tf-opacity="95" style="all:unset"></div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.0"></script>
-<script src="/public/js/home.js"></script>
-<script src="/public/js/banner.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.2.2/cdn.js" defer></script>
 <script src="//embed.typeform.com/next/embed.js"></script>
+<script src="/public/js/home.js"></script>
+<script src="/public/js/banner.js"></script>
 </html>
