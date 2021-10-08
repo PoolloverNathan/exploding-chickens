@@ -15,38 +15,37 @@ const toast_alert = Swal.mixin({
 // Declare socket.io
 let socket = io();
 
-// Attempt to join game
-function join_game() {
+// Check that lobby slug is valid, if so, enter lobby
+function check_lobby_slug() {
     // Get game slug from input
-    let passed_slug = document.getElementById("game_slug").value;
-    // Input validation
-    if (passed_slug !== "" && /^[a-z-]+$/.test(passed_slug)) {
-        socket.emit('check-slug', {
-            slug: passed_slug,
-            player_id: "spectator"
-        });
+    let passed_slug = document.getElementById("slug_input").value;
+    console.log(passed_slug);
+    if (passed_slug === "") {
+        document.getElementById("slug_input").className = "sm:h-14 h-12 w-80 pl-9 pr-8 rounded-xl text-lg z-0 bg-transparent text-gray-400 border-2 border-gray-500 focus:outline-none";
+        document.getElementById("slug_indicator").innerHTML = "<i class=\"hidden\"></i>";
     } else {
-        invalid_game_slug();
+        // Input validation
+        if (passed_slug !== "" && /^[a-z-]+$/.test(passed_slug)) {
+            socket.emit('check-lobby-slug', {
+                slug: passed_slug,
+                player_id: "spectator"
+            });
+        } else {
+            document.getElementById("slug_input").className = "sm:h-14 h-12 w-80 pl-9 pr-8 rounded-xl text-lg z-0 bg-transparent text-gray-400 border-2 border-red-600 focus:outline-none";
+            document.getElementById("slug_indicator").innerHTML = "<i class=\"fa fa-times text-red-600 z-20\"></i>";
+        }
     }
-}
-
-// Invalid game slug
-function invalid_game_slug() {
-    // Clear input
-    document.getElementById("game_slug").value = "";
-    // Fire error toast
-    toast_alert.fire({
-        icon: 'error',
-        html: '<h1 class="text-lg font-bold pl-2 pr-1">Invalid game code</h1>'
-    });
 }
 
 // Handle incoming slug response
 socket.on("slug-response", function (data) {
     if (data === false) {
-        invalid_game_slug();
+        document.getElementById("slug_input").className = "sm:h-14 h-12 w-80 pl-9 pr-8 rounded-xl text-lg z-0 bg-transparent text-gray-400 border-2 border-red-600 focus:outline-none";
+        document.getElementById("slug_indicator").innerHTML = "<i class=\"fa fa-times text-red-600 z-20\"></i>";
     } else {
-        window.location.href = "/game/" + data;
+        document.getElementById("slug_input").className = "sm:h-14 h-12 w-80 pl-9 pr-8 rounded-xl text-lg z-0 bg-transparent text-gray-400 border-2 border-green-600 focus:outline-none";
+        document.getElementById("slug_indicator").innerHTML = "<i class=\"fa fa-check text-green-600 z-20\"></i>";
+        setTimeout(e => {window.location.href = "/game/" + data;}, 600);
     }
 });
 

@@ -15,3 +15,21 @@ Desc     : css file for home assets
         border-radius: 1.6rem;
     }
 }
+.invalid-feedback,
+      .empty-feedback {
+        display: none;
+      }
+      .was-validated :placeholder-shown:invalid ~ .empty-feedback {
+        display: block;
+      }
+      .was-validated :not(:placeholder-shown):invalid ~ .invalid-feedback {
+        display: block;
+      }
+      .is-invalid,
+      .was-validated :invalid {
+        border-color: #dc3545;
+      }
+      .is-invalid,
+      .was-validated :invalid:focus {
+    --tw-ring-color: rgba(220, 53, 69, 0.2);
+}

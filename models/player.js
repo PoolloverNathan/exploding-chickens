@@ -14,6 +14,10 @@ module.exports = mongoose.Schema({
         type: String,
         default: nanoid(10)
     },
+    game_slug: {
+        type: String,
+        required: false // TODO change to true
+    },
     nickname: {
         type: String,
         required: true

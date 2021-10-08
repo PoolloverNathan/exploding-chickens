@@ -2,6 +2,8 @@ module.exports = {
   purge: [
       '../../templates/*.hbs',
       '../js/game/*.js',
+      '../js/banner.js',
+      '../js/home.js',
       '../services/socket-handler.js'
   ],
   darkMode: false, // or 'media' or 'class'

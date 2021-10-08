@@ -32,7 +32,7 @@
 </head>
 <body class='flex flex-col h-full anim-scene' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
 {{! Banner }}
-<div class="bg-indigo-600 hidden anim-ele anim-ele-fadein" id="banner">
+<div class="bg-indigo-600 hidden" id="banner">
     <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between flex-wrap">
             <div class="w-0 flex-1 flex items-center">
@@ -43,10 +43,10 @@
                 </span>
                 <p class="ml-3 font-medium text-white truncate">
                     <span class="md:hidden">
-                        New Expansion Pack Released!
+                        New Feature: Tournament Mode!
                     </span>
                     <span class="hidden md:inline">
-                        We've added the brand new "Yolking Around" Expansion Pack! If you're the host, add using the sidebar <i class="fas fa-arrow-right"></i>
+                        Tournament Mode is now available! Host a single lobby with 100's of players.
                     </span>
                 </p>
             </div>
