@@ -16,10 +16,11 @@ const dataStore = require('data-store');
 const config_storage = new dataStore({path: './config/config.json'});
 const pkg = require('../package.json');
 
-//Services
-let card_actions = require('../services/card-actions.js');
-let game_actions = require('../services/game-actions.js');
+// Services
+let lobby_actions = require('./lobby-actions.js');
+let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
+let card_actions = require('./card-actions.js');
 
 // Name : game_actions.create_game()
 // Desc : creates a new game in mongodb, returns game details

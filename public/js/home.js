@@ -19,7 +19,6 @@ let socket = io();
 function check_lobby_slug() {
     // Get game slug from input
     let passed_slug = document.getElementById("slug_input").value;
-    console.log(passed_slug);
     if (passed_slug === "") {
         document.getElementById("slug_input").className = "sm:h-14 h-12 w-80 pl-9 pr-8 rounded-xl text-lg z-0 bg-transparent text-gray-400 border-2 border-gray-500 focus:outline-none";
         document.getElementById("slug_indicator").innerHTML = "<i class=\"hidden\"></i>";

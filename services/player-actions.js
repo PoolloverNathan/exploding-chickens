@@ -5,14 +5,15 @@ Desc     : handles all player actions
 Author(s): RAk3rman, SengdowJones
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-//Packages
+// Packages
 let game = require('../models/game.js');
 const { nanoid } = require('nanoid');
 
-//Services
-let card_actions = require('../services/card-actions.js');
-let game_actions = require('../services/game-actions.js');
+// Services
+let lobby_actions = require('./lobby-actions.js');
+let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
+let card_actions = require('./card-actions.js');
 
 // Name : player_actions.create_player()
 // Desc : creates a new player

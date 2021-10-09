@@ -6,6 +6,7 @@ Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Packages
+let lobby = require('../models/lobby.js');
 let game = require('../models/game.js');
 const chalk = require('chalk');
 const wipe = chalk.white;
@@ -14,9 +15,10 @@ const waterfall = require('async-waterfall');
 const Filter = require('bad-words'), filter = new Filter();
 
 // Services
-let card_actions = require('../services/card-actions.js');
-let game_actions = require('../services/game-actions.js');
-let player_actions = require('../services/player-actions.js');
+let lobby_actions = require('./lobby-actions.js');
+let game_actions = require('./game-actions.js');
+let player_actions = require('./player-actions.js');
+let card_actions = require('./card-actions.js');
 
 // Export to app.js file
 module.exports = function (fastify, stats_storage, config_storage, bot) {
@@ -398,9 +400,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Desc : runs when we need to see if a slug exists in the db
         // Author(s) : RAk3rman
         socket.on('check-lobby-slug', async function (data) {
-            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-lobby-slug')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to verify game slug`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-lobby-slug')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to verify lobby slug`));
             // Check to see if game exists
-            if (await game.exists({ slug: data.slug })) {
+            if (await lobby.exists({ slug: data.slug })) {
                 fastify.io.to(socket.id).emit("slug-response", data.slug);
                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-lobby-slug')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Lobby slug is ${chalk.dim.green('valid')}`));
             } else {

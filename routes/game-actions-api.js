@@ -13,10 +13,13 @@ module.exports = function (fastify) {
     const moment = require('moment');
 
     // Services
+    let lobby_actions = require('../services/lobby-actions.js');
     let game_actions = require('../services/game-actions.js');
+    let player_actions = require('../services/player-actions.js');
+    let card_actions = require('../services/card-actions.js');
 
     // Create game route, expecting a player nickname
-    fastify.post('/game/create', {
+    fastify.post('/lobby/create', {
         config: {
             rateLimit: {
                 max: 5,
@@ -24,21 +27,14 @@ module.exports = function (fastify) {
             }
         }
     }, async function (req, reply) {
-        // Create sample game
-        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('POST ' + req.url + '')} ${chalk.bold.green('200')} Create new game then redirect to game url`));
-        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} Received request to create new game`));
-        let game_details = await game_actions.create_game().catch(e => {failed_step(e, reply)});
-        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} ${chalk.dim.yellow(game_details["slug"])} Created new game`));
-        // Import cards
-        let card_count = await game_actions.import_cards(game_details, 'base').catch(e => {failed_step(e, reply)});
-        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-game     ')} ${chalk.dim.yellow(game_details["slug"])} Imported ` + chalk.bold(card_count) + ` cards from base.json`));
-        // Redirect to game url
-        reply.redirect("/game/" + game_details["slug"]);
+        // Create new lobby
+        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('POST ' + req.url + '')} ${chalk.bold.green('200')} Create new lobby then redirect to lobby url`));
+        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-lobby    ')} Received request to create new lobby`));
+        let lobby_details = await lobby_actions.create_lobby();
+        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-lobby    ')} ${chalk.dim.yellow(lobby_details["slug"])} Created new lobby`));
+        // Insert first game in lobby
+        await game_actions.create_game(lobby_details);
+        // Redirect to lobby url
+        reply.redirect("/lobby/" + lobby_details["slug"]);
     })
-
-    // Failed step in api
-    function failed_step (desc, reply) {
-        console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.red('FAIL')} Failed previous step with error message: "` + desc + `"`));
-        reply.code(500);
-    }
 };
