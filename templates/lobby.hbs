@@ -76,9 +76,10 @@
             <div class="block">
                 <div class="ml-4 flex items-center md:ml-6">
                     <span class="relative inline-flex">
-                        {{! EC chance & active users }}
-                        <div class="text-lg font-bold truncate text-gray-700 py-2" id="itr_ele_ec_count"></div>
-                        <div class="inline-flex items-center -space-x-1 overflow-hidden p-2 hidden sm:block" id="itr_ele_players_top"></div>
+                        {{! Lobby status }}
+                        <div class="text-lg font-bold truncate text-gray-700 py-2 pr-2" id="itr_ele_status">
+                            <p>In Lobby</p>
+                        </div>
                         {{! Slide over button }}
                         <button @click="sidebar_open = true" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
                             <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -96,41 +97,162 @@
         </div>
     </div>
 </nav>
-{{! Draw and discard deck }}
-<div class="flex flex-col items-center justify-center h-screen mb-28 anim-ele anim-ele-fadein">
-    <div class="flex align-top mb-6 lg:mb-10 mt-10">
-        <div class="flex flex-wrap justify-center items-center p-2" id="itr_ele_players_center">
-            {{! Host player when no one has joined }}
+{{! Game groups }}
+<div class="flex justify-center h-screen anim-ele anim-ele-fadein">
+    <div id="itr_ele_groups" class="my-auto">
+        <span class="auto-rows-max auto-rows-min auto-rows-auto auto-cols-max auto-cols-min auto-cols-auto row-auto col-auto"></span>
+        {{! Grid of games }}
+        <div class="grid grid-cols-2 gap-x-6 gap-y-6 p-4">
+            {{! Individual game }}
             <div class="block text-center">
                 <h1 class="text-gray-600 font-medium text-sm">
-                    Host <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                    Game Room: spicy-chicken <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
                 </h1>
-                <div class="flex flex-col items-center -space-y-3">
-                    <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
-                    <div class="-space-x-4 rotate-12">
-                        <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
-                            <h1 class="text-white text-sm">0</h1>
+                <h1 class="text-gray-600 font-medium text-sm pb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    4/5
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    1 Pack
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                    </svg>
+                    2 EC / 53 Cards
+                </h1>
+                <div class="rounded-2xl bg-contain mx-1 border-dashed border-4 border-gray-400">
+                    <div class="grid grid-cols-2 gap-x-2 gap-y-4 py-6 px-4">
+                        <div class="block text-center w-28">
+                            <h1 class="text-gray-600 font-medium text-sm">
+                                Radison <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                            </h1>
+                            <div class="flex flex-col items-center -space-y-3">
+                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
+                                <div class="-space-x-4 rotate-12">
+                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm">0</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="block text-center w-28">
+                            <h1 class="text-gray-600 font-medium text-sm">
+                                Sengdao <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                            </h1>
+                            <div class="flex flex-col items-center -space-y-3">
+                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
+                                <div class="-space-x-4 rotate-12">
+                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm">0</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="block text-center w-28">
+                            <h1 class="text-gray-600 font-medium text-sm">
+                                Richard <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                            </h1>
+                            <div class="flex flex-col items-center -space-y-3">
+                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
+                                <div class="-space-x-4 rotate-12">
+                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm">0</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="block text-center w-28">
+                            <h1 class="text-gray-600 font-medium text-sm">
+                                Joe Ma <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                            </h1>
+                            <div class="flex flex-col items-center -space-y-3">
+                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
+                                <div class="-space-x-4 rotate-12">
+                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm">0</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{! Individual game }}
+            <div class="block text-center">
+                <h1 class="text-gray-600 font-medium text-sm">
+                    Game Room: hungry-tiger <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                </h1>
+                <h1 class="text-gray-600 font-medium text-sm pb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    3/5
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    1 Pack
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                    </svg>
+                    2 EC / 53 Cards
+                </h1>
+                <div class="rounded-2xl bg-contain mx-1 border-dashed border-4 border-gray-400">
+                    <div class="grid grid-cols-2 gap-x-2 gap-y-4 py-6 px-4">
+                        <div class="block text-center w-28">
+                            <h1 class="text-gray-600 font-medium text-sm">
+                                Vincent <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                            </h1>
+                            <div class="flex flex-col items-center -space-y-3">
+                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
+                                <div class="-space-x-4 rotate-12">
+                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm">0</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="block text-center w-28">
+                            <h1 class="text-gray-600 font-medium text-sm">
+                                Nathanael <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                            </h1>
+                            <div class="flex flex-col items-center -space-y-3">
+                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
+                                <div class="-space-x-4 rotate-12">
+                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm">0</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="block text-center w-28">
+                            <h1 class="text-gray-600 font-medium text-sm">
+                                Joe Guth <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                            </h1>
+                            <div class="flex flex-col items-center -space-y-3">
+                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
+                                <div class="-space-x-4 rotate-12">
+                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
+                                        <h1 class="text-white text-sm">0</h1>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="flex align-bottom">
-        <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 z-0" id="anim_draw" style="position:absolute;background-image: url('/public/cards/card_back.png');"></div>
-        <button class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 z-10 focus:outline-none active:outline-none active:ring-2 active:ring-offset-2 active:ring-gray-700" onclick="draw_card()" style="background-image: url('/public/cards/card_back.png');"></button>
-        <div id="itr_ele_discard_deck">
-            <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 border-dashed border-4 border-gray-400">
-                <h1 class="text-gray-400 font-bold flex items-center justify-center center-card-text">Discard Pile</h1>
-            </div>
-        </div>
-    </div>
-</div>
-{{! Card hand }}
-<div class="w-full h-28 text-center py-2 anim-ele anim-ele-fadein">
-    <div class="-my-24 overflow-x-auto">
-        <div class="align-middle inline-block min-w-full sm:px-0 lg:px-8 pt-6">
-            <div class="flex items-center" id="itr_ele_player_hand"></div>
+        <div class="flex justify-center mt-4 mb-6">
+            {{! Start button }}
+            <button type="button" class="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600">
+                <svg class="-ml-1 mr-1 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                </svg>
+                Start Game
+            </button>
         </div>
     </div>
 </div>

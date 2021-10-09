@@ -1,6 +1,6 @@
 /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-Filename : exploding-chickens/routes/game-actions-api.js
-Desc     : all routes related to game actions
+Filename : exploding-chickens/routes/actions-api.js
+Desc     : all routes related to lobby and game actions
 Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 

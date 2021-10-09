@@ -91,11 +91,11 @@ fastify.register(require('fastify-rate-limit'), {
     timeWindow: '1 minute'
 })
 // Routers
-let game_actions_api = require('./routes/game-actions-api.js');
+let actions_api = require('./routes/actions-api.js');
 let error_routes = require('./routes/error-routes.js');
 
 // Import routes
-game_actions_api(fastify);
+actions_api(fastify);
 error_routes(fastify);
 
 // Home page
