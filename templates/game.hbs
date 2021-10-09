@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Exploding Chickens: {{ slug_1 }}</title>
+    <title>EC Game: {{ slug_1 }}</title>
     <meta name="HandheldFriendly" content="True" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/tailwind.css" rel="stylesheet">
@@ -22,7 +22,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade" />
     <meta property="og:site_name" content="Exploding Chickens" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Join game lobby: {{ slug_3 }}" />
+    <meta property="og:title" content="Spectate game: {{ slug_3 }}" />
     <meta property="og:description" content="A beautiful, online alternative to the popular Exploding Kittens card game (just with chickens)" />
     <meta property="og:url" content="https://chickens.rakerman.com/" />
     <meta property="og:image" content="https://chickens.rakerman.com/public/home_ui.png" />
@@ -30,6 +30,7 @@
     <meta property="og:image:height" content="440" />
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
+<!-- Exploding Chickens, game page // RAk3rman -->
 <body class='flex flex-col h-full anim-scene' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
 {{! Banner }}
 <div class="bg-indigo-600 hidden" id="banner">
@@ -43,10 +44,10 @@
                 </span>
                 <p class="ml-3 font-medium text-white truncate">
                     <span class="md:hidden">
-                        New Feature: Tournament Mode!
+                        {{ bnr_short_desc }}
                     </span>
                     <span class="hidden md:inline">
-                        Tournament Mode is now available! Host a single lobby with 100's of players.
+                        {{ bnr_long_desc }}
                     </span>
                 </p>
             </div>
@@ -393,5 +394,6 @@
 <script src="/public/js/game/setup.js"></script>
 <script src="/public/js/game/sidebar.js"></script>
 <script src="/public/js/banner.js"></script>
+<script>check_banner('{{ bnr_tag }}')</script>
 </body>
 </html>

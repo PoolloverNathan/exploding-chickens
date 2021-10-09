@@ -44,7 +44,7 @@ socket.on("slug-response", function (data) {
     } else {
         document.getElementById("slug_input").className = "sm:h-14 h-12 w-80 pl-9 pr-8 rounded-xl text-lg z-0 bg-transparent text-gray-400 border-2 border-green-600 focus:outline-none";
         document.getElementById("slug_indicator").innerHTML = "<i class=\"fa fa-check text-green-600 z-20\"></i>";
-        setTimeout(e => {window.location.href = "/game/" + data;}, 600);
+        setTimeout(e => {window.location.href = "/lobby/" + data;}, 600);
     }
 });
 

@@ -45,7 +45,10 @@ let lobbySchema = mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    active_games: [String],
+    games: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'game'
+    }],
     players: [player],
     imported_packs: [String],
     events: [event]

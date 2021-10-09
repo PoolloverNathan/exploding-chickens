@@ -30,7 +30,7 @@
     <meta property="og:image:width" content="800" />
     <meta property="og:image:height" content="440" />
 </head>
-
+<!-- Exploding Chickens, home page // RAk3rman -->
 <body class="leading-normal tracking-normal text-indigo-400 bg-cover bg-fixed anim-scene" style="background-image: url('/public/home_back.jpg');background-color: #0f0f0f;">
 {{! Banner }}
 <div class="bg-indigo-600 hidden" id="banner">
@@ -45,10 +45,10 @@
                 </span>
                     <p class="ml-3 font-medium text-white truncate">
                         <span class="md:hidden">
-                            New Feature: Tournament Mode!
+                            {{ bnr_short_desc }}
                         </span>
-                            <span class="hidden md:inline">
-                            Tournament Mode is now available! Host a single lobby with 100's of players.
+                        <span class="hidden md:inline">
+                            {{ bnr_long_desc }}
                         </span>
                     </p>
                 </div>
@@ -98,7 +98,7 @@
                 <strong>{{ stat_explosions }}</strong> chickens exploded.
             </p>
             <div class="flex flex-wrap space-y-4 sm:space-y-0 sm:space-x-4 text-center">
-                <form class="pr-3 mb-3" action="/game/create" method="POST" enctype="application/x-www-form-urlencoded">
+                <form class="pr-3 mb-3" action="/lobby" method="POST" enctype="application/x-www-form-urlencoded">
                     <button type="submit" class="w-auto sm:h-14 h-12 flex-none bg-yellow-500 hover:bg-yellow-600 text-gray-100 text-lg font-semibold px-6 border border-transparent rounded-xl focus:outline-none transition-colors duration-200">
                         New Lobby
                     </button>
@@ -728,4 +728,5 @@
 <script src="//embed.typeform.com/next/embed.js"></script>
 <script src="/public/js/home.js"></script>
 <script src="/public/js/banner.js"></script>
+<script>check_banner('{{ bnr_tag }}')</script>
 </html>

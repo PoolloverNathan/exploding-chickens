@@ -6,7 +6,8 @@ Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Packages
-let lobby = require('../models/lobby.js');
+let Lobby = require('../models/lobby.js');
+let Game = require('../models/game.js');
 const chalk = require('chalk');
 const moment = require('moment');
 let momentDurationFormatSetup = require("moment-duration-format");
@@ -26,8 +27,13 @@ let card_actions = require('./card-actions.js');
 // Desc : creates a new lobby in mongodb, returns lobby_details
 // Author(s) : RAk3rman
 exports.create_lobby = async function () {
-    await lobby.create({
-        slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2})
-    });
+    // Create new lobby
+    try {
+        return await Lobby.create({
+            slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2})
+        });
+    } catch (err) {
+        throw new Error(err);
+    }
 }
 

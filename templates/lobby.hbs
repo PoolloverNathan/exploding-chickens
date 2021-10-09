@@ -30,6 +30,7 @@
     <meta property="og:image:height" content="440" />
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
+<!-- Exploding Chickens, lobby page // RAk3rman -->
 <body class='flex flex-col h-full anim-scene' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
 {{! Banner }}
 <div class="bg-indigo-600 hidden" id="banner">
@@ -43,10 +44,10 @@
                 </span>
                 <p class="ml-3 font-medium text-white truncate">
                     <span class="md:hidden">
-                        New Feature: Tournament Mode!
+                        {{ bnr_short_desc }}
                     </span>
                     <span class="hidden md:inline">
-                        Tournament Mode is now available! Host a single lobby with 100's of players.
+                        {{ bnr_long_desc }}
                     </span>
                 </p>
             </div>
@@ -387,11 +388,7 @@
 <script src="//embed.typeform.com/next/embed.js"></script>
 <script src="/public/js/lscache.js"></script>
 <script src="/public/js/moment.js"></script>
-<script src="/public/js/game/animation.js"></script>
-<script src="/public/js/game/events.js"></script>
-<script src="/public/js/game/interface.js"></script>
-<script src="/public/js/game/setup.js"></script>
-<script src="/public/js/game/sidebar.js"></script>
 <script src="/public/js/banner.js"></script>
+<script>check_banner('{{ bnr_tag }}')</script>
 </body>
 </html>

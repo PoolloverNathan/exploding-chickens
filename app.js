@@ -7,7 +7,8 @@ Author(s): RAk3rman
 // Packages and configuration - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // Declare packages
-let game = require('./models/game.js');
+let Lobby = require('./models/lobby.js');
+let Game = require('./models/game.js');
 const path = require('path');
 let mongoose = require('mongoose');
 const dataStore = require('data-store');
@@ -16,6 +17,7 @@ const stats_storage = new dataStore({path: './config/stats.json'});
 const moment = require('moment');
 const chalk = require('chalk');
 const pkg = require('./package.json');
+const bnr_config = require('./config/banner.json');
 require('eris-embed-builder');
 const eris = require('eris');
 const wipe = chalk.white;
@@ -103,9 +105,31 @@ fastify.get('/', (req, reply) => {
         version: pkg.version,
         stat_games_played: stats_storage.get('games_played').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
         stat_explosions: stats_storage.get('explosions').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
-        stats_avg_play_time: Math.round(stats_storage.get('mins_played') / stats_storage.get('games_played')) || 0
+        stats_avg_play_time: Math.round(stats_storage.get('mins_played') / stats_storage.get('games_played')) || 0,
+        bnr_short_desc: bnr_config.short_desc,
+        bnr_long_desc: bnr_config.long_desc,
+        bnr_tag: bnr_config.tag
     })
     console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET /')} ${chalk.bold.green('200')} Rendering home page`));
+})
+
+// Lobby page
+fastify.get('/lobby/:_id', {
+    config: {
+        rateLimit: {
+            max: 15,
+            timeWindow: '1 minute'
+        }
+    }
+}, async function (req, reply) {
+    // Make sure lobby exists
+    if (await Lobby.exists({ slug: req.params._id, created: { $gte: moment().subtract(12, "hours").toISOString() } })) {
+        reply.view('/templates/lobby.hbs', { slug_1: req.params._id, slug_2: req.params._id, slug_3: req.params._id, version: pkg.version, bnr_short_desc: bnr_config.short_desc, bnr_long_desc: bnr_config.long_desc, bnr_tag: bnr_config.tag })
+        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.green('200')} Lobby exists, rendering lobby page`));
+    } else {
+        reply.status(404).view('/templates/error.hbs', { error_code: "404", title: "Lobby does not exist", desc_1: "Unfortunately, we could not find the lobby you are looking for.", desc_2: "Try a different link or create a new lobby on the home page." });
+        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.red('404')} Lobby does not exist, rendering error page`));
+    }
 })
 
 // Game page
@@ -118,11 +142,11 @@ fastify.get('/game/:_id', {
     }
 }, async function (req, reply) {
     // Make sure game exists
-    if (await game.exists({ slug: req.params._id, created: { $gte: moment().subtract(12, "hours").toISOString() } })) {
-        reply.view('/templates/game.hbs', { slug_1: req.params._id, slug_2: req.params._id, slug_3: req.params._id, version: pkg.version })
+    if (await Game.exists({ slug: req.params._id, created: { $gte: moment().subtract(12, "hours").toISOString() } })) {
+        reply.view('/templates/game.hbs', { slug_1: req.params._id, slug_2: req.params._id, slug_3: req.params._id, version: pkg.version, bnr_short_desc: bnr_config.short_desc, bnr_long_desc: bnr_config.long_desc, bnr_tag: bnr_config.tag })
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.green('200')} Game exists, rendering game page`));
     } else {
-        reply.status(404).view('/templates/error.hbs', { error_code: "404", title: "Game does not exist", desc_1: "Unfortunately, we could not find the game lobby you are looking for.", desc_2: "Try a different link or create a new game on the home page." });
+        reply.status(404).view('/templates/error.hbs', { error_code: "404", title: "Game does not exist", desc_1: "Unfortunately, we could not find the game you are looking for.", desc_2: "Try a different link or create a new lobby on the home page." });
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.red('404')} Game does not exist, rendering error page`));
     }
 })

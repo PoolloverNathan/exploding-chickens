@@ -39,8 +39,9 @@ module.exports = function (fastify) {
             reply.status(429).view('/templates/error.hbs', { error_code: error.statusCode, title: "Request limit reached", desc_1: "Woah there, it looks like you made too many requests.", desc_2: "Please try again in a couple minutes." });
             console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + request.url + '')} ${chalk.bold.red('429')} Request limit reached`));
         } else {
-            reply.status(404).view('/templates/error.hbs', { error_code: error.statusCode, title: "Internal server error", desc_1: "Unfortunately, we could not complete the action that was requested.", desc_2: "Please try again later." });
-            console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + request.url + '')} ${chalk.bold.red('404')} Could not find resource`));
+            reply.status(error.statusCode || 500).view('/templates/error.hbs', { error_code: error.statusCode || 500, title: "Internal server error", desc_1: "Unfortunately, we could not complete the action that was requested.", desc_2: "Please try again later." });
+            console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + request.url + '')} ${chalk.bold.red(error.statusCode || 500)} Internal server error`));
+            console.log(error);
         }
 
     })
