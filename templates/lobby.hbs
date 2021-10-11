@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
 <!-- Exploding Chickens, lobby page // RAk3rman -->
-<body class='flex flex-col h-full anim-scene' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
+<body class='flex flex-col h-full anim-scene' x-data="{ sidebar_open: true }" @keydown.window.escape="sidebar_open = false">
 {{! Banner }}
 <div class="bg-indigo-600 hidden" id="banner">
     <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
@@ -107,7 +107,7 @@
                 <h1 class="text-gray-600 font-medium text-sm">
                     Game Room: spicy-chicken <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
                 </h1>
-                <h1 class="text-gray-600 font-medium text-sm pb-3">
+                <h1 class="text-gray-600 font-medium text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 text-blue-500 -mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
@@ -122,11 +122,14 @@
                     </svg>
                     2 EC / 53 Cards
                 </h1>
+                <div class="px-2 pb-2">
+                    <progress class="progress progress-info" value="30" max="100"></progress>
+                </div>
                 <div class="rounded-2xl bg-contain mx-1 border-dashed border-4 border-gray-400">
                     <div class="grid grid-cols-2 gap-x-2 gap-y-4 py-6 px-4">
                         <div class="block text-center w-28">
                             <h1 class="text-gray-600 font-medium text-sm">
-                                Radison <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                                Player <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
                             </h1>
                             <div class="flex flex-col items-center -space-y-3">
                                 <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
@@ -139,7 +142,7 @@
                         </div>
                         <div class="block text-center w-28">
                             <h1 class="text-gray-600 font-medium text-sm">
-                                Sengdao <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                                Player <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
                             </h1>
                             <div class="flex flex-col items-center -space-y-3">
                                 <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
@@ -152,7 +155,7 @@
                         </div>
                         <div class="block text-center w-28">
                             <h1 class="text-gray-600 font-medium text-sm">
-                                Richard <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                                Player <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
                             </h1>
                             <div class="flex flex-col items-center -space-y-3">
                                 <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
@@ -165,7 +168,7 @@
                         </div>
                         <div class="block text-center w-28">
                             <h1 class="text-gray-600 font-medium text-sm">
-                                Joe Ma <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                                Player <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
                             </h1>
                             <div class="flex flex-col items-center -space-y-3">
                                 <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
@@ -327,62 +330,70 @@
                             <div class="flex-1 min-w-0">
                                 <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
                                     <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                    </svg>
-                                    Sync Card Packs
-                                </h3>
-                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
-                                    <div class="flex items-center text-sm text-gray-500">
-                                        Lock card packs across all games
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex mt-0 ml-4">
-                                <span class="">
-                                    <input type="checkbox" checked="checked" class="inline-flex items-center mt-2 toggle toggle-md">
-                                </span>
-                            </div>
-                        </div>
-                        {{! Yolking around }}
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex-1 min-w-0">
-                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
-                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                                     </svg>
                                     Grouping Method
                                 </h3>
                                 <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
                                     <div class="flex items-center text-sm text-gray-500">
-
+                                        How players are sorted between game rooms while in lobby
                                     </div>
                                 </div>
                             </div>
                             <div class="flex mt-0 ml-4">
                                 <span class="">
                                       <div class="inline-flex items-center btn-group">
-                                          <button class="btn btn-outline btn-sm btn-active">Random</button>
-                                          <button class="btn btn-outline btn-sm">Win #</button>
+                                          <input type="radio" name="grp_method" id="grp_random" data-title="Random" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                          <input type="radio" name="grp_method" id="grp_wins" data-title="Win #" disabled="disabled" class="btn btn-sm btn-outline no-animation">
                                       </div>
                                 </span>
                             </div>
                         </div>
-                    </div>
-                    {{! Sidebar players }}
-                    <div class="mt-4 px-5">
-                        <h2 class="text-xl font-medium text-gray-700">
-                            Players
-                        </h2>
-                    </div>
-                    <div class="mt-4 relative flex flex-col px-5" id="sbr_ele_players">
                         <div class="flex items-center justify-between mb-2">
                             <div class="flex-1 min-w-0">
                                 <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
                                     <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
                                     </svg>
-                                    Waiting for players to join...
+                                    Room Size
                                 </h3>
+                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        Number of players per game room
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex mt-0 ml-4">
+                                <span class="">
+                                      <div class="inline-flex items-center btn-group">
+                                          <input type="radio" name="grp_size" id="option1" data-title="2" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                          <input type="radio" name="grp_size" id="option2" data-title="3" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                          <input type="radio" name="grp_size" id="option3" data-title="4" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                          <input type="radio" name="grp_size" id="option4" data-title="5" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                          <input type="radio" name="grp_size" id="option5" data-title="6" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                      </div>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
+                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Sync Card Packs
+                                </h3>
+                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        Locks card packs across all game rooms
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex mt-0 ml-4">
+                                <span class="">
+                                    <input type="checkbox" disabled="disabled" class="inline-flex items-center mt-2 toggle toggle-md toggle-accent">
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -458,6 +469,24 @@
                                         <p>Confused on how to use a card? Refer to the <a class="text-blue-600" target="_blank" href="/#base-pack">card descriptions</a>.</p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{! Sidebar players }}
+                    <div class="mt-4 px-5">
+                        <h2 class="text-xl font-medium text-gray-700">
+                            Players
+                        </h2>
+                    </div>
+                    <div class="mt-4 relative flex flex-col px-5" id="sbr_ele_players">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
+                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    Waiting for players to join...
+                                </h3>
                             </div>
                         </div>
                     </div>

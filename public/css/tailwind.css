@@ -569,14 +569,14 @@ html {
 }
 
 :root {
-  --p: 259 94.4% 51.2%;
-  --pf: 259 94.3% 41%;
+  --p: 258 89.5% 66.3%;
+  --pf: 262 83.3% 57.8%;
   --pc: 0 0% 100%;
-  --s: 314 100% 47.1%;
-  --sf: 314 100% 37.1%;
+  --s: 38 92.1% 50.2%;
+  --sf: 32 94.6% 43.7%;
   --sc: 0 0% 100%;
-  --a: 174 60% 51%;
-  --af: 174 59.8% 41%;
+  --a: 160 84.1% 39.4%;
+  --af: 161 93.5% 30.4%;
   --ac: 0 0% 100%;
   --n: 219 14.1% 27.8%;
   --nf: 222 13.4% 19%;
@@ -585,123 +585,10 @@ html {
   --b2: 210 20% 98%;
   --b3: 216 12.2% 83.9%;
   --bc: 215 27.9% 16.9%;
-  --in: 207 89.8% 53.9%;
-  --su: 174 100% 29%;
-  --wa: 36 100% 50%;
-  --er: 14 100% 57.1%;
-  --rounded-box: 1rem;
-  --rounded-btn: 0.5rem;
-  --rounded-badge: 1.9rem;
-  --animation-btn: 0.25s;
-  --animation-input: .2s;
-  --padding-card: 2rem;
-  --btn-text-case: uppercase;
-  --btn-focus-scale: 0.95;
-  --navbar-padding: .5rem;
-  --border-btn: 1px;
-  --tab-border: 1px;
-  --tab-radius: 0.5rem;
-  --tab-spacer: 0.5rem;
-  --focus-ring: 2px;
-  --focus-ring-offset: 2px;
-  --glass-opacity: 30%;
-  --glass-border-opacity: 10%;
-  --glass-reflex-degree: 100deg;
-  --glass-reflex-opacity: 10%;
-  --glass-blur: 40px;
-  --glass-text-shadow-opacity: 5%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --p: 259 94% 61%;
-    --pf: 259 94.4% 51.2%;
-    --pc: 0 0% 100%;
-    --s: 314 100% 47.1%;
-    --sf: 314 100% 37.1%;
-    --sc: 0 0% 100%;
-    --a: 174 60% 51%;
-    --af: 174 59.8% 41%;
-    --ac: 0 0% 100%;
-    --n: 222 13.4% 19%;
-    --nf: 223 13.7% 10%;
-    --nc: 0 0% 100%;
-    --b1: 219 14.1% 27.8%;
-    --b2: 222 13.4% 19%;
-    --b3: 223 13.7% 10%;
-    --bc: 228 14.3% 93.1%;
-    --in: 202 100% 70%;
-    --su: 89 61.6% 52%;
-    --wa: 54 68.8% 63.5%;
-    --er: 0 100% 71.8%;
-  }
-}
-
-[data-theme=light] {
-  --p: 259 94.4% 51.2%;
-  --pf: 259 94.3% 41%;
-  --pc: 0 0% 100%;
-  --s: 314 100% 47.1%;
-  --sf: 314 100% 37.1%;
-  --sc: 0 0% 100%;
-  --a: 174 60% 51%;
-  --af: 174 59.8% 41%;
-  --ac: 0 0% 100%;
-  --n: 219 14.1% 27.8%;
-  --nf: 222 13.4% 19%;
-  --nc: 0 0% 100%;
-  --b1: 0 0% 100%;
-  --b2: 210 20% 98%;
-  --b3: 216 12.2% 83.9%;
-  --bc: 215 27.9% 16.9%;
-  --in: 207 89.8% 53.9%;
-  --su: 174 100% 29%;
-  --wa: 36 100% 50%;
-  --er: 14 100% 57.1%;
-  --rounded-box: 1rem;
-  --rounded-btn: 0.5rem;
-  --rounded-badge: 1.9rem;
-  --animation-btn: 0.25s;
-  --animation-input: .2s;
-  --padding-card: 2rem;
-  --btn-text-case: uppercase;
-  --btn-focus-scale: 0.95;
-  --navbar-padding: .5rem;
-  --border-btn: 1px;
-  --tab-border: 1px;
-  --tab-radius: 0.5rem;
-  --tab-spacer: 0.5rem;
-  --focus-ring: 2px;
-  --focus-ring-offset: 2px;
-  --glass-opacity: 30%;
-  --glass-border-opacity: 10%;
-  --glass-reflex-degree: 100deg;
-  --glass-reflex-opacity: 10%;
-  --glass-blur: 40px;
-  --glass-text-shadow-opacity: 5%;
-}
-
-[data-theme=dark] {
-  --p: 259 94% 61%;
-  --pf: 259 94.4% 51.2%;
-  --pc: 0 0% 100%;
-  --s: 314 100% 47.1%;
-  --sf: 314 100% 37.1%;
-  --sc: 0 0% 100%;
-  --a: 174 60% 51%;
-  --af: 174 59.8% 41%;
-  --ac: 0 0% 100%;
-  --n: 222 13.4% 19%;
-  --nf: 223 13.7% 10%;
-  --nc: 0 0% 100%;
-  --b1: 219 14.1% 27.8%;
-  --b2: 222 13.4% 19%;
-  --b3: 223 13.7% 10%;
-  --bc: 228 14.3% 93.1%;
-  --in: 202 100% 70%;
-  --su: 89 61.6% 52%;
-  --wa: 54 68.8% 63.5%;
-  --er: 0 100% 71.8%;
+  --in: 217 91.2% 59.8%;
+  --su: 160 84.1% 39.4%;
+  --wa: 38 92.1% 50.2%;
+  --er: 0 84.2% 60.2%;
 }
 
 .container {
@@ -859,6 +746,16 @@ html {
   flex-wrap: wrap;
 }
 
+.btn-group>input[type=radio].btn {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.btn-group>input[type=radio].btn:before {
+  content: attr(data-title);
+}
+
 .card {
   display: flex;
   flex-direction: column;
@@ -1007,6 +904,11 @@ html {
   border-radius: var(--rounded-box,1rem);
 }
 
+.radio:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
 .select {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -1133,7 +1035,7 @@ html {
   transform: scale(var(--btn-focus-scale,.95));
 }
 
-.btn-active,.btn:hover {
+.btn:hover {
   --tw-bg-opacity: 1;
   background-color: hsla(var(--nf)/var(--tw-bg-opacity,1));
   --tw-border-opacity: 1;
@@ -1160,7 +1062,7 @@ html {
   color: hsla(var(--b1)/var(--tw-text-opacity,1));
 }
 
-.btn-group>.btn-active {
+.btn-group>input[type=radio]:checked.btn {
   --tw-bg-opacity: 1;
   background-color: hsla(var(--p)/var(--tw-bg-opacity,1));
   --tw-border-opacity: 1;
@@ -1169,7 +1071,7 @@ html {
   color: hsla(var(--pc)/var(--tw-text-opacity,1));
 }
 
-.btn-group>.btn-active:focus-visible {
+.btn-group>input[type=radio]:checked.btn:focus-visible {
   box-shadow: 0 0 0 2px hsl(var(--b1)),0 0 0 4px hsl(var(--p));
 }
 
@@ -1321,6 +1223,11 @@ html {
   background-color: hsla(var(--n)/var(--tw-bg-opacity,1));
 }
 
+.progress-info::-moz-progress-bar {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--in)/var(--tw-bg-opacity,1));
+}
+
 .progress::-webkit-progress-bar {
   --tw-bg-opacity: 1;
   --tw-bg-opacity: 0.2;
@@ -1332,6 +1239,45 @@ html {
   --tw-bg-opacity: 1;
   background-color: hsla(var(--nf)/var(--tw-bg-opacity,1));
   border-radius: var(--rounded-box,1rem);
+}
+
+.progress-info::-webkit-progress-value {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--in)/var(--tw-bg-opacity,1));
+}
+
+.radio {
+  --chkbg: var(--bc);
+  --focus-shadow: 0 0 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  --tw-border-opacity: 1;
+  --tw-border-opacity: 0.2;
+  border-color: hsla(var(--bc)/var(--tw-border-opacity,1));
+  border-radius: 9999px;
+  border-width: 1px;
+  cursor: pointer;
+  height: 1.5rem;
+  width: 1.5rem;
+  transition: background,box-shadow var(--animation-input,.2s) ease-in-out;
+}
+
+.radio:focus-visible {
+  --focus-shadow: 0 0 0 2px hsl(var(--b1)),0 0 0 4px hsl(var(--bc));
+}
+
+.radio:checked {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--bc)/var(--tw-bg-opacity,1));
+  -webkit-animation: radiomark var(--animation-input,.2s) ease-in-out;
+  animation: radiomark var(--animation-input,.2s) ease-in-out;
+  box-shadow: 0 0 0 4px hsl(var(--b1)) inset,0 0 0 4px hsl(var(--b1)) inset,var(--focus-shadow);
+}
+
+.radio:disabled {
+  cursor: not-allowed;
+  opacity: .2;
 }
 
 @-webkit-keyframes radiomark {
@@ -1485,6 +1431,12 @@ html {
 .tooltip:hover:after,.tooltip:hover:before {
   opacity: 1;
   transition-delay: 75ms;
+}
+
+.no-animation {
+  --btn-focus-scale: 1;
+  --animation-btn: 0;
+  --animation-input: 0;
 }
 
 .btn-sm {
