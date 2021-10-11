@@ -21,5 +21,7 @@ module.exports = {
       zIndex: ['hover', 'active']
     },
   },
-  plugins: [],
+  plugins: [
+      require('daisyui')
+  ],
 }

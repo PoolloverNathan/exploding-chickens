@@ -27,6 +27,7 @@
     "chalk": "^4.1.0",
     "cookie-parser": "^1.4.4",
     "cross-env": "^7.0.3",
+    "daisyui": "^1.14.3",
     "data-store": "^3.1.0",
     "ejs": "^2.6.1",
     "eris": "^0.15.1",

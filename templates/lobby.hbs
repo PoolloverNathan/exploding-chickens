@@ -1,5 +1,5 @@
 <!doctype html>
-<html class='h-full'>
+<html class="h-full" data-theme="light">
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -100,24 +100,23 @@
 {{! Game groups }}
 <div class="flex justify-center h-screen anim-ele anim-ele-fadein">
     <div id="itr_ele_groups" class="my-auto">
-        <span class="auto-rows-max auto-rows-min auto-rows-auto auto-cols-max auto-cols-min auto-cols-auto row-auto col-auto"></span>
         {{! Grid of games }}
-        <div class="grid grid-cols-2 gap-x-6 gap-y-6 p-4">
+        <div class="grid grid-cols-1 gap-x-6 gap-y-6 p-4">
             {{! Individual game }}
             <div class="block text-center">
                 <h1 class="text-gray-600 font-medium text-sm">
                     Game Room: spicy-chicken <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
                 </h1>
                 <h1 class="text-gray-600 font-medium text-sm pb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 text-blue-500 -mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                     4/5
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1 text-purple-500 -mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                     </svg>
                     1 Pack
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1 text-red-500 -mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
                     </svg>
@@ -167,70 +166,6 @@
                         <div class="block text-center w-28">
                             <h1 class="text-gray-600 font-medium text-sm">
                                 Joe Ma <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
-                            </h1>
-                            <div class="flex flex-col items-center -space-y-3">
-                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
-                                <div class="-space-x-4 rotate-12">
-                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
-                                        <h1 class="text-white text-sm">0</h1>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {{! Individual game }}
-            <div class="block text-center">
-                <h1 class="text-gray-600 font-medium text-sm">
-                    Game Room: hungry-tiger <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
-                </h1>
-                <h1 class="text-gray-600 font-medium text-sm pb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    3/5
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                    </svg>
-                    1 Pack
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block pb-0.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
-                    </svg>
-                    2 EC / 53 Cards
-                </h1>
-                <div class="rounded-2xl bg-contain mx-1 border-dashed border-4 border-gray-400">
-                    <div class="grid grid-cols-2 gap-x-2 gap-y-4 py-6 px-4">
-                        <div class="block text-center w-28">
-                            <h1 class="text-gray-600 font-medium text-sm">
-                                Vincent <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
-                            </h1>
-                            <div class="flex flex-col items-center -space-y-3">
-                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
-                                <div class="-space-x-4 rotate-12">
-                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
-                                        <h1 class="text-white text-sm">0</h1>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="block text-center w-28">
-                            <h1 class="text-gray-600 font-medium text-sm">
-                                Nathanael <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
-                            </h1>
-                            <div class="flex flex-col items-center -space-y-3">
-                                <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
-                                <div class="-space-x-4 rotate-12">
-                                    <div class="transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4">
-                                        <h1 class="text-white text-sm">0</h1>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="block text-center w-28">
-                            <h1 class="text-gray-600 font-medium text-sm">
-                                Joe Guth <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
                             </h1>
                             <div class="flex flex-col items-center -space-y-3">
                                 <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
@@ -328,40 +263,108 @@
                             </div>
                         </div>
                         <div class="flex flex-row w-full space-x-2 space-y-0 mb-2">
-                            <div style="width: 60%">
+                            <div style="width: 32%">
                                 <div class="widget w-full p-2.5 rounded-lg bg-white border border-gray-100">
                                     <div class="flex flex-row items-center justify-between">
                                         <div class="flex flex-col">
                                             <div class="text-xs uppercase text-gray-500 truncate">
-                                                Exploding Chickens
+                                                Players
                                             </div>
-                                            <div class="text-lg font-bold truncate" id="sbr_ele_ec_count">
+                                            <div class="text-lg font-bold truncate" id="sbr_ele_cards_remain">
                                                 ...
                                             </div>
                                         </div>
-                                        <svg class="stroke-current text-red-500" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                                        <svg class="stroke-current text-pink-500" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                         </svg>
                                     </div>
                                 </div>
                             </div>
-                            <div style="width: 40%">
+                            <div style="width: 32%">
                                 <div class="widget w-full p-2.5 rounded-lg bg-white border border-gray-100">
                                     <div class="flex flex-row items-center justify-between">
                                         <div class="flex flex-col">
                                             <div class="text-xs uppercase text-gray-500 truncate">
-                                                Cards Left
+                                                Rooms
+                                            </div>
+                                            <div class="text-lg font-bold truncate" id="sbr_ele_cards_remain">
+                                                ...
+                                            </div>
+                                        </div>
+                                        <svg class="stroke-current text-yellow-400" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="width: 32%">
+                                <div class="widget w-full p-2.5 rounded-lg bg-white border border-gray-100">
+                                    <div class="flex flex-row items-center justify-between">
+                                        <div class="flex flex-col">
+                                            <div class="text-xs uppercase text-gray-500 truncate">
+                                                Games
                                             </div>
                                             <div class="text-lg font-bold truncate" id="sbr_ele_cards_remain">
                                                 ...
                                             </div>
                                         </div>
                                         <svg class="stroke-current text-green-500" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                         </svg>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{! Sidebar options }}
+                    <div class="mt-4 px-5">
+                        <h2 class="text-xl font-medium text-gray-700">
+                            Options
+                        </h2>
+                    </div>
+                    <div class="mt-4 relative flex flex-col px-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
+                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                    </svg>
+                                    Sync Card Packs
+                                </h3>
+                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        Lock card packs across all games
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex mt-0 ml-4">
+                                <span class="">
+                                    <input type="checkbox" checked="checked" class="inline-flex items-center mt-2 toggle toggle-md">
+                                </span>
+                            </div>
+                        </div>
+                        {{! Yolking around }}
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
+                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                    </svg>
+                                    Grouping Method
+                                </h3>
+                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                                    <div class="flex items-center text-sm text-gray-500">
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex mt-0 ml-4">
+                                <span class="">
+                                      <div class="inline-flex items-center btn-group">
+                                          <button class="btn btn-outline btn-sm btn-active">Random</button>
+                                          <button class="btn btn-outline btn-sm">Win #</button>
+                                      </div>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -458,10 +461,10 @@
                             </div>
                         </div>
                     </div>
-                    {{! Sidebar card packs }}
+                    {{! Event log }}
                     <div class="mt-4 px-5">
                         <h2 class="text-xl font-medium text-gray-700">
-                            Game Log
+                            Event Log
                         </h2>
                     </div>
                     <div class="mt-4 mb-14 relative flex flex-col px-5">
