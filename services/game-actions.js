@@ -750,30 +750,21 @@ exports.delete_game = async function (game_id) {
 }
 
 // Name : game_actions.game_purge()
-// Desc : deletes all games that are over 7 days old
+// Desc : deletes all games that are older than the purge age
 // Author(s) : RAk3rman
 exports.game_purge = async function () {
-    console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all games older than ` + config_storage.get('game_purge_age_hrs') + ` hours`));
-    await new Promise((resolve, reject) => {
-        game.find({}, function (err, found_games) {
-            if (err) {
-                console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Could not retrieve games`));
-                reject(err);
-            } else {
-                // Loop through each game
-                for (let i = 0; i < found_games.length; i++) {
-                    // Determine if the game is more than X hours old
-                    if (!moment(found_games[i].created).add(config_storage.get('game_purge_age_hrs'), "hours").isSameOrAfter(moment())) {
-                        // Delete game
-                        game_actions.delete_game(found_games[i]._id).then(() => {
-                            console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(found_games[i].slug)} Deleted game created on ` + moment(found_games[i].created).format('MM/DD/YY-HH:mm:ss')));
-                        });
-                    }
-                }
-                resolve();
-            }
+    // Filter which objects to purge
+    try {
+        let to_purge = await game.find({ created: { $lte: moment().subtract(config_storage.get('purge_age_hrs'), "hours").toISOString() } });
+        to_purge.forEach(ele => {
+            // Delete game
+            game_actions.delete_game(ele._id).then(() => {
+                console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted game created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));
+            });
         });
-    })
+    } catch (err) {
+        throw new Error(err);
+    }
 }
 
 // Name : game_actions.log_event(game_details, event_name, card_action, rel_id, req_player, target_player)

@@ -26,10 +26,10 @@ exports.check_values = function (config_storage, stats_storage) {
         config_storage.set('mongodb_url', 'mongodb://localhost:27017/exploding-chickens');
         console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] "mongodb_url" value in config.json set to default: "mongodb://localhost:27017/exploding-chickens"`));
     }
-    // Config value: game_purge_age_hrs | the verbosity of output to the console
-    if (!config_storage.has('game_purge_age_hrs') || config_storage.get('game_purge_age_hrs') === '') {
-        config_storage.set('game_purge_age_hrs', 12);
-        console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] "game_purge_age_hrs" value in config.json set to default: "12"`));
+    // Config value: purge_age_hrs | the verbosity of output to the console
+    if (!config_storage.has('purge_age_hrs') || config_storage.get('purge_age_hrs') === '') {
+        config_storage.set('purge_age_hrs', 12);
+        console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] "purge_age_hrs" value in config.json set to default: "12"`));
     }
     // Config value: verbose_debug | the verbosity of output to the console
     if (!config_storage.has('verbose_debug') || config_storage.get('verbose_debug') === '') {

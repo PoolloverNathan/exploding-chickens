@@ -26,6 +26,7 @@ const wipe = chalk.white;
 let setup = require('./config/setup.js');
 
 // Services
+let lobby_actions = require('./services/lobby-actions.js');
 let game_actions = require('./services/game-actions.js');
 let socket_handler = require('./services/socket-handler.js');
 
@@ -170,9 +171,15 @@ mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  use
 function mongoose_connected() {
     console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at "` + config_storage.get('mongodb_url') + `"`));
     // Start purge game cycle
-    if (config_storage.get('game_purge_age_hrs') !== -1) {
+    if (config_storage.get('purge_age_hrs') !== -1) {
+        console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies and games older than ` + config_storage.get('purge_age_hrs') + ` hours`));
         game_actions.game_purge().then(function () {});
-        setInterval(game_actions.game_purge, 3600000*2);
+        lobby_actions.lobby_purge().then(function () {});
+        setInterval(e => {
+            console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies and games older than ` + config_storage.get('purge_age_hrs') + ` hours`));
+            game_actions.game_purge().then(function () {});
+            lobby_actions.lobby_purge().then(function () {});
+        }, 3600000*2);
     }
     // Start webserver using config values
     console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to start http webserver on port ` + config_storage.get('webserver_port')));
