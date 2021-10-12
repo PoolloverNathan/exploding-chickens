@@ -74,8 +74,8 @@ exports.get_lobby_export = async function (slug, source, player_id) {
         for (let i = raw_lobby_details["events"].length - 1; i >= 0 && i >= (raw_lobby_details["events"].length - 20); i--) {
             parsed_events.push(await lobby_actions.parse_event(raw_lobby_details, raw_lobby_details["events"][i]));
         }
-        // Prepare pretty game details
-        let pretty_game_details = {
+        // Prepare pretty lobby details
+        let pretty_lobby_details = {
             games: [],
             slug: raw_lobby_details["slug"],
             created: moment(raw_lobby_details["created"]),
@@ -96,6 +96,16 @@ exports.get_lobby_export = async function (slug, source, player_id) {
         for (let i = 0; i < raw_lobby_details["players"].length; i++) {
             // Get game details
             let game_details = await game_actions.game_details_slug(raw_lobby_details["players"][i].game_slug);
+            // Determine number of exploding chickens
+            let ec_count = 0;
+            for (let i = 0; i < game_details.cards.length; i++) {
+                // If the card is assigned to deck, add to count
+                if (game_details.cards[i].action === "chicken" && game_details.cards[i].assignment === "draw_deck") {
+                    ec_count += 1;
+                }
+            }
+            // Prepare draw deck
+            let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
             // Create array of players
             let game_players = {};
             while (raw_lobby_details["players"][i].game_slug === game_details.slug) {
@@ -116,13 +126,16 @@ exports.get_lobby_export = async function (slug, source, player_id) {
                 i++;
             }
             // Push game object into payload
-            pretty_game_details.games.push({
+            pretty_lobby_details.games.push({
                 slug: game_details.slug,
+                status: game_details.status,
+                cards_remaining: draw_deck.length,
+                ec_remaining: ec_count,
                 players: game_players
             });
         }
         // Send lobby data
-        return pretty_game_details;
+        return pretty_lobby_details;
     } else {
         return {};
     }

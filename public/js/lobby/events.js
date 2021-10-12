@@ -32,7 +32,7 @@ let session_user = {
 
 // Name : frontend-game.socket.on.{slug}-update
 // Desc : whenever an event occurs containing a game update
-socket.on(window.location.pathname.substr(6) + "-update", function (data) {
+socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) {
     console.log(data.trigger);
     // Check browser session
     setup_session_check(data);
@@ -61,7 +61,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
         // Update host designation in session_user
         for (let i = 0; i < data.players.length; i++) {
             // Check if individual player exists
-            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(6))).player_id) {
+            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(7))).player_id) {
                 // Update session_user _id and is_host
                 session_user = {
                     _id: data.players[i]._id,
@@ -124,15 +124,15 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
 socket.on("player-created", function (data) {
     // Update player_id
     session_user._id = data;
-    lscache.set('ec_session_' + window.location.pathname.substr(6), JSON.stringify({
-        slug: window.location.pathname.substr(6),
+    lscache.set('ec_session_' + window.location.pathname.substr(7), JSON.stringify({
+        slug: window.location.pathname.substr(7),
         player_id: data
     }), 12);
 });
 
 // Name : frontend-game.socket.on.{slug}-error
 // Desc : whenever an event occurs related to an error
-socket.on(window.location.pathname.substr(6) + "-error", function (data) {
+socket.on(window.location.pathname.substr(7) + "-error", function (data) {
     console.log(data);
     if (data.msg === "LOBBY-DNE") {
         window.location.href = "/";
@@ -194,7 +194,7 @@ socket.on("disconnect", function (data) {
 function start_game() {
     sbr_update_widgets({status: "starting"});
     socket.emit('start-game', {
-        slug: window.location.pathname.substr(6),
+        slug: window.location.pathname.substr(7),
         player_id: session_user._id
     })
 }
@@ -203,7 +203,7 @@ function start_game() {
 // Desc : emits the reset-game event when the host clicks the reset game button
 function reset_game() {
     socket.emit('reset-game', {
-        slug: window.location.pathname.substr(6),
+        slug: window.location.pathname.substr(7),
         player_id: session_user._id
     })
 }
@@ -212,7 +212,7 @@ function reset_game() {
 // Desc : emits the kick-player event to kick a target player
 function kick_player(target_player_id) {
     socket.emit('kick-player', {
-        slug: window.location.pathname.substr(6),
+        slug: window.location.pathname.substr(7),
         player_id: session_user._id,
         kick_player_id: target_player_id
     })
@@ -222,7 +222,7 @@ function kick_player(target_player_id) {
 // Desc : emits the make-host event to update the host
 function make_host(target_player_id) {
     socket.emit('make-host', {
-        slug: window.location.pathname.substr(6),
+        slug: window.location.pathname.substr(7),
         player_id: session_user._id,
         suc_player_id: target_player_id
     })
@@ -232,7 +232,7 @@ function make_host(target_player_id) {
 // Desc : emits the import-pack event to import a pack
 function import_pack(pack_name) {
     socket.emit('import-pack', {
-        slug: window.location.pathname.substr(6),
+        slug: window.location.pathname.substr(7),
         player_id: session_user._id,
         pack_name: pack_name
     })
@@ -242,7 +242,7 @@ function import_pack(pack_name) {
 // Desc : emits the export-pack event to export a pack
 function export_pack(pack_name) {
     socket.emit('export-pack', {
-        slug: window.location.pathname.substr(6),
+        slug: window.location.pathname.substr(7),
         player_id: session_user._id,
         pack_name: pack_name
     })
