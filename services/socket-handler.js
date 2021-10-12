@@ -52,6 +52,22 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             ], wf_final_callback);
         })
 
+        // Name : socket.on.retrieve-lobby
+        // Desc : runs when lobby data is requested from the client
+        // Author(s) : RAk3rman
+        socket.on('retrieve-lobby', async function (data) {
+            let action = "retrieve-lobby  ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to retrieve lobby data`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_get_lobby, // Get game_details
+                async function(game_details, req_data, action, socket_id, callback) { // Send game data
+                    await update_lobby_ui(req_data.slug, socket_id, action, socket_id, req_data.player_id);
+                    callback(false, `Retrieved and sent lobby data`, req_data.slug, action, socket_id, req_data.player_id);
+                }
+            ], wf_final_callback);
+        })
+
         // Name : socket.on.retrieve-game
         // Desc : runs when game data is requested from the client
         // Author(s) : RAk3rman
@@ -457,6 +473,20 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         }
     }
 
+    // Name : wf_get_lobby(req_data, action, socket_id, callback)
+    // Desc : get lobby details from waterfall
+    // Author(s) : RAk3rman
+    async function wf_get_lobby(req_data, action, socket_id, callback) {
+        // Determine if we should filter by slug and player_id
+        let filter = req_data.player_id === "spectator" ? { slug: req_data.slug } : { slug: req_data.slug, "players._id": req_data.player_id };
+        // Determine if lobby exists
+        if (await lobby.exists(filter)) {
+            callback(false, await lobby_actions.lobby_details_slug(req_data.slug), req_data, action, socket_id);
+        } else {
+            callback(true, "LOBBY-DNE", req_data.slug, action, socket_id, req_data.player_id);
+        }
+    }
+
     // Name : wf_validate_host(game_details, req_data, action, socket_id, callback)
     // Desc : validate req user is host from waterfall
     // Author(s) : RAk3rman
@@ -524,6 +554,23 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (game_details.players[i]._id === player_id) {
                 return game_details.players[i].seat === game_details.seat_playing;
             }
+        }
+    }
+
+    // Name : update_lobby_ui(slug, target, source, socket_id)
+    // Desc : sends an event containing lobby data
+    // Author(s) : RAk3rman
+    async function update_lobby_ui(slug, target, source, socket_id, player_id) {
+        // Get raw pretty lobby details
+        let pretty_lobby_details = await lobby_actions.get_lobby_export(slug, source, player_id);
+        if (pretty_lobby_details !== {}) {
+            // Send lobby data
+            if (target === "") {
+                fastify.io.emit(slug + "-lobby-update", pretty_lobby_details);
+            } else {
+                fastify.io.to(target).emit(slug + "-lobby-update", pretty_lobby_details);
+            }
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} Emitted lobby update event`));
         }
     }
 

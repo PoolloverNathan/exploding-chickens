@@ -25,6 +25,10 @@ let gameSchema = mongoose.Schema({
             length: 2
         })
     },
+    lobby: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'lobby'
+    },
     seat_playing: {
         type: Number,
         default: 0

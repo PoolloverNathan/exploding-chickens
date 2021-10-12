@@ -29,26 +29,18 @@ let lobbySchema = mongoose.Schema({
         type: String,
         default: "in_queue"
     },
-    tournament_mode: {
-        type: Boolean,
-        default: false
-    },
-    matching_method: {
+    grouping_method: {
         type: String,
         default: "random"
     },
-    players_per_game: {
+    room_size: {
         type: Number,
-        default: 4
+        default: 5
     },
     created: {
         type: Date,
         default: Date.now
     },
-    games: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'game'
-    }],
     players: [player],
     imported_packs: [String],
     events: [event]
