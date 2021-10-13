@@ -6,6 +6,7 @@ Author(s): RAk3rman, SengdowJones
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Packages
+let Lobby = require('../models/lobby.js');
 let game = require('../models/game.js');
 const { nanoid } = require('nanoid');
 
@@ -18,37 +19,30 @@ let card_actions = require('./card-actions.js');
 // Name : player_actions.create_player()
 // Desc : creates a new player
 // Author(s) : RAk3rman
-exports.create_player = async function (game_details, p_nickname, p_avatar) {
-    // Create new promise and return player id after saved
-    return await new Promise((resolve, reject) => {
-        // Push new player into existing game
-        game_details.players.push({ _id: nanoid(10), nickname: p_nickname, avatar: p_avatar, seat: game_details.players.length, type: game_details.players.length === 0 ? "host" : "player" });
-        // Save existing game and return player_id
-        game_details.save(function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(game_details.players[game_details.players.length - 1]._id);
-            }
-        });
-    })
+exports.create_player = async function (lobby_details, p_nickname, p_avatar) {
+    // Push new player into existing lobby
+    let player_id = nanoid(10);
+    lobby_details.players.push({ _id: player_id, nickname: p_nickname, avatar: p_avatar, seat: -1, type: lobby_details.players.length === 0 ? "host" : "player" });
+    // Save lobby
+    try {
+        await lobby_details.save();
+        return player_id;
+    } catch (err) {
+        throw new Error(err);
+    }
 };
 
-// Name : player_actions.update_connection(game_slug, player_id, p_connection))
+// Name : player_actions.update_connection(lobby_slug, player_id, p_connection))
 // Desc : updates the connection for a target player
 // Author(s) : RAk3rman
-exports.update_connection = async function (game_slug, player_id, p_connection) {
-    // Create new promise and return player id after saved
-    return await new Promise((resolve, reject) => {
-        // Update existing player and return player_id
-        game.findOneAndUpdate({ slug: game_slug, "players._id": player_id }, {"$set": { "players.$.connection": p_connection }}, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(player_id);
-            }
-        });
-    })
+exports.update_connection = async function (lobby_slug, player_id, p_connection) {
+    // Find player and update
+    try {
+        await Lobby.findOneAndUpdate({ slug: lobby_slug, "players._id": player_id }, {"$set": { "players.$.connection": p_connection }});
+        return player_id;
+    } catch (err) {
+        throw new Error(err);
+    }
 };
 
 // Name : player_actions.get_player(game_details, player_id)

@@ -83,6 +83,8 @@ exports.get_lobby_export = async function (slug, source, player_id) {
             imported_packs: raw_lobby_details["imported_packs"],
             grouping_method: raw_lobby_details["grouping_method"],
             room_size: raw_lobby_details["room_size"],
+            players_length: raw_lobby_details["players"].length,
+            games_completed: 0,
             events: parsed_events,
             events_length: raw_lobby_details["events"].length,
             req_player_id: player_id,
@@ -93,14 +95,15 @@ exports.get_lobby_export = async function (slug, source, player_id) {
             return a.game_slug - b.game_slug || a.seat.localeCompare(b.seat);
         });
         // Loop through each game using sorted array of players
+        let total_wins = 0;
         for (let i = 0; i < raw_lobby_details["players"].length; i++) {
             // Get game details
             let game_details = await game_actions.game_details_slug(raw_lobby_details["players"][i].game_slug);
             // Determine number of exploding chickens
             let ec_count = 0;
-            for (let i = 0; i < game_details.cards.length; i++) {
+            for (let j = 0; j < game_details.cards.length; j++) {
                 // If the card is assigned to deck, add to count
-                if (game_details.cards[i].action === "chicken" && game_details.cards[i].assignment === "draw_deck") {
+                if (game_details.cards[j].action === "chicken" && game_details.cards[j].assignment === "draw_deck") {
                     ec_count += 1;
                 }
             }
@@ -122,6 +125,8 @@ exports.get_lobby_export = async function (slug, source, player_id) {
                     seat: raw_lobby_details["players"][i].seat,
                     wins: raw_lobby_details["players"][i].wins
                 });
+                // Increment total number of wins
+                total_wins += raw_lobby_details["players"][i].wins;
                 // Increment i
                 i++;
             }
@@ -130,11 +135,14 @@ exports.get_lobby_export = async function (slug, source, player_id) {
                 slug: game_details.slug,
                 status: game_details.status,
                 cards_remaining: draw_deck.length,
+                total_cards: game_details.cards.length,
                 ec_remaining: ec_count,
+                seat_playing: game_details.seat_playing,
                 players: game_players
             });
         }
         // Send lobby data
+        pretty_lobby_details.games_completed = total_wins;
         return pretty_lobby_details;
     } else {
         return {};

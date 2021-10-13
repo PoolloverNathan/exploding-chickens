@@ -48,11 +48,11 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
         sbr_update_widgets(data);
         sbr_update_players(data);
         sbr_update_packs(data);
-        itr_update_players(data);
+        itr_update_games(data);
     } else if (data.trigger === "start-game") { // Game started
         sbr_update_widgets(data);
         sbr_update_pstatus(data);
-        itr_update_players(data);
+        itr_update_games(data);
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Game has started</h1>'
@@ -65,8 +65,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
                 // Update session_user _id and is_host
                 session_user = {
                     _id: data.players[i]._id,
-                    is_host: data.players[i].type === "host",
-                    can_draw: session_user.can_draw
+                    is_host: data.players[i].type === "host"
                 };
                 break;
             }
@@ -82,9 +81,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
     } else if (data.trigger === "kick-player") {
         sbr_update_widgets(data);
         sbr_update_players(data);
-        itr_update_players(data);
-        itr_update_discard(data);
-        itr_update_hand(data);
+        itr_update_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
@@ -113,9 +110,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
         sbr_update_widgets(data);
         sbr_update_players(data);
         sbr_update_packs(data);
-        itr_update_players(data);
-        itr_update_discard(data);
-        itr_update_hand(data);
+        itr_update_games(data);
     }
 });
 
@@ -130,9 +125,9 @@ socket.on("player-created", function (data) {
     }), 12);
 });
 
-// Name : frontend-game.socket.on.{slug}-error
+// Name : frontend-game.socket.on.{slug}-lobby-error
 // Desc : whenever an event occurs related to an error
-socket.on(window.location.pathname.substr(7) + "-error", function (data) {
+socket.on(window.location.pathname.substr(7) + "-lobby-error", function (data) {
     console.log(data);
     if (data.msg === "LOBBY-DNE") {
         window.location.href = "/";

@@ -199,9 +199,9 @@ socket.on("player-created", function (data) {
     }), 12);
 });
 
-// Name : frontend-game.socket.on.{slug}-error
+// Name : frontend-game.socket.on.{slug}-game-error
 // Desc : whenever an event occurs related to an error
-socket.on(window.location.pathname.substr(6) + "-error", function (data) {
+socket.on(window.location.pathname.substr(6) + "-game-error", function (data) {
     cooldown = false;
     console.log(data);
     if (data.msg === "GAME-DNE") {

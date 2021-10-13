@@ -27,7 +27,7 @@ let lobbySchema = mongoose.Schema({
     },
     status: {
         type: String,
-        default: "in_queue"
+        default: "in_lobby"
     },
     grouping_method: {
         type: String,
