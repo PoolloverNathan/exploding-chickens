@@ -379,13 +379,40 @@
                             <div class="flex-1 min-w-0">
                                 <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
                                     <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </svg>
+                                    Auto Play Timeout
+                                </h3>
+                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        How long to wait before forcing a player to draw in game
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex mt-0 ml-4">
+                                <span class="">
+                                      <div class="inline-flex items-center btn-group">
+                                          <input type="radio" name="play_timeout" id="option1" data-title="∞" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                          <input type="radio" name="play_timeout" id="option2" data-title="30s" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                          <input type="radio" name="play_timeout" id="option3" data-title="1m" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                          <input type="radio" name="play_timeout" id="option4" data-title="2m" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                                      </div>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
+                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />
                                     </svg>
                                     Remove Host from Rooms
                                 </h3>
                                 <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
                                     <div class="flex items-center text-sm text-gray-500">
-                                        Determines if the host will be included in game rooms
+                                        Determines if the host will be included in games
                                     </div>
                                 </div>
                             </div>

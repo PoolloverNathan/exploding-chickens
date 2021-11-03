@@ -324,7 +324,7 @@ exports.scrambled_eggs = async function (game_details) {
     // Loop through each card to create array
     let bucket = [];
     let cards_in_deck = 0;
-    let possible_assign = ["draw_deck", "out_of_play"];
+    let possible_assign = ["draw_deck", "out_of_play", "discard_deck"];
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
         // Get all cards assigned to players
         if (!possible_assign.includes(game_details.cards[i].assignment)) {
