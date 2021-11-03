@@ -62,6 +62,14 @@ exports.lobby_details_id = async function (_id) {
     }
 }
 
+// Name : lobby_actions.partition_players(lobby_details)
+// Desc : takes a lobby and partitions players into game rooms based on grouping settings
+// Author(s) : RAk3rman
+exports.partition_players = async function (lobby_details) {
+    // Determine which games are already assigned to players
+
+}
+
 // Name : game_actions.get_lobby_export(slug, source, player_id)
 // Desc : prepares lobby data for export to client
 // Author(s) : RAk3rman

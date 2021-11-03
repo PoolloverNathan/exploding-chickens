@@ -10,7 +10,7 @@ Exploding Chickens is a card game with explosions and of course, chickens — al
 The rules are simple. Each player takes turns drawing a card or playing a card, rolling the dice of luck so that they can survive for yet another turn. 
 From there, the drawing deck slowly shrinks and the explosions only become more frequent. **So, who will be the last one standing?**
 
-- Supports up to **2-7 players**
+- **2-6 players** per game room
 - Utilizes a **53-card** base deck
 - **3-10 min** average game time
 
@@ -33,7 +33,8 @@ This file stores all the environment variables needed for the project, which can
 The config file will be populated with the following default values:
 - ``"webserver_port": 3000`` Port where the webserver will accept incoming connections, of type int
 - ``"mongodb_url": "mongodb://localhost:27017/exploding-chickens"`` The url of your mongodb instance (make sure to add "/exploding-chickens" at the end of the url), of type string
-- ``"purge_age_hrs": 12`` How old should a game be (in hours) before it is deleted, set to -1 to disable
+- ``"purge_age_hrs": 12`` How old should a game or lobby be (in hours) before it is deleted, set to -1 to disable
+- ``"verbose_debug": false`` How explicit the debug output is, set to true if you want all logs to be printed to the console
 - ``"discord_bot_token": ""`` Authentication token for the Discord Bot found on Discord Developer Portal, leave blank to disable feature
 - ``"discord_bot_channel": ""`` What Discord channel the bot should send updates to, leave blank to disable feature
 
