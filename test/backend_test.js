@@ -47,65 +47,65 @@ before(done => {
 // Name : test.game_creation
 // Desc : creates a test game and initializes to sample values
 // Author(s) : RAk3rman
-describe('Game setup', function() {
-    let game_details_create;
-    describe('#game_actions.create_game()', function() {
-        it('create new sample game', function(done) {
-            game_actions.create_game().then(result => {
-                game_details_create = result;
-                game_id = result._id;
-                done();
-            })
-        });
-        it('slug exists', function() {
-            assert(game_details_create.slug);
-        });
-        it('no players exist', function() {
-            assert.equal(game_details_create.players.length, 0);
-        });
-        it('no cards exist', function() {
-            assert.equal(game_details_create.cards.length, 0);
-        });
-    });
-    describe('#game_actions.game_details_slug(slug)', function() {
-        let game_details_slug;
-        it('search for existing game', function(done) {
-            game_actions.game_details_slug(game_details_create.slug).then(result => {
-                game_details_slug = result;
-                done();
-            })
-        });
-        it('games match', function() {
-            assert.equal(game_details_create.slug, game_details_slug.slug);
-        });
-    });
-    describe('#game_actions.game_details_id(_id)', function() {
-        let game_details_slug;
-        it('search for existing game', function(done) {
-            game_actions.game_details_id(game_id).then(result => {
-                game_details_slug = result;
-                done();
-            })
-        });
-        it('games match', function() {
-            assert.equal(game_details_create.slug, game_details_slug.slug);
-        });
-    });
-    describe('#game_actions.import_cards(game_details, pack_loc)', function() {
-        let card_count;
-        it('importing cards', function(done) {
-            game_actions.import_cards(game_details_create, 'base').then(result => {
-                card_count = result;
-                done();
-            })
-        });
-        it('card count match', function() {
-            game_actions.game_details_id(game_id).then(result => {
-                assert.equal(result.cards.length, card_count);
-            })
-        });
-    });
-});
+// describe('Game setup', function() {
+//     let game_details_create;
+//     describe('#game_actions.create_game()', function() {
+//         it('create new sample game', function(done) {
+//             game_actions.create_game().then(result => {
+//                 game_details_create = result;
+//                 game_id = result._id;
+//                 done();
+//             })
+//         });
+//         it('slug exists', function() {
+//             assert(game_details_create.slug);
+//         });
+//         it('no players exist', function() {
+//             assert.equal(game_details_create.players.length, 0);
+//         });
+//         it('no cards exist', function() {
+//             assert.equal(game_details_create.cards.length, 0);
+//         });
+//     });
+//     describe('#game_actions.game_details_slug(slug)', function() {
+//         let game_details_slug;
+//         it('search for existing game', function(done) {
+//             game_actions.game_details_slug(game_details_create.slug).then(result => {
+//                 game_details_slug = result;
+//                 done();
+//             })
+//         });
+//         it('games match', function() {
+//             assert.equal(game_details_create.slug, game_details_slug.slug);
+//         });
+//     });
+//     describe('#game_actions.game_details_id(_id)', function() {
+//         let game_details_slug;
+//         it('search for existing game', function(done) {
+//             game_actions.game_details_id(game_id).then(result => {
+//                 game_details_slug = result;
+//                 done();
+//             })
+//         });
+//         it('games match', function() {
+//             assert.equal(game_details_create.slug, game_details_slug.slug);
+//         });
+//     });
+//     describe('#game_actions.import_cards(game_details, pack_loc)', function() {
+//         let card_count;
+//         it('importing cards', function(done) {
+//             game_actions.import_cards(game_details_create, 'base').then(result => {
+//                 card_count = result;
+//                 done();
+//             })
+//         });
+//         it('card count match', function() {
+//             game_actions.game_details_id(game_id).then(result => {
+//                 assert.equal(result.cards.length, card_count);
+//             })
+//         });
+//     });
+// });
 
 // Name : test.players
 // Desc : adds players to a sample game and tests interaction
@@ -131,39 +131,39 @@ describe('Game setup', function() {
 // Name : test.game_deletion
 // Desc : deletes a test game and cleans up
 // Author(s) : RAk3rman
-describe('Game deletion', function() {
-    describe('#game_actions.game_purge(debug)', function() {
-        let game_id_temp;
-        it('create purgeable game', function(done) {
-            game.create({
-                created: moment().subtract(12, 'hours')
-            }, function (err, created_game) {
-                if (!err) {
-                    game_id_temp = created_game._id;
-                    done();
-                }
-            });
-        });
-        it('purging games', function(done) {
-            game_actions.game_purge(false).then(result => {
-                done();
-            })
-        });
-        it('verifying purge', async function() {
-            assert.isNotOk(await game.exists({ _id: game_id_temp }));
-        });
-    });
-    describe('#game_actions.delete_game(game_id))', function() {
-        it('deleting sample game', function(done) {
-            game_actions.delete_game(game_id).then(result => {
-                done();
-            })
-        });
-        it('verifying deletion', async function() {
-            assert.isNotOk(await game.exists({ _id: game_id }));
-        });
-    });
-});
+// describe('Game deletion', function() {
+//     describe('#game_actions.game_purge(debug)', function() {
+//         let game_id_temp;
+//         it('create purgeable game', function(done) {
+//             game.create({
+//                 created: moment().subtract(12, 'hours')
+//             }, function (err, created_game) {
+//                 if (!err) {
+//                     game_id_temp = created_game._id;
+//                     done();
+//                 }
+//             });
+//         });
+//         it('purging games', function(done) {
+//             game_actions.game_purge(false).then(result => {
+//                 done();
+//             })
+//         });
+//         it('verifying purge', async function() {
+//             assert.isNotOk(await game.exists({ _id: game_id_temp }));
+//         });
+//     });
+//     describe('#game_actions.delete_game(game_id))', function() {
+//         it('deleting sample game', function(done) {
+//             game_actions.delete_game(game_id).then(result => {
+//                 done();
+//             })
+//         });
+//         it('verifying deletion', async function() {
+//             assert.isNotOk(await game.exists({ _id: game_id }));
+//         });
+//     });
+// });
 
 // Name : test.after
 // Desc : clean everything up after test cases

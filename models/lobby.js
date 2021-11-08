@@ -11,9 +11,9 @@ const { v4: uuidv4 } = require('uuid');
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 
 // Imported schemas
-let game = require('../models/game.js');
-let player = require('../models/player.js');
-let event = require('../models/event.js');
+let Game = require('../models/game.js');
+let Player = require('../models/player.js');
+let Event = require('../models/event.js');
 
 // Lobby schema
 let lobbySchema = mongoose.Schema({
@@ -25,11 +25,11 @@ let lobbySchema = mongoose.Schema({
             length: 2
         })
     },
-    status: {
-        type: String,
-        default: "in_lobby"
+    in_progress: {
+        type: Boolean,
+        default: false
     },
-    grouping_method: {
+    grp_method: {
         type: String,
         default: "random"
     },
@@ -37,14 +37,23 @@ let lobbySchema = mongoose.Schema({
         type: Number,
         default: 5
     },
+    play_timeout: {
+        type: Number,
+        default: -1
+    },
+    include_host: {
+        type: Boolean,
+        default: true
+    },
     created: {
         type: Date,
         default: Date.now
     },
-    players: [player],
-    imported_packs: [String],
-    events: [event]
+    games: [Game],
+    players: [Player],
+    packs: [String],
+    events: [Event]
 });
 
 // Export game model
-module.exports = mongoose.model('lobby', lobbySchema);
+module.exports = mongoose.model('Lobby', lobbySchema);

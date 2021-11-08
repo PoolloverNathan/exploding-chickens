@@ -13,23 +13,19 @@ module.exports = mongoose.Schema({
         type: String,
         required: true
     },
-    image_loc: {
-        type: String,
-        required: true
-    },
     action: {
         type: String,
         required: true
     },
-    assignment: {
+    assign: {
         type: String,
         default: "draw_deck"
     },
-    position: {
+    pos: {
         type: Number,
         required: true
     },
-    placed_by_id: {
+    placed_by_plyr_id: {
         type: String,
         required: false
     },

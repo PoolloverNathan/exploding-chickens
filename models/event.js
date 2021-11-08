@@ -9,25 +9,21 @@ let mongoose = require('mongoose');
 
 // Event schema
 module.exports = mongoose.Schema({
-    event_name: {
+    tag: {
         type: String,
         required: true
     },
-    card_action: {
+    req_plyr_id: {
         type: String,
-        default: ""
+        required: true
+    },
+    target_plyr_id: {
+        type: String,
+        required: false
     },
     rel_id: {
-        type: String,
-        default: ""
-    },
-    req_player: {
-        type: String,
-        required: true
-    },
-    target_player: {
-        type: String,
-        default: ""
+        type: mongoose.Schema.Types.ObjectId,
+        required: false
     },
     created: {
         type: Date,

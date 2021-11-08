@@ -14,36 +14,41 @@ module.exports = mongoose.Schema({
         type: String,
         default: nanoid(10)
     },
-    game_slug: {
-        type: String,
-        required: false // TODO change to true
+    game_assign: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'games',
+        required: true
     },
     nickname: {
         type: String,
-        required: true
-    },
-    seat: {
-        type: Number,
         required: true
     },
     avatar: {
         type: String,
         default: "/public/avatars/default.png"
     },
-    type: {
-        type: String,
-        default: "player"
-    },
-    status: {
-        type: String,
-        default: "idle"
-    },
-    connection: {
-        type: String,
-        default: "connected"
+    seat_pos: {
+        type: Number,
+        required: true
     },
     wins: {
         type: Number,
         default: 0
     },
+    is_connected: {
+        type: Boolean,
+        default: false
+    },
+    is_host: {
+        type: Boolean,
+        default: false
+    },
+    is_dead: {
+        type: Boolean,
+        default: false
+    },
+    created: {
+        type: Date,
+        default: Date.now
+    }
 });

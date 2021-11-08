@@ -11,12 +11,11 @@ const { v4: uuidv4 } = require('uuid');
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 
 // Imported schemas
-let player = require('../models/player.js');
-let card = require('../models/card.js');
-let event = require('../models/event.js');
+let Card = require('../models/card.js');
+let Event = require('../models/event.js');
 
 // Game schema
-let gameSchema = mongoose.Schema({
+module.exports = mongoose.Schema({
     slug: {
         type: String,
         default: uniqueNamesGenerator({
@@ -25,43 +24,26 @@ let gameSchema = mongoose.Schema({
             length: 2
         })
     },
-    lobby: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'lobby'
+    in_progress: {
+        type: Boolean,
+        default: false
     },
-    seat_playing: {
-        type: Number,
-        default: 0
+    turn_plyr_id: {
+        type: String,
+        required: true
     },
-    turn_direction: {
+    turn_dir: {
         type: String,
         default: "forward"
     },
-    turns_remaining: {
+    turns_remain: {
         type: Number,
         default: 1
-    },
-    player_cap: {
-        type: Number,
-        default: 5
-    },
-    status: {
-        type: String,
-        default: "in_lobby"
     },
     created: {
         type: Date,
         default: Date.now
     },
-    start_time: {
-        type: Date,
-        default: Date.now
-    },
-    players: [player],
-    cards: [card],
-    events: [event],
-    imported_packs: [String]
+    cards: [Card],
+    events: [Event]
 });
-
-// Export game model
-module.exports = mongoose.model('game', gameSchema);
