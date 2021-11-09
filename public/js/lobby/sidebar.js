@@ -60,7 +60,7 @@ function sbr_update_widgets(lobby_details) {
     // Update players and rooms widgets
     document.getElementById("sbr_ele_players_ctn").innerHTML = lobby_details.players.length;
     document.getElementById("sbr_ele_rooms_ctn").innerHTML = lobby_details.games.length;
-    document.getElementById("sbr_ele_games_ctn").innerHTML = lobby_details.games_ctn;
+    document.getElementById("sbr_ele_games_ctn").innerHTML = lobby_details.games_completed;
 }
 
 // Name : frontend-game.sbr_update_players(lobby_details)
@@ -73,7 +73,7 @@ function sbr_update_players(lobby_details) {
         for (let j = 0; j < lobby_details.games[i].players.length; j++) {
             // Check if we found current user, append to top
             if (lobby_details.games[i].players[j]._id === session_user._id) {
-                document.getElementById("sbr_ele_usertop").innerHTML = lobby_details.games[i].players[j].nickname + create_stat_dot(lobby_details.games[i].players[j].status, lobby_details.games[i].players[j].connection, "mx-1.5", "sbr_stat_usertop_" + lobby_details.games[i].players[j]._id);
+                document.getElementById("sbr_ele_usertop").innerHTML = lobby_details.games[i].players[j].nickname + create_stat_dot(lobby_details.games[i].players[j].sockets_open, "mx-1.5", "sbr_stat_usertop_" + lobby_details.games[i].players[j]._id);
                 found_player = true;
             }
             // If host, add make host and kick options to each player
@@ -109,11 +109,11 @@ function sbr_update_players(lobby_details) {
             payload += "<div class=\"flex items-center justify-between mb-2\">\n" +
                 "    <div class=\"flex-1 min-w-0\">\n" +
                 "        <h3 class=\"text-md font-bold text-gray-900 truncate\">\n" +
-                "            " + name + " " + create_stat_dot(lobby_details.games[i].players[j].status, lobby_details.games[i].players[j].connection, "mx-0.5", "sbr_stat_player_dot_" + lobby_details.games[i].players[j]._id) + "\n" +
+                "            " + name + " " + create_stat_dot(lobby_details.games[i].players[j].sockets_open, "mx-0.5", "sbr_stat_player_dot_" + lobby_details.games[i].players[j]._id) + "\n" +
                 "        </h3>\n" +
                 "        <div class=\"mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6\">\n" +
                 "            <div class=\"flex items-center text-sm text-gray-500\" id=\"sbr_stat_player_details_" + lobby_details.games[i].players[j]._id + "\">\n" +
-                "                " +  + ", " + lobby_details.players[i].connection + "\n" +
+                "                " + (lobby_details.games[i].in_progress ? "In game" : lobby_details.games[i].is_completed ? "In queue" : "Matchmaking") + ", " + (lobby_details.games[i].players[j].sockets_open > 0 ? "connected" : "disconnected") + "\n" +
                 "            </div>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
@@ -139,11 +139,11 @@ function sbr_update_pstatus(lobby_details) {
         for (let j = 0; j < lobby_details.games[i].players.length; j++) {
             // Check if we found current user, append to top
             if (lobby_details.games[i].players[j]._id === session_user._id) {
-                document.getElementById("sbr_stat_usertop_" + lobby_details.games[i].players[j]._id).className = stat_dot_class(lobby_details.games[i].players[j].connection, "mx-1.5");
+                document.getElementById("sbr_stat_usertop_" + lobby_details.games[i].players[j]._id).className = stat_dot_class(lobby_details.games[i].players[j].sockets_open, "mx-1.5");
             }
             // Update status for players element
-            document.getElementById("sbr_stat_player_dot_" + lobby_details.games[i].players[j]._id).className = stat_dot_class(lobby_details.games[i].players[j].connection, "mx-0.5");
-            document.getElementById("sbr_stat_player_details_" + lobby_details.games[i].players[j]._id).innerHTML = lobby_details.games[i].players[j].status.charAt(0).toUpperCase() + lobby_details.games[i].players[j].status.slice(1) + ", " + lobby_details.games[i].players[j].connection;
+            document.getElementById("sbr_stat_player_dot_" + lobby_details.games[i].players[j]._id).className = stat_dot_class(lobby_details.games[i].players[j].sockets_open, "mx-0.5");
+            document.getElementById("sbr_stat_player_details_" + lobby_details.games[i].players[j]._id).innerHTML = (lobby_details.games[i].in_progress ? "In game" : lobby_details.games[i].is_completed ? "In queue" : "Matchmaking") + ", " + (lobby_details.games[i].players[j].sockets_open > 0 ? "connected" : "disconnected");
         }
     }
 }
@@ -152,14 +152,14 @@ function sbr_update_pstatus(lobby_details) {
 // Name : frontend-game.sbr_update_packs(lobby_details)
 // Desc : updates which card packs are marked as imported
 function sbr_update_packs(lobby_details) {
-    if (lobby_details.packs?.includes("yolking_around") && session_user.is_host) {
+    if (lobby_details.packs.includes("yolking_around") && session_user.is_host) {
         document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none\" onclick=\"export_pack('yolking_around')\">\n" +
             "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M18 12H6\" />\n" +
             "      </svg>" +
             "      Remove\n" +
             "</button>";
-    } else if (lobby_details.packs?.includes("yolking_around")) {
+    } else if (lobby_details.packs.includes("yolking_around")) {
         document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none\">\n" +
             "      <svg class=\"-ml-1 mr-1 h-5 w-5\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\" />\n" +

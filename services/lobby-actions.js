@@ -123,6 +123,10 @@ exports.partition_players = async function (lobby_details) {
             await game_actions.import_cards(lobby_details, game_pos, "base");
             game_candidates.push(lobby_details.games[game_pos]._id);
         }
+    } else if (groups.length < game_candidates.length) { // Check if we have too many candidates, delete if so
+        for (let i = groups.length; i < game_candidates.length; i++) {
+            await game_actions.delete_game(game_candidates[i]);
+        }
     }
     // Map game candidates to player groupings
     for (let i = 0; i < lobby_details.players.length; i++) {
@@ -142,6 +146,7 @@ exports.partition_players = async function (lobby_details) {
 // Desc : prepares lobby data for export to client
 // Author(s) : RAk3rman
 exports.lobby_export = async function (lobby_details, source, req_player_id) {
+    if (!lobby_details) return;
     // Prepare events payload
     let events_payload = [];
     for (let i = lobby_details.events.length - 1; i >= 0 && i >= (lobby_details.events.length - 20); i--) {
@@ -149,10 +154,12 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
     }
     // Prepare games payload
     let games_payload = [];
+    let games_completed = 0;
     for (let i = 0; i < lobby_details.games.length; i++) {
         if (!lobby_details.games[i].is_completed && !lobby_details.games[i].in_progress) {
             games_payload.push(await game_actions.game_export(lobby_details, i, source, req_player_id));
         }
+        if (lobby_details.games[i].is_completed) games_completed++;
     }
     // Prepare players payload
     let players_payload = [];
@@ -172,7 +179,7 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
         include_host: lobby_details.include_host,
         created: moment(lobby_details.created),
         games: games_payload,
-        games_ctn: lobby_details.games.length,
+        games_completed: games_completed,
         players: players_payload,
         packs: lobby_details.packs,
         events: events_payload,

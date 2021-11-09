@@ -403,15 +403,15 @@ exports.safety_draw = async function (game_details, player_id) {
     });
 }
 
-// Name : card_actions.filter_cards(assignment, card_array)
-// Desc : filters and sorts cards based on assignment and position
+// Name : card_actions.filter_cards(assign, card_array)
+// Desc : filters and sorts cards based on assign and position
 // Author(s) : RAk3rman
-exports.filter_cards = async function (assignment, card_array) {
-    // Get cards based on assignment
+exports.filter_cards = async function (assign, card_array) {
+    // Get cards based on assign
     let temp_deck = [];
     for (let i = 0; i < card_array.length; i++) {
         //If the card is assigned to this player, add to hand
-        if (card_array[i].assignment === assignment) {
+        if (card_array[i].assign === assign) {
             temp_deck.push(card_array[i]);
         }
     }

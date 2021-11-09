@@ -39,18 +39,18 @@ function setup_session_check(lobby_details) {
         for (let i = 0; i < lobby_details.games.length; i++) {
             for (let j = 0; j < lobby_details.games[i].players.length; j++) {
                 // Check if individual player exists
-                if (lobby_details.games[i].players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(7))).player_id) {
+                if (lobby_details.games[i].players[j]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(7))).player_id) {
                     if (session_user._id === undefined) {
                         // Tell server that a valid player connected
                         socket.emit('player-online', {
                             slug: window.location.pathname.substr(7),
-                            player_id: lobby_details.games[i].players[i]._id
+                            player_id: lobby_details.games[i].players[j]._id
                         })
                     }
                     // Update session_user _id and is_host
                     session_user = {
-                        _id: lobby_details.games[i].players[i]._id,
-                        is_host: lobby_details.games[i].players[i].type === "host"
+                        _id: lobby_details.games[i].players[j]._id,
+                        is_host: lobby_details.games[i].players[j].is_host
                     };
                     // Break
                     break dance;

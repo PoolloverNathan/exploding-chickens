@@ -486,12 +486,12 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
     let game_details = lobby_details.games[game_pos];
     // Prepare events payload
     let events_payload = [];
-    for (let i = game_details.events?.length - 1; i >= 0 && i >= (game_details.events?.length - 20); i--) {
+    for (let i = game_details.events.length - 1; i >= 0 && i >= (game_details.events.length - 20); i--) {
         events_payload.push(await event_actions.parse_event(game_details.events[i]));
     }
     // Prepare players payload
     let players_payload = [];
-    for (let i = 0; i < lobby_details.players?.length; i++) {
+    for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.players[i].game_assign.equals(game_details._id)) {
             players_payload.push(await player_actions.player_export(lobby_details, lobby_details.players[i]));
         }
@@ -502,9 +502,9 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
     });
     // Determine number of exploding chickens
     let ec_remain = 0;
-    for (let i = 0; i < game_details.cards?.length; i++) {
+    for (let i = 0; i < game_details.cards.length; i++) {
         // If the card is assigned to deck, add to count
-        if (game_details.cards[i].action === "chicken" && game_details.cards[i].assignment === "draw_deck") {
+        if (game_details.cards[i].action === "chicken" && game_details.cards[i].assign === "draw_deck") {
             ec_remain += 1;
         }
     }
@@ -519,7 +519,8 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
         turn_plyr_id: game_details.turn_plyr_id,
         turn_dir: game_details.turn_dir,
         turns_remain: game_details.turns_remain,
-        cards_remain: draw_deck?.length,
+        cards_total: game_details.cards.length,
+        cards_remain: draw_deck.length,
         ec_remain: ec_remain,
         created: moment(game_details.created),
         players: players_payload,

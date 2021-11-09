@@ -49,7 +49,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     await player_actions.update_sockets_open(lobby_details, req_data.player_id, "inc");
                     await lobby_details.save();
                     await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
-                    callback(false, `Player now ${chalk.dim.green('connected')}`, req_data.slug, action, socket_id, req_data.player_id);
+                    callback(false, `Player now ${chalk.dim.green('connected')}`, lobby_details, req_data, action, socket_id);
                 }
             ], wf_final_lobby_callback);
         })
@@ -65,7 +65,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 wf_get_lobby, // Get lobby_details
                 async function(lobby_details, req_data, action, socket_id, callback) { // Send lobby data
                     await update_lobby_ui(lobby_details, socket_id, action, socket_id, req_data.player_id);
-                    callback(false, `Retrieved and sent lobby data`, req_data.slug, action, socket_id, req_data.player_id);
+                    callback(false, `Retrieved and sent lobby data`, lobby_details, req_data, action, socket_id);
                 }
             ], wf_final_lobby_callback);
         })
@@ -106,13 +106,13 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     }
                 },
                 async function(lobby_details, req_data, action, socket_id, callback) { // Create player
-                    let new_player_id = await player_actions.create_player(lobby_details, req_data.nickname, req_data.avatar);
-                    await event_actions.log_event(lobby_details, action.trim(), new_player_id, "", "");
+                    req_data.player_id = await player_actions.create_player(lobby_details, req_data.nickname, req_data.avatar);
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", "");
                     await lobby_actions.partition_players(lobby_details);
                     await lobby_details.save();
-                    fastify.io.to(socket_id).emit("player-created", new_player_id);
-                    await update_lobby_ui(lobby_details, "", action, socket_id, new_player_id);
-                    callback(false, `Created new player`, req_data.slug, action, socket_id, new_player_id);
+                    fastify.io.to(socket_id).emit("player-created", req_data.player_id);
+                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                    callback(false, `Created new player`, lobby_details, req_data, action, socket_id);
                 }
             ], wf_final_lobby_callback);
         })
@@ -445,26 +445,26 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         player_data = req_data;
                         await player_actions.update_sockets_open(lobby_details, req_data.player_id, "dec");
                         await lobby_details.save();
-                        await update_lobby_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-                        callback(false, `Player now ${chalk.dim.red('disconnected')}`, req_data.slug, action, socket_id, req_data.player_id);
+                        await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                        callback(false, `Player now ${chalk.dim.red('disconnected')}`, lobby_details, req_data, action, socket_id);
                     }
                 ], wf_final_lobby_callback);
             }
         });
     })
 
-    // Name : wf_final_lobby_callback(err, msg, slug, action, socket_id, player_id)
+    // Name : wf_final_lobby_callback(err, msg, lobby_details, req_data, action, socket_id)
     // Desc : final callback from waterfall, handles error if triggered
     // Author(s) : RAk3rman
-    async function wf_final_lobby_callback(err, msg, slug, action, socket_id, player_id) {
+    async function wf_final_lobby_callback(err, msg, lobby_details, req_data, action, socket_id) {
         if (err) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} ${chalk.dim.red('lobby-error')} ` + msg));
-            fastify.io.to(socket_id).emit(slug + "-lobby-error", {
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(req_data.player_id)} ${chalk.dim.red('lobby-error')} ` + msg));
+            fastify.io.to(socket_id).emit(req_data.slug + "-lobby-error", {
                 msg: msg,
-                lobby_details: await lobby_actions.lobby_export(slug, action, player_id)
+                lobby_details: await lobby_actions.lobby_export(lobby_details, action, req_data.player_id)
             });
         } else {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} ` + msg));
+            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(req_data.player_id)} ` + msg));
         }
     }
 
@@ -483,6 +483,20 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         }
     }
 
+    // Name : wf_get_lobby(req_data, action, socket_id, callback)
+    // Desc : get lobby details from waterfall
+    // Author(s) : RAk3rman
+    async function wf_get_lobby(req_data, action, socket_id, callback) {
+        // Determine if we should filter by slug and player_id
+        let filter = req_data.player_id === "spectator" ? { slug: req_data.slug } : { slug: req_data.slug, "players._id": req_data.player_id };
+        // Determine if lobby exists
+        if (await lobby.exists(filter)) {
+            callback(false, await lobby_actions.lobby_details_slug(req_data.slug), req_data, action, socket_id);
+        } else {
+            callback(true, "LOBBY-DNE", undefined, req_data, action, socket_id);
+        }
+    }
+
     // Name : wf_get_game(req_data, action, socket_id, callback)
     // Desc : get game details from waterfall
     // Author(s) : RAk3rman
@@ -494,20 +508,6 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             callback(false, await game_actions.game_details_slug(req_data.slug), req_data, action, socket_id);
         } else {
             callback(true, "GAME-DNE", req_data.slug, action, socket_id, req_data.player_id);
-        }
-    }
-
-    // Name : wf_get_lobby(req_data, action, socket_id, callback)
-    // Desc : get lobby details from waterfall
-    // Author(s) : RAk3rman
-    async function wf_get_lobby(req_data, action, socket_id, callback) {
-        // Determine if we should filter by slug and player_id
-        let filter = req_data.player_id === "spectator" ? { slug: req_data.slug } : { slug: req_data.slug, "players._id": req_data.player_id };
-        // Determine if lobby exists
-        if (await lobby.exists(filter)) {
-            callback(false, await lobby_actions.lobby_details_slug(req_data.slug), req_data, action, socket_id);
-        } else {
-            callback(true, "LOBBY-DNE", req_data.slug, action, socket_id, req_data.player_id);
         }
     }
 

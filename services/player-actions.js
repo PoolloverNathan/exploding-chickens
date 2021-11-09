@@ -300,17 +300,27 @@ exports.sort_hand = async function (game_details, player_id) {
 exports.player_export = async function (lobby_details, player) {
     // Get game details
     let game_details;
-    for (let i = 0; i < lobby_details.games.length; i++) {
-        if (lobby_details.games[i]._id.equals(player.game_assign)) {
-            game_details = lobby_details.games[i];
-            break;
+    lobby_details.games.every(game => {
+        if (game._id.equals(player.game_assign)) {
+            game_details = game;
+            return false;
         }
-    }
+        return true;
+    });
     // Filter card hand
     let card_array = await card_actions.filter_cards(player._id, game_details.cards);
     // Sort card hand in reverse order
     card_array.sort(function(a, b) {
         return b.pos - a.pos;
+    });
+    // Check if the player is exploding
+    let is_exploding = false;
+    card_array.every(card => {
+        if (card.action === "chicken") {
+            is_exploding = true;
+            return false;
+        }
+        return true;
     });
     // Return pretty player details
     return {
@@ -320,8 +330,10 @@ exports.player_export = async function (lobby_details, player) {
         avatar: player.avatar,
         seat_pos: player.seat_pos,
         wins: player.wins,
+        sockets_open: player.sockets_open,
         is_connected: player.is_connected,
         is_host: player.is_host,
+        is_exploding: is_exploding,
         is_dead: player.is_dead,
         cards: card_array,
         created: moment(player.created)
