@@ -27,7 +27,6 @@ let setup = require('./config/setup.js');
 
 // Services
 let lobby_actions = require('./services/lobby-actions.js');
-let game_actions = require('./services/game-actions.js');
 let socket_handler = require('./services/socket-handler.js');
 
 // Print header to console
@@ -92,12 +91,12 @@ fastify.register(require('fastify-rate-limit'), {
     timeWindow: '1 minute'
 })
 // Routers
-let actions_api = require('./routes/actions-api.js');
-let error_routes = require('./routes/error-routes.js');
+let lobby_api = require('./routes/lobby-api.js');
+let error_api = require('./routes/error-api.js');
 
 // Import routes
-actions_api(fastify);
-error_routes(fastify);
+lobby_api(fastify);
+error_api(fastify);
 
 // Home page
 fastify.get('/', (req, reply) => {
@@ -172,12 +171,10 @@ function mongoose_connected() {
     console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at "` + config_storage.get('mongodb_url') + `"`));
     // Start purge game cycle
     if (config_storage.get('purge_age_hrs') !== -1) {
-        console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies and games older than ` + config_storage.get('purge_age_hrs') + ` hours`));
-        game_actions.game_purge().then(function () {});
+        console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies older than ` + config_storage.get('purge_age_hrs') + ` hours`));
         lobby_actions.lobby_purge().then(function () {});
         setInterval(e => {
-            console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies and games older than ` + config_storage.get('purge_age_hrs') + ` hours`));
-            game_actions.game_purge().then(function () {});
+            console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies older than ` + config_storage.get('purge_age_hrs') + ` hours`));
             lobby_actions.lobby_purge().then(function () {});
         }, 3600000*2);
     }

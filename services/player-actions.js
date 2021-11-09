@@ -16,46 +16,53 @@ let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
+const moment = require("moment");
 
-// Name : player_actions.create_player()
+// Name : player_actions.create_player(lobby_details, nickname, avatar)
 // Desc : creates a new player
 // Author(s) : RAk3rman
-exports.create_player = async function (lobby_details, p_nickname, p_avatar) {
-    // Push new player into existing lobby
+exports.create_player = async function (lobby_details, nickname, avatar) {
+    // Push new player into existing lobby, await game assignment
     let player_id = nanoid(10);
-    lobby_details.players.push({ _id: player_id, nickname: p_nickname, avatar: p_avatar, seat: -1, type: lobby_details.players.length === 0 ? "host" : "player" });
-    // Save lobby
-    try {
-        await lobby_details.save();
-        return player_id;
-    } catch (err) {
-        throw new Error(err);
-    }
+    lobby_details.players.push({
+        _id: player_id,
+        nickname: nickname,
+        avatar: avatar,
+        is_host: lobby_details.players.length === 0
+    });
+    return player_id;
 };
 
-// Name : player_actions.update_connection(lobby_slug, player_id, p_connection))
+// Name : player_actions.update_sockets_open(lobby_details, player_id, method)
 // Desc : updates the connection for a target player
 // Author(s) : RAk3rman
-exports.update_connection = async function (lobby_slug, player_id, p_connection) {
-    // Find player and update
-    try {
-        await Lobby.findOneAndUpdate({ slug: lobby_slug, "players._id": player_id }, {"$set": { "players.$.connection": p_connection }});
-        return player_id;
-    } catch (err) {
-        throw new Error(err);
-    }
-};
-
-// Name : player_actions.get_player(game_details, player_id)
-// Desc : return the details for a target player
-// Author(s) : RAk3rman
-exports.get_player = async function (game_details, player_id) {
-    // Find player and return details
-    for (let i = 0; i < game_details.players.length; i++) {
-        if (game_details.players[i]._id === player_id) {
-            return game_details.players[i];
+exports.update_sockets_open = async function (lobby_details, player_id, method) {
+    // Find player and return new socket total
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.players[i]._id === player_id) {
+            // Inc or dec
+            if (method === "inc" && lobby_details.players[i].sockets_open >= 0) {
+                lobby_details.players[i].sockets_open += 1;
+            } else if (method === "dec" && lobby_details.players[i].sockets_open > 0) {
+                lobby_details.players[i].sockets_open -= 1;
+            }
+            return lobby_details.players[i].sockets_open;
         }
     }
+    return null;
+};
+
+// Name : player_actions.get_player(lobby_details, player_id)
+// Desc : return the details for a target player
+// Author(s) : RAk3rman
+exports.get_player = async function (lobby_details, player_id) {
+    // Find player and return details
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.players[i]._id === player_id) {
+            return lobby_details.players[i];
+        }
+    }
+    return null;
 }
 
 // Name : player_actions.create_hand(game_details)
@@ -285,6 +292,40 @@ exports.sort_hand = async function (game_details, player_id) {
     for (let i = 0; i <= player_hand.length - 1; i++) {
         game_details.cards[player_hand[i].gbl_pos].position = i;
     }
+}
+
+// Name : game_actions.player_export(lobby_details, player)
+// Desc : prepares player data for export to client
+// Author(s) : RAk3rman
+exports.player_export = async function (lobby_details, player) {
+    // Get game details
+    let game_details;
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        if (lobby_details.games[i]._id.equals(player.game_assign)) {
+            game_details = lobby_details.games[i];
+            break;
+        }
+    }
+    // Filter card hand
+    let card_array = await card_actions.filter_cards(player._id, game_details.cards);
+    // Sort card hand in reverse order
+    card_array.sort(function(a, b) {
+        return b.pos - a.pos;
+    });
+    // Return pretty player details
+    return {
+        _id: player._id,
+        game_assign: game_details.slug,
+        nickname: player.nickname,
+        avatar: player.avatar,
+        seat_pos: player.seat_pos,
+        wins: player.wins,
+        is_connected: player.is_connected,
+        is_host: player.is_host,
+        is_dead: player.is_dead,
+        cards: card_array,
+        created: moment(player.created)
+    };
 }
 
 // PRIVATE FUNCTIONS

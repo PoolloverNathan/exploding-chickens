@@ -38,7 +38,8 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
     setup_session_check(data);
     // Update events log
     events_data = data.events;
-    events_length = data.events_length;
+    events_length = data.events.length;
+    console.log(data);
     sbr_update_log();
     // Update elements based on update trigger
     if (data.trigger === "player-online") { // Existing player connected

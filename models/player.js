@@ -16,7 +16,7 @@ module.exports = mongoose.Schema({
     },
     game_assign: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
+        required: false
     },
     nickname: {
         type: String,
@@ -28,21 +28,25 @@ module.exports = mongoose.Schema({
     },
     seat_pos: {
         type: Number,
-        required: true
+        default: -1
     },
     wins: {
         type: Number,
         default: 0
     },
-    is_connected: {
-        type: Boolean,
-        default: false
+    sockets_open: {
+        type: Number,
+        default: 0
     },
     is_host: {
         type: Boolean,
         default: false
     },
     is_dead: {
+        type: Boolean,
+        default: false
+    },
+    is_disabled: {
         type: Boolean,
         default: false
     },

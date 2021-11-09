@@ -22,88 +22,37 @@ let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
+const {nanoid} = require("nanoid");
 
-// Name : game_actions.create_game()
-// Desc : creates a new game in mongodb, returns game details
+// Name : game_actions.create_game(lobby_details)
+// Desc : creates a new game
 // Author(s) : RAk3rman
-exports.create_game = async function () {
-    // Create new promise and return created_game after saved
-    return await new Promise((resolve, reject) => {
-        game.create({
-            slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2})
-        }, function (err, created_game) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(created_game);
-            }
-        });
+exports.create_game = async function (lobby_details) {
+    // Push new game into existing lobby
+    lobby_details.games.push({
+        slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2})
     });
+    return lobby_details.games.length - 1;
 }
 
-// Name : game_actions.game_details_slug(slug)
-// Desc : returns the details for a game slug
-// Author(s) : RAk3rman
-exports.game_details_slug = async function (slug) {
-    // Create new promise and return found_game after saved
-    return await new Promise((resolve, reject) => {
-        game.findOne({ slug: slug }, function (err, found_game) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(found_game);
-            }
-        });
-    });
-}
-
-// Name : game_actions.game_details_id(_id)
-// Desc : returns the details for a game id
-// Author(s) : RAk3rman
-exports.game_details_id = async function (_id) {
-    // Create new promise and return found_game after saved
-    return await new Promise((resolve, reject) => {
-        game.findOne({ _id: _id }, function (err, found_game) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(found_game);
-            }
-        });
-    });
-}
-
-// Name : game_actions.import_cards(game_details, pack_name)
+// Name : game_actions.import_cards(lobby_details, game_pos, pack_name)
 // Desc : bulk import cards via json file
 // Author(s) : RAk3rman
-exports.import_cards = async function (game_details, pack_name) {
+exports.import_cards = async function (lobby_details, game_pos, pack_name) {
     // Get json array of cards
     let pack_array = require('../packs/' + pack_name + '.json');
-    let card_length = game_details.cards.length;
+    let card_length = lobby_details.games[game_pos].cards.length;
     // Loop through each json value and add card
     for (let i = 1; i <= pack_array.length - 1; i++) {
-        game_details.cards.push({
+        lobby_details.games[game_pos].cards.push({
             _id: pack_array[i]._id,
-            image_loc: "public/cards/" + pack_array[0].pack_name + "/" + pack_array[i].file_name,
             action: pack_array[i].action,
-            position: i + card_length,
+            pos: i + card_length,
             pack: pack_array[0].pack_name
         });
     }
-    // Add pack to array of imported_packs
-    game_details.imported_packs.push(pack_array[0].pack_name);
-    // Create new promise
-    return await new Promise((resolve, reject) => {
-        // Save existing game
-        game_details.save(function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                // Resolve promise when the last card has been pushed
-                resolve(pack_array.length - 1);
-            }
-        });
-    });
+    // Add pack to array of packs
+    lobby_details.packs.push(pack_array[0].pack_name);
 }
 
 // Name : game_actions.export_cards(game_details, pack_name)
@@ -497,211 +446,6 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
     }
 }
 
-// Name : game_actions.get_game_export(slug, source, player_id)
-// Desc : prepares game data for export to client
-// Author(s) : RAk3rman
-exports.get_game_export = async function (slug, source, player_id) {
-    // Get raw game details from mongodb
-    let raw_game_details = await game_actions.game_details_slug(slug);
-    if (raw_game_details !== null) {
-        // Determine number of exploding chickens
-        let ec_count = 0;
-        for (let i = 0; i < raw_game_details["cards"].length; i++) {
-            // If the card is assigned to deck, add to count
-            if (raw_game_details["cards"][i].action === "chicken" && raw_game_details["cards"][i].assignment === "draw_deck") {
-                ec_count += 1;
-            }
-        }
-        // Prepare draw deck
-        let draw_deck = await card_actions.filter_cards("draw_deck", raw_game_details["cards"]);
-        // Prepare events payload
-        let parsed_events = [];
-        for (let i = raw_game_details["events"].length - 1; i >= 0 && i >= (raw_game_details["events"].length - 20); i--) {
-            parsed_events.push(await game_actions.parse_event(raw_game_details, raw_game_details["events"][i]));
-        }
-        // Prepare pretty game details
-        let pretty_game_details = {
-            players: [],
-            discard_deck: [],
-            slug: raw_game_details["slug"],
-            created: moment(raw_game_details["created"]),
-            status: raw_game_details["status"],
-            seat_playing: raw_game_details["seat_playing"],
-            turn_direction: raw_game_details["turn_direction"],
-            turns_remaining: raw_game_details["turns_remaining"],
-            cards_remaining: draw_deck.length,
-            ec_remaining: ec_count,
-            req_player_id: player_id,
-            trigger: source.trim(),
-            imported_packs: raw_game_details["imported_packs"],
-            player_cap: raw_game_details["player_cap"],
-            events: parsed_events,
-            events_length: raw_game_details["events"].length
-        }
-        // Sort and add players to json array
-        raw_game_details["players"].sort(function(a, b) {
-            return a.seat - b.seat;
-        });
-        // Loop through each player
-        for (let i = 0; i < raw_game_details["players"].length; i++) {
-            let card_array = await card_actions.filter_cards(raw_game_details["players"][i]._id, raw_game_details["cards"]);
-            // Sort card hand in reverse order
-            card_array.sort(function(a, b) {
-                return b.position - a.position;
-            });
-            // Found current player, return extended details
-            pretty_game_details.players.push({
-                _id: raw_game_details["players"][i]._id,
-                cards: card_array,
-                card_num: card_array.length,
-                avatar: raw_game_details["players"][i].avatar,
-                type: raw_game_details["players"][i].type,
-                status: raw_game_details["players"][i].status,
-                connection: raw_game_details["players"][i].connection,
-                nickname: raw_game_details["players"][i].nickname,
-                seat: raw_game_details["players"][i].seat,
-                wins: raw_game_details["players"][i].wins
-            });
-        }
-        // Get discard deck
-        pretty_game_details.discard_deck = await card_actions.filter_cards("discard_deck", raw_game_details["cards"]);
-        // Send game data
-        return pretty_game_details;
-    } else {
-        return {};
-    }
-}
-
-// Name : game_actions.parse_event(game_details, event_obj)
-// Desc : parses an event into readable html
-// Author(s) : RAk3rman
-exports.parse_event = async function (game_details, event_obj) {
-    if (event_obj.event_name === "create-player") {
-        return {
-            icon_path: "<path d=\"M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z\"/>",
-            icon_color: "text-purple-500",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> joined the lobby",
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "start-game") {
-        return {
-            icon_path: "<path fill-rule=\"evenodd\" d=\"M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z\" clip-rule=\"evenodd\"/>",
-            icon_color: "text-green-500",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> started the game",
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "reset-game") {
-        return {
-            icon_path: "<path fill-rule=\"evenodd\" d=\"M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z\" clip-rule=\"evenodd\"/>",
-            icon_color: "text-yellow-400",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> reset the game",
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "play-card") {
-        let desc = "";
-        // Determine which card was played
-        if (event_obj.card_action === "attack") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played an attack card";
-        } else if (event_obj.card_action === "chicken") {
-            return {
-                icon_path: "<path fill-rule=\"evenodd\" d=\"M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z\" clip-rule=\"evenodd\"/>",
-                icon_color: "text-red-500",
-                desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> exploded",
-                created: moment(event_obj.created).format()
-            };
-        } else if (event_obj.card_action === "defuse") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a defuse card";
-        } else if (event_obj.card_action === "favor" || event_obj.card_action === "randchick-1" || event_obj.card_action === "randchick-2" ||
-            event_obj.card_action === "randchick-3" || event_obj.card_action === "randchick-4") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> asked for a favor from <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong>";
-        } else if (event_obj.card_action === "reverse") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a reverse card";
-        } else if (event_obj.card_action === "seethefuture") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> saw the future";
-        } else if (event_obj.card_action === "shuffle") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> shuffled the deck";
-        } else if (event_obj.card_action === "skip") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> skipped their turn";
-        } else if (event_obj.card_action === "hotpotato") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> used a hot potato";
-        } else if (event_obj.card_action === "scrambledeggs") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> scrambled all hands in play";
-        } else if (event_obj.card_action === "superskip") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> used a super skip";
-        } else if (event_obj.card_action === "safetydraw") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> played a safety draw card";
-        } else if (event_obj.card_action === "drawbottom") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> drew from the bottom";
-        } else if (event_obj.card_action === "favorgator") {
-            desc = "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> used a favor gator on <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong>";
-        }
-        return {
-            icon_path: "<path fill-rule=\"evenodd\" d=\"M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z\" clip-rule=\"evenodd\"/>",
-            icon_color: "text-blue-500",
-            desc: desc,
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "draw-card") {
-        return {
-            icon_path: "<path fill-rule=\"evenodd\" d=\"M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"/>\n" +
-                "            <path fill-rule=\"evenodd\" d=\"M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"/>",
-            icon_color: "text-green-500",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> drew a new card",
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "kick-player") {
-        return {
-            icon_path: "<path d=\"M11 6a3 3 0 11-6 0 3 3 0 016 0zM14 17a6 6 0 00-12 0h12zM13 8a1 1 0 100 2h4a1 1 0 100-2h-4z\"/>",
-            icon_color: "text-red-500",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> kicked <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong> from the game",
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "make-host") {
-        return {
-            icon_path: "<path d=\"M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z\"/>",
-            icon_color: "text-purple-500",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> made <strong class=\"text-gray-700\">" + event_obj.target_player + "</strong> the host",
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "import-pack") {
-        let pack = "";
-        if (event_obj.rel_id === "yolking_around") {
-            pack = "Yolking Around";
-        }
-        return {
-            icon_path: "<path fill-rule=\"evenodd\" d=\"M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z\" clip-rule=\"evenodd\"/>",
-            icon_color: "text-green-500",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> added the <strong class=\"text-gray-700\">" + pack + "</strong> card pack",
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "export-pack") {
-        let pack = "";
-        if (event_obj.rel_id === "yolking_around") {
-            pack = "Yolking Around";
-        }
-        return {
-            icon_path: "<path fill-rule=\"evenodd\" d=\"M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm1 8a1 1 0 100 2h6a1 1 0 100-2H7z\" clip-rule=\"evenodd\"/>",
-            icon_color: "text-red-500",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> removed the <strong class=\"text-gray-700\">" + pack + "</strong> card pack",
-            created: moment(event_obj.created).format()
-        };
-    } else if (event_obj.event_name === "game-won") {
-        return {
-            icon_path: "<path d=\"M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z\"/>",
-            icon_color: "text-yellow-400",
-            desc: "<strong class=\"text-gray-700\">" + event_obj.req_player + "</strong> won the game",
-            created: moment(event_obj.created).format()
-        };
-    } else {
-        return {
-            icon_path: "<path fill-rule=\"evenodd\" d=\"M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z\" clip-rule=\"evenodd\"/>",
-            icon_color: "text-red-500",
-            desc: "Invalid event action",
-            created: moment(event_obj.created).format()
-        };
-    }
-}
-
 // Name : game_actions.reset_game(game_details, player_status, game_status)
 // Desc : resets the game to default
 // Author(s) : Vincent Do, RAk3rman
@@ -732,6 +476,59 @@ exports.reset_game = async function (game_details, player_status, game_status) {
             }
         });
     });
+}
+
+// Name : game_actions.game_export(lobby_details, game_pos, source, req_player_id)
+// Desc : prepares game data for export to client
+// Author(s) : RAk3rman
+exports.game_export = async function (lobby_details, game_pos, source, req_player_id) {
+    // Reference to game details
+    let game_details = lobby_details.games[game_pos];
+    // Prepare events payload
+    let events_payload = [];
+    for (let i = game_details.events?.length - 1; i >= 0 && i >= (game_details.events?.length - 20); i--) {
+        events_payload.push(await event_actions.parse_event(game_details.events[i]));
+    }
+    // Prepare players payload
+    let players_payload = [];
+    for (let i = 0; i < lobby_details.players?.length; i++) {
+        if (lobby_details.players[i].game_assign === game_details.slug) {
+            players_payload.push(await player_actions.player_export(lobby_details.players[i]));
+        }
+    }
+    // Sort players by seat
+    players_payload.sort(function(a, b) {
+        return a.seat_pos - b.seat_pos;
+    });
+    // Determine number of exploding chickens
+    let ec_remain = 0;
+    for (let i = 0; i < game_details.cards?.length; i++) {
+        // If the card is assigned to deck, add to count
+        if (game_details.cards[i].action === "chicken" && game_details.cards[i].assignment === "draw_deck") {
+            ec_remain += 1;
+        }
+    }
+    // Prepare draw deck
+    let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
+    // Prepare discard deck
+    let discard_deck = await card_actions.filter_cards("discard_deck", game_details.cards);
+    // Return pretty game details
+    return {
+        slug: game_details.slug,
+        in_progress: game_details.in_progress,
+        turn_plyr_id: game_details.turn_plyr_id,
+        turn_dir: game_details.turn_dir,
+        turns_remain: game_details.turns_remain,
+        cards_remain: draw_deck?.length,
+        ec_remain: ec_remain,
+        created: moment(game_details.created),
+        players: players_payload,
+        events: events_payload,
+        discard_deck: discard_deck,
+        packs: lobby_details.packs,
+        req_player_id: req_player_id,
+        trigger: source.trim()
+    }
 }
 
 // Name : game_actions.delete_game(game_id)

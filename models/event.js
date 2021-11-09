@@ -22,7 +22,7 @@ module.exports = mongoose.Schema({
         required: false
     },
     rel_id: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         required: false
     },
     created: {

@@ -28,9 +28,13 @@ module.exports = mongoose.Schema({
         type: Boolean,
         default: false
     },
-    turn_plyr_id: {
-        type: String,
-        required: true
+    is_completed: {
+        type: Boolean,
+        default: false
+    },
+    turn_seat_pos: {
+        type: Number,
+        default: 0
     },
     turn_dir: {
         type: String,

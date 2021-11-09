@@ -34,6 +34,6 @@ module.exports = function (fastify) {
         let lobby_details = await lobby_actions.create_lobby();
         console.log(wipe(`${chalk.bold.white('API')}:     [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('create-lobby    ')} ${chalk.dim.yellow(lobby_details["slug"])} Created new lobby`));
         // Redirect to lobby url
-        reply.redirect("/lobby/" + lobby_details["slug"]);
+        reply.redirect("/lobby/" + lobby_details["slug"] + "?auth_token=" + lobby_details["auth_token"]);
     })
 };
