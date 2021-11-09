@@ -95,9 +95,14 @@ exports.partition_players = async function (lobby_details) {
     });
     // Pull players from bucket and form groups according to grp_method
     while (player_bucket.length > 0) {
-        // Group of room_size players
+        // Determine room_size
+        let room_size = lobby_details.room_size;
+        if (player_bucket.length === room_size + 1 && room_size > 2) { // One left out, reduce current room_size
+            room_size -= 1;
+        }
+        // Generate group
         let grp = [];
-        for (let i = 0; i < lobby_details.room_size && player_bucket.length > 0; i++) {
+        for (let i = 0; i < room_size && player_bucket.length > 0; i++) {
             if (lobby_details.grp_method === "random") {
                 let rand_index = Math.floor(Math.random() * player_bucket.length);
                 grp.push(player_bucket.splice(rand_index, 1)[0]._id);

@@ -98,9 +98,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 async function(lobby_details, req_data, action, socket_id, callback) { // Validation checks
                     let options = ["bear.png", "bull.png", "cat.png", "dog.png", "elephant.png", "flamingo.png", "fox.png", "lion.png", "mandrill.png", "meerkat.png", "monkey.png", "panda.png", "puma.png", "raccoon.png", "wolf.png"];
                     if (req_data.nickname === "" || !/^[a-zA-Z]/.test(req_data.nickname) || req_data.nickname.length > 12 || filter.isProfane(req_data.nickname)) { // Make sure nickname matches filters
-                        callback(true, `PLYR-NAME`, req_data.slug, action, socket_id, req_data.player_id);
+                        callback(true, `PLYR-NAME`, lobby_details, req_data, action, socket_id);
                     } else if (req_data.avatar === "default.png" && options.includes(req_data.avatar)) { // Make sure a valid avatar was chosen
-                        callback(true, `PLYR-AVTR`, req_data.slug, action, socket_id, req_data.player_id);
+                        callback(true, `PLYR-AVTR`, lobby_details, req_data, action, socket_id);
                     } else {
                         callback(false, lobby_details, req_data, action, socket_id);
                     }
