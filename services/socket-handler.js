@@ -272,7 +272,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //     waterfall([
         //         async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
         //         wf_get_game, // Get game_details
-        //         wf_validate_in_game, // Validate we are in game
+        //         wf_validate_in_progress, // Validate we are in game
         //         wf_validate_turn, // Validate it is req player's turn
         //         async function(game_details, req_data, action, socket_id, callback) { // Verify player isn't exploding
         //             for (let i = 0; i < game_details.players.length; i++) {
@@ -342,76 +342,80 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //         }
         //     ], wf_final_game_callback);
         // })
-        //
-        // // Name : socket.on.import-pack
-        // // Desc : imports a new pack into a game
-        // // Author(s) : RAk3rman
-        // socket.on('import-pack', async function (data) {
-        //     let action = "import-pack     ";
-        //     if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to import card pack`));
-        //     waterfall([
-        //         async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-        //         wf_get_game, // Get game_details
-        //         wf_validate_host, // Validate req player is host
-        //         wf_validate_in_lobby, // Validate we are in lobby
-        //         async function(game_details, req_data, action, socket_id, callback) { // Verify pack isn't imported already
-        //             if (!game_details.imported_packs.includes(req_data.pack_name)) {
-        //                 callback(false, game_details, req_data, action, socket_id);
-        //             } else {
-        //                 callback(true, `Pack has already been imported`, req_data.slug, action, socket_id, req_data.player_id);
-        //             }
-        //         },
-        //         async function(game_details, req_data, action, socket_id, callback) { // Make sure pack exists
-        //             if (req_data.pack_name === "yolking_around") {
-        //                 game_details.player_cap += 2;
-        //                 callback(false, game_details, req_data, action, socket_id);
-        //             } else {
-        //                 callback(true, `Pack does not exist`, req_data.slug, action, socket_id, req_data.player_id);
-        //             }
-        //         },
-        //         async function(game_details, req_data, action, socket_id, callback) { // Import card pack
-        //             await game_actions.import_cards(game_details, req_data.pack_name);
-        //             await game_actions.log_event(game_details, action.trim(), "", req_data.pack_name, (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
-        //             await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-        //             callback(false, `Imported card pack: ` + req_data.pack_name, req_data.slug, action, socket_id, req_data.player_id);
-        //         }
-        //     ], wf_final_game_callback);
-        // })
-        //
-        // // Name : socket.on.export-pack
-        // // Desc : exports a new pack from a game
-        // // Author(s) : RAk3rman
-        // socket.on('export-pack', async function (data) {
-        //     let action = "export-pack     ";
-        //     if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to export card pack`));
-        //     waterfall([
-        //         async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-        //         wf_get_game, // Get game_details
-        //         wf_validate_host, // Validate req player is host
-        //         wf_validate_in_lobby, // Validate we are in lobby
-        //         async function(game_details, req_data, action, socket_id, callback) { // Verify pack was imported already
-        //             if (game_details.imported_packs.includes(req_data.pack_name)) {
-        //                 callback(false, game_details, req_data, action, socket_id);
-        //             } else {
-        //                 callback(true, `Pack was never imported`, req_data.slug, action, socket_id, req_data.player_id);
-        //             }
-        //         },
-        //         async function(game_details, req_data, action, socket_id, callback) { // Make sure pack exists
-        //             if (req_data.pack_name === "yolking_around") {
-        //                 game_details.player_cap -= 2;
-        //                 callback(false, game_details, req_data, action, socket_id);
-        //             } else {
-        //                 callback(true, `Pack does not exist`, req_data.slug, action, socket_id, req_data.player_id);
-        //             }
-        //         },
-        //         async function(game_details, req_data, action, socket_id, callback) { // Export card pack
-        //             await game_actions.export_cards(game_details, req_data.pack_name);
-        //             await game_actions.log_event(game_details, action.trim(), "", req_data.pack_name, (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
-        //             await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-        //             callback(false, `Exported card pack: ` + req_data.pack_name, req_data.slug, action, socket_id, req_data.player_id);
-        //         }
-        //     ], wf_final_game_callback);
-        // })
+
+        // Name : socket.on.import-pack
+        // Desc : imports a new pack into a game
+        // Author(s) : RAk3rman
+        socket.on('import-pack', async function (data) {
+            let action = "import-pack     ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to import card pack`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_get_lobby, // Get lobby_details
+                wf_validate_host, // Validate req player is host
+                wf_validate_not_in_progress, // Validate we are not in progress
+                async function(lobby_details, req_data, action, socket_id, callback) { // Verify pack isn't imported already
+                    if (!lobby_details.packs.includes(req_data.pack_name)) {
+                        callback(false, lobby_details, req_data, action, socket_id);
+                    } else {
+                        callback(true, `Pack has already been imported`, lobby_details, req_data, action, socket_id);
+                    }
+                },
+                async function(lobby_details, req_data, action, socket_id, callback) { // Make sure pack exists
+                    if (req_data.pack_name === "yolking_around") {
+                        callback(false, lobby_details, req_data, action, socket_id);
+                    } else {
+                        callback(true, `Pack does not exist`, lobby_details, req_data, action, socket_id);
+                    }
+                },
+                async function(lobby_details, req_data, action, socket_id, callback) { // Import card pack across all games
+                    for (let i = 0; i < lobby_details.games.length; i++) {
+                        await game_actions.import_cards(lobby_details, i, req_data.pack_name);
+                    }
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", req_data.pack_name);
+                    await lobby_details.save();
+                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                    callback(false, `Imported card pack: ` + lobby_details.slug, lobby_details, req_data, action, socket_id);
+                }
+            ], wf_final_lobby_callback);
+        })
+
+        // Name : socket.on.export-pack
+        // Desc : exports a new pack from a game
+        // Author(s) : RAk3rman
+        socket.on('export-pack', async function (data) {
+            let action = "export-pack     ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to export card pack`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_get_lobby, // Get lobby_details
+                wf_validate_host, // Validate req player is host
+                wf_validate_not_in_progress, // Validate we are not in progress
+                async function(lobby_details, req_data, action, socket_id, callback) { // Verify pack is imported already
+                    if (lobby_details.packs.includes(req_data.pack_name)) {
+                        callback(false, lobby_details, req_data, action, socket_id);
+                    } else {
+                        callback(true, `Pack was never imported`, lobby_details, req_data, action, socket_id);
+                    }
+                },
+                async function(lobby_details, req_data, action, socket_id, callback) { // Make sure pack exists
+                    if (req_data.pack_name === "yolking_around") {
+                        callback(false, lobby_details, req_data, action, socket_id);
+                    } else {
+                        callback(true, `Pack does not exist`, lobby_details, req_data, action, socket_id);
+                    }
+                },
+                async function(lobby_details, req_data, action, socket_id, callback) { // Export card pack across all games
+                    for (let i = 0; i < lobby_details.games.length; i++) {
+                        await game_actions.export_cards(lobby_details, i, req_data.pack_name);
+                    }
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", req_data.pack_name);
+                    await lobby_details.save();
+                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                    callback(false, `Exported card pack: ` + lobby_details.slug, lobby_details, req_data, action, socket_id);
+                }
+            ], wf_final_lobby_callback);
+        })
 
         // Name : socket.on.check-lobby-slug
         // Desc : runs when we need to see if a slug exists in the db
@@ -511,44 +515,44 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         }
     }
 
-    // Name : wf_validate_host(game_details, req_data, action, socket_id, callback)
+    // Name : wf_validate_host(lobby_details, req_data, action, socket_id, callback)
     // Desc : validate req user is host from waterfall
     // Author(s) : RAk3rman
-    async function wf_validate_host(game_details, req_data, action, socket_id, callback) {
+    async function wf_validate_host(lobby_details, req_data, action, socket_id, callback) {
         // Find player
-        for (let i = 0; i < game_details.players.length; i++) {
-            if (game_details.players[i]._id === req_data.player_id) {
+        for (let i = 0; i < lobby_details.players.length; i++) {
+            if (lobby_details.players[i]._id === req_data.player_id) {
                 // Check if the user is of type host
-                if (game_details.players[i].type === "host") {
-                    callback(false, game_details, req_data, action, socket_id);
+                if (lobby_details.players[i].is_host) {
+                    callback(false, lobby_details, req_data, action, socket_id);
                 } else {
-                    callback(true, "You are not the host", req_data.slug, action, socket_id, req_data.player_id);
+                    callback(true, "You are not the host", lobby_details, req_data, action, socket_id);
                 }
             }
         }
     }
 
-    // Name : player(game_details, req_data, action, socket_id, callback)
+    // Name : wf_validate_not_in_progress(details, req_data, action, socket_id, callback)
     // Desc : validate that the game is in_lobby
     // Author(s) : RAk3rman
-    async function wf_validate_in_lobby(game_details, req_data, action, socket_id, callback) {
-        // Find player
-        if (game_details.status === "in_lobby") {
-            callback(false, game_details, req_data, action, socket_id);
+    async function wf_validate_not_in_progress(details, req_data, action, socket_id, callback) {
+        // Verify the object is not in progress
+        if (!details.in_progress) {
+            callback(false, details, req_data, action, socket_id);
         } else {
-            callback(true, "Game must be stopped first", req_data.slug, action, socket_id, req_data.player_id);
+            callback(true, "Lobby must be reset first", details, req_data, action, socket_id);
         }
     }
 
-    // Name : wf_validate_in_game(game_details, req_data, action, socket_id, callback)
+    // Name : wf_validate_in_progress(details, req_data, action, socket_id, callback)
     // Desc : validate that the game is in_game
     // Author(s) : RAk3rman
-    async function wf_validate_in_game(game_details, req_data, action, socket_id, callback) {
-        // Find player
-        if (game_details.status === "in_game") {
-            callback(false, game_details, req_data, action, socket_id);
+    async function wf_validate_in_progress(details, req_data, action, socket_id, callback) {
+        // Verify the object is in progress
+        if (details.in_progress) {
+            callback(false, details, req_data, action, socket_id);
         } else {
-            callback(true, "Game must be started first", req_data.slug, action, socket_id, req_data.player_id);
+            callback(true, "Lobby must be started first", details, req_data, action, socket_id);
         }
     }
 

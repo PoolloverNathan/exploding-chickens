@@ -55,36 +55,24 @@ exports.import_cards = async function (lobby_details, game_pos, pack_name) {
     lobby_details.packs.push(pack_array[0].pack_name);
 }
 
-// Name : game_actions.export_cards(game_details, pack_name)
+// Name : game_actions.export_cards(lobby_details, game_pos, pack_name)
 // Desc : bulk export cards
 // Author(s) : RAk3rman
-exports.export_cards = async function (game_details, pack_name) {
+exports.export_cards = async function (lobby_details, game_pos, pack_name) {
     // Loop through all cards and remove if apart of pack
-    for (let i = 0; i < game_details.cards.length; i++) {
-        if (game_details.cards[i].pack === pack_name) {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        if (lobby_details.games[game_pos].cards[i].pack === pack_name) {
             // Remove card
-            game_details.cards.splice(i, 1);
+            lobby_details.games[game_pos].cards.splice(i, 1);
             i--;
         }
     }
     //
-    // Remove pack from array of imported_packs
-    let index = game_details.imported_packs.indexOf(pack_name);
+    // Remove pack from array of packs (if it is there)
+    let index = lobby_details.packs.indexOf(pack_name);
     if (index > -1) {
-        game_details.imported_packs.splice(index, 1);
+        lobby_details.packs.splice(index, 1);
     }
-    // Create new promise
-    return await new Promise((resolve, reject) => {
-        // Save existing game
-        game_details.save(function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                // Resolve promise when the last card has been pushed
-                resolve(game_details.cards.length);
-            }
-        });
-    });
 }
 
 // Name : game_actions.draw_card(game_details, player_id)

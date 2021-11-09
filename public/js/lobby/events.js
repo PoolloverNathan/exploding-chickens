@@ -91,6 +91,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
     } else if (data.trigger === "import-pack") {
         sbr_update_widgets(data);
         sbr_update_packs(data);
+        itr_update_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'success',
@@ -99,6 +100,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
     } else if (data.trigger === "export-pack") {
         sbr_update_widgets(data);
         sbr_update_packs(data);
+        itr_update_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'success',
