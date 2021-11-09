@@ -142,7 +142,6 @@ exports.partition_players = async function (lobby_details) {
 // Desc : prepares lobby data for export to client
 // Author(s) : RAk3rman
 exports.lobby_export = async function (lobby_details, source, req_player_id) {
-    console.log(lobby_details);
     // Prepare events payload
     let events_payload = [];
     for (let i = lobby_details.events.length - 1; i >= 0 && i >= (lobby_details.events.length - 20); i--) {

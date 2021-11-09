@@ -35,6 +35,7 @@ function setup_session_check(lobby_details) {
         };
     } else {
         // Check to make sure that the player is valid
+        dance:
         for (let i = 0; i < lobby_details.games.length; i++) {
             for (let j = 0; j < lobby_details.games[i].players.length; j++) {
                 // Check if individual player exists
@@ -52,8 +53,7 @@ function setup_session_check(lobby_details) {
                         is_host: lobby_details.games[i].players[i].type === "host"
                     };
                     // Break
-                    i = lobby_details.games.length;
-                    j = lobby_details.games[i].players.length;
+                    break dance;
                 }
             }
         }

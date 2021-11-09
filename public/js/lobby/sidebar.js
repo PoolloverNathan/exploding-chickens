@@ -57,7 +57,6 @@ function sbr_update_widgets(lobby_details) {
         "        </div>\n" + stat_icon +
         "    </div>\n" +
         "</div>";
-    if (lobby_details.status === "starting") { return }
     // Update players and rooms widgets
     document.getElementById("sbr_ele_players_ctn").innerHTML = lobby_details.players.length;
     document.getElementById("sbr_ele_rooms_ctn").innerHTML = lobby_details.games.length;
@@ -114,7 +113,7 @@ function sbr_update_players(lobby_details) {
                 "        </h3>\n" +
                 "        <div class=\"mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6\">\n" +
                 "            <div class=\"flex items-center text-sm text-gray-500\" id=\"sbr_stat_player_details_" + lobby_details.games[i].players[j]._id + "\">\n" +
-                "                " + lobby_details.games[i].players[j].status.charAt(0).toUpperCase() + lobby_details.players[i].status.slice(1) + ", " + lobby_details.players[i].connection + "\n" +
+                "                " +  + ", " + lobby_details.players[i].connection + "\n" +
                 "            </div>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
