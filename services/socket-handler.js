@@ -19,6 +19,7 @@ let lobby_actions = require('./lobby-actions.js');
 let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
+let event_actions = require('./event-actions.js');
 
 // Export to app.js file
 module.exports = function (fastify, stats_storage, config_storage, bot) {

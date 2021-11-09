@@ -21,6 +21,7 @@ let lobby_actions = require('./lobby-actions.js');
 let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
+let event_actions = require('./event-actions.js');
 
 // Name : game_actions.create_game()
 // Desc : creates a new game in mongodb, returns game details
@@ -765,30 +766,5 @@ exports.game_purge = async function () {
     } catch (err) {
         throw new Error(err);
     }
-}
-
-// Name : game_actions.log_event(game_details, event_name, card_action, rel_id, req_player, target_player)
-// Desc : creates a new event
-// Author(s) : RAk3rman
-exports.log_event = async function (game_details, event_name, card_action, rel_id, req_player, target_player) {
-    game_details.events.push({
-        event_name: event_name,
-        card_action: card_action,
-        rel_id: rel_id,
-        req_player: req_player,
-        target_player: target_player
-    });
-    // Create new promise to save game
-    return await new Promise((resolve, reject) => {
-        // Save updated game
-        game_details.save({}, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                // console.log(wipe(`${chalk.bold.green('Event')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('new-event       ')} ${chalk.dim.yellow(game_details.slug)} ${chalk.bold('event_name:')} '` + event_name + `', ${chalk.bold('rel_id:')} '` + rel_id + `', ${chalk.bold('card_action:')} '` + card_action + `', ${chalk.bold('req_player:')} '` + req_player + `', ${chalk.bold('target_player:')} '` + target_player + `'`));
-                resolve();
-            }
-        });
-    });
 }
 

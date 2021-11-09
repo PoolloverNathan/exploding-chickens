@@ -1,6 +1,6 @@
 /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-Filename : exploding-chickens/routes/actions-api.js
-Desc     : all routes related to lobby and game actions
+Filename : exploding-chickens/routes/lobby-api.js
+Desc     : all routes related to lobby actions
 Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
@@ -17,6 +17,7 @@ module.exports = function (fastify) {
     let game_actions = require('../services/game-actions.js');
     let player_actions = require('../services/player-actions.js');
     let card_actions = require('../services/card-actions.js');
+    let event_actions = require('../services/event-actions.js');
 
     // "/lobby" POST: Create new lobby and redirect
     fastify.post('/lobby', {

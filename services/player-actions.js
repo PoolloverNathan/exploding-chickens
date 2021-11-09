@@ -15,6 +15,7 @@ let lobby_actions = require('./lobby-actions.js');
 let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
+let event_actions = require('./event-actions.js');
 
 // Name : player_actions.create_player()
 // Desc : creates a new player

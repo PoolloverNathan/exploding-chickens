@@ -7,7 +7,6 @@ Author(s): RAk3rman
 
 // Packages
 let Lobby = require('../models/lobby.js');
-let Game = require('../models/game.js');
 const chalk = require('chalk');
 const moment = require('moment');
 let momentDurationFormatSetup = require("moment-duration-format");
@@ -22,7 +21,7 @@ let lobby_actions = require('./lobby-actions.js');
 let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
-const game = require("../models/game.js");
+let event_actions = require('./event-actions.js');
 
 // Name : lobby_actions.create_lobby()
 // Desc : creates a new lobby in mongodb, returns lobby_details
@@ -57,6 +56,18 @@ exports.lobby_details_id = async function (_id) {
     // Find lobby and return
     try {
         return await Lobby.findOne({ _id: _id });
+    } catch (err) {
+        throw new Error(err);
+    }
+}
+
+// Name : lobby_actions.save_lobby(lobby_details)
+// Desc : saves a lobby_details object
+// Author(s) : RAk3rman
+exports.save_lobby = async function (lobby_details) {
+    // Save lobby
+    try {
+        return await lobby_details.save();
     } catch (err) {
         throw new Error(err);
     }
@@ -246,25 +257,6 @@ exports.lobby_purge = async function () {
                 console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted lobby created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));
             });
         });
-    } catch (err) {
-        throw new Error(err);
-    }
-}
-
-// Name : lobby_actions.log_event(lobby_details, event_name, card_action, rel_id, req_player, target_player)
-// Desc : creates a new event
-// Author(s) : RAk3rman
-exports.log_event = async function (lobby_details, event_name, card_action, rel_id, req_player, target_player) {
-    lobby_details.events.push({
-        event_name: event_name,
-        card_action: card_action,
-        rel_id: rel_id,
-        req_player: req_player,
-        target_player: target_player
-    });
-    // Save lobby
-    try {
-        return await lobby_details.save();
     } catch (err) {
         throw new Error(err);
     }
