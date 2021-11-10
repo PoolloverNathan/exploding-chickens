@@ -482,7 +482,7 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
     // Prepare players payload
     let players_payload = [];
     for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.players[i].game_assign.equals(game_details._id)) {
+        if (lobby_details.players[i].game_assign?.equals(game_details._id)) {
             players_payload.push(await player_actions.player_export(lobby_details, i));
         }
     }
