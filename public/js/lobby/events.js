@@ -72,6 +72,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
             }
         }
         sbr_update_widgets(data);
+        sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
         toast_turn.close();
@@ -111,6 +112,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
         itr_update_pstatus(data);
     } else { // Update entire ui
         sbr_update_widgets(data);
+        sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
         itr_update_games(data);
@@ -204,6 +206,19 @@ function reset_game() {
         slug: window.location.pathname.substr(7),
         player_id: session_user._id
     })
+}
+
+// Name : frontend-game.update_option(option, value)
+// Desc : emits the update-option event to update an option
+function update_option(option, value) {
+    if (session_user.is_host) {
+        socket.emit('update-option', {
+            slug: window.location.pathname.substr(7),
+            player_id: session_user._id,
+            option: option,
+            value: value
+        })
+    }
 }
 
 // Name : frontend-game.kick_player(target_player_id)

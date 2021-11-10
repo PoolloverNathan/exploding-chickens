@@ -52,7 +52,9 @@ exports.import_cards = async function (lobby_details, game_pos, pack_name) {
         });
     }
     // Add pack to array of packs
-    lobby_details.packs.push(pack_array[0].pack_name);
+    if (lobby_details.packs.indexOf(pack_array[0].pack_name) === -1) {
+        lobby_details.packs.push(pack_array[0].pack_name);
+    }
 }
 
 // Name : game_actions.export_cards(lobby_details, game_pos, pack_name)
@@ -523,34 +525,12 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
 // Name : game_actions.delete_game(game_id)
 // Desc : deletes a existing game in mongodb, returns game_id
 // Author(s) : RAk3rman
-exports.delete_game = async function (game_id) {
-    // Create new promise and return game_id after deleted
-    return await new Promise((resolve, reject) => {
-        game.deleteOne({ _id: game_id }, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(game_id);
-            }
-        });
-    });
-}
-
-// Name : game_actions.game_purge()
-// Desc : deletes all games that are older than the purge age
-// Author(s) : RAk3rman
-exports.game_purge = async function () {
-    // Filter which objects to purge
-    try {
-        let to_purge = await game.find({ created: { $lte: moment().subtract(config_storage.get('purge_age_hrs'), "hours").toISOString() } });
-        to_purge.forEach(ele => {
-            // Delete game
-            game_actions.delete_game(ele._id).then(() => {
-                console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted game created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));
-            });
-        });
-    } catch (err) {
-        throw new Error(err);
+exports.delete_game = async function (lobby_details, game_id) {
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        if (lobby_details.games[i]._id.equals(game_id)) {
+            lobby_details.games.splice(i, 1);
+            return;
+        }
     }
 }
 

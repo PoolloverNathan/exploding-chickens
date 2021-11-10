@@ -107,7 +107,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 },
                 async function(lobby_details, req_data, action, socket_id, callback) { // Create player
                     req_data.player_id = await player_actions.create_player(lobby_details, req_data.nickname, req_data.avatar);
-                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", "");
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", "", "");
                     await lobby_actions.partition_players(lobby_details);
                     await lobby_details.save();
                     fastify.io.to(socket_id).emit("player-created", req_data.player_id);
@@ -305,6 +305,28 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //     ], wf_final_game_callback);
         // })
 
+        // Name : socket.on.update-option
+        // Desc : updates a lobby option
+        // Author(s) : RAk3rman
+        socket.on('update-option', async function (data) {
+            let action = "update-option   ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to update lobby option`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_get_lobby, // Get lobby_details
+                wf_validate_host, // Validate req player is host
+                async function(lobby_details, req_data, action, socket_id, callback) { // Update option
+                    let result = await lobby_actions.update_option(lobby_details, req_data.option, req_data.value);
+                    if (!result) callback(true, `Invalid option`, lobby_details, req_data, action, socket_id);
+                    if (req_data.option === "include_host") req_data.value = lobby_details.include_host;
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", req_data.option, req_data.value);
+                    await lobby_details.save();
+                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                    callback(false, `Updated option: ` + req_data.option, lobby_details, req_data, action, socket_id);
+                }
+            ], wf_final_lobby_callback);
+        })
+
         // Name : socket.on.kick-player
         // Desc : kicks a target player from a lobby
         // Author(s) : RAk3rman
@@ -317,7 +339,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 wf_validate_host, // Validate req player is host
                 async function(lobby_details, req_data, action, socket_id, callback) { // Kick player
                     await player_actions.kick_player(lobby_details, req_data.player_id, req_data.kick_player_id);
-                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, req_data.kick_player_id, "");
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, req_data.kick_player_id, "", "");
                     await lobby_details.save();
                     await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
                     callback(false, `Kicked player: ` + req_data.kick_player_id, lobby_details, req_data, action, socket_id);
@@ -337,7 +359,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 wf_validate_host, // Validate req player is host
                 async function(lobby_details, req_data, action, socket_id, callback) { // Make host
                     await player_actions.make_host(lobby_details, req_data.player_id, req_data.suc_player_id);
-                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, req_data.suc_player_id, "");
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, req_data.suc_player_id, "", "");
                     await lobby_details.save();
                     await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
                     callback(false, `Transferred host role from: ` + req_data.player_id + ` -> ` + req_data.suc_player_id, lobby_details, req_data, action, socket_id);
@@ -374,7 +396,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     for (let i = 0; i < lobby_details.games.length; i++) {
                         await game_actions.import_cards(lobby_details, i, req_data.pack_name);
                     }
-                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", req_data.pack_name);
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", req_data.pack_name, "");
                     await lobby_details.save();
                     await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
                     callback(false, `Imported card pack: ` + lobby_details.slug, lobby_details, req_data, action, socket_id);
@@ -411,7 +433,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     for (let i = 0; i < lobby_details.games.length; i++) {
                         await game_actions.export_cards(lobby_details, i, req_data.pack_name);
                     }
-                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", req_data.pack_name);
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", req_data.pack_name, "");
                     await lobby_details.save();
                     await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
                     callback(false, `Exported card pack: ` + lobby_details.slug, lobby_details, req_data, action, socket_id);

@@ -85,7 +85,7 @@ exports.partition_players = async function (lobby_details) {
     let player_bucket = [];
     for (let i = 0; i < lobby_details.players.length; i++) {
         // Make sure player isn't disabled and isn't included as host if param set
-        if (!lobby_details.players[i].is_disabled || (!lobby_details.include_host && lobby_details.players[i].is_host)) {
+        if (!lobby_details.players[i].is_disabled && (lobby_details.players[i].is_host ? lobby_details.include_host : true)) {
             player_bucket.push(lobby_details.players[i]);
         }
     }
@@ -125,12 +125,14 @@ exports.partition_players = async function (lobby_details) {
         let diff = groups.length - game_candidates.length;
         for (let i = 0; i < diff; i++) {
             let game_pos = await game_actions.create_game(lobby_details);
-            await game_actions.import_cards(lobby_details, game_pos, "base");
+            for (let j = 0; j < lobby_details.packs.length; j++) {
+                await game_actions.import_cards(lobby_details, game_pos, lobby_details.packs[j]);
+            }
             game_candidates.push(lobby_details.games[game_pos]._id);
         }
     } else if (groups.length < game_candidates.length) { // Check if we have too many candidates, delete if so
         for (let i = groups.length; i < game_candidates.length; i++) {
-            await game_actions.delete_game(game_candidates[i]);
+            await game_actions.delete_game(lobby_details, game_candidates[i]);
         }
     }
     // Map game candidates to player groupings
@@ -145,6 +147,40 @@ exports.partition_players = async function (lobby_details) {
             }
         }
     }
+}
+
+// Name : lobby_actions.update_option(lobby_details, option, value)
+// Desc : updates an option from the client
+// Author(s) : RAk3rman
+exports.update_option = async function (lobby_details, option, value) {
+    // Determine which option to change and verify parameter
+    if (option === "grp_method" && (value === "random" || value === "wins")) {
+        lobby_details.grp_method = value;
+        await lobby_actions.partition_players(lobby_details);
+        return true;
+    } else if (option === "room_size" && (value < 7 && value > 1)) {
+        lobby_details.room_size = value;
+        await lobby_actions.partition_players(lobby_details);
+        return true;
+    } else if (option === "play_timeout" && (value === "-1" || value === "30" || value === "60" || value === "120")) {
+        lobby_details.play_timeout = value;
+        return true;
+    } else if (option === "include_host") {
+        lobby_details.include_host = !lobby_details.include_host;
+        // Update host if not included in game
+        if (!lobby_details.include_host) {
+            for (let i = 0; i < lobby_details.players.length; i++) {
+                if (lobby_details.players[i].is_host) {
+                    lobby_details.players[i].game_assign = undefined;
+                    lobby_details.players[i].seat_pos = -1;
+                    break;
+                }
+            }
+        }
+        await lobby_actions.partition_players(lobby_details);
+        return true;
+    }
+    return false;
 }
 
 // Name : game_actions.lobby_export(lobby_details, source, req_player_id)

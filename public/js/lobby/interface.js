@@ -122,8 +122,10 @@ function itr_update_games(lobby_details) {
 // Desc : updates only the status symbol of players
 function itr_update_pstatus(lobby_details) {
     // Loop through each player and update status
-    for (let i = 0; i < lobby_details.players.length; i++) {
-        document.getElementById("itr_stat_player_dot_" + lobby_details.players[i]._id).className = stat_dot_class(lobby_details.players[i].sockets_open, "mx-0.5");
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        for (let j = 0; j < lobby_details.games[i].players.length; j++) {
+            document.getElementById("itr_stat_player_dot_" + lobby_details.games[i].players[j]._id).className = stat_dot_class(lobby_details.games[i].players[j].sockets_open, "mx-0.5");
+        }
     }
 }
 

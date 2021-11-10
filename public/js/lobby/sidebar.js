@@ -69,91 +69,38 @@ function sbr_update_widgets(lobby_details) {
     document.getElementById("itr_ele_status").innerHTML = itr_stat;
 }
 
-// Name : frontend-game.sbr_update_players(lobby_details)
-// Desc : updates players, add host actions if able
-function sbr_update_players(lobby_details) {
-    let payload = "";
-    let found_player = false;
-    // Loop through each player and append to payload
-    for (let i = 0; i < lobby_details.games.length; i++) {
-        for (let j = 0; j < lobby_details.games[i].players.length; j++) {
-            // Check if we found current user, append to top
-            if (lobby_details.games[i].players[j]._id === session_user._id) {
-                document.getElementById("sbr_ele_usertop").innerHTML = lobby_details.games[i].players[j].nickname + create_stat_dot(lobby_details.games[i].players[j].sockets_open, "mx-1.5", "sbr_stat_usertop_" + lobby_details.games[i].players[j]._id);
-                found_player = true;
-            }
-            // If host, add make host and kick options to each player
-            let actions = "";
-            if (session_user.is_host && lobby_details.games[i].players[j]._id !== session_user._id) {
-                actions = "<div class=\"flex mt-0 ml-4\">\n" +
-                    "    <span class=\"\">\n" +
-                    "          <button onclick=\"make_host('" + lobby_details.games[i].players[j]._id + "')\" type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500\">\n" +
-                    "                <svg class=\"-ml-1 mr-1 h-5 w-5 text-gray-500\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
-                    "                    <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z\" />\n" +
-                    "                </svg>\n" +
-                    "                Make Host\n" +
-                    "          </button>\n" +
-                    "    </span>\n" +
-                    "    <span class=\"ml-3\">\n" +
-                    "          <button onclick=\"kick_player('" + lobby_details.games[i].players[j]._id + "')\" type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500\">\n" +
-                    "                <svg class=\"-ml-1 mr-1 h-5 w-5\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
-                    "                    <path fill-rule=\"evenodd\" d=\"M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z\" clip-rule=\"evenodd\" />\n" +
-                    "                </svg>\n" +
-                    "                Kick\n" +
-                    "          </button>\n" +
-                    "    </span>\n" +
-                    "</div>";
-            }
-            // Construct name for each player
-            let name = lobby_details.games[i].players[j].nickname;
-            if (lobby_details.games[i].players[j].is_host) {
-                name += ", Host"
-            } else if (lobby_details.games[i].players[j]._id === session_user._id) {
-                name += ", You"
-            }
-            // Add sidebar html to payload
-            payload += "<div class=\"flex items-center justify-between mb-2\">\n" +
-                "    <div class=\"flex-1 min-w-0\">\n" +
-                "        <h3 class=\"text-md font-bold text-gray-900 truncate\">\n" +
-                "            " + name + " " + create_stat_dot(lobby_details.games[i].players[j].sockets_open, "mx-0.5", "sbr_stat_player_dot_" + lobby_details.games[i].players[j]._id) + "\n" +
-                "        </h3>\n" +
-                "        <div class=\"mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6\">\n" +
-                "            <div class=\"flex items-center text-sm text-gray-500\" id=\"sbr_stat_player_details_" + lobby_details.games[i].players[j]._id + "\">\n" +
-                "                " + (lobby_details.games[i].in_progress ? "In game" : lobby_details.games[i].is_completed ? "In queue" : "Matchmaking") + ", " + (lobby_details.games[i].players[j].sockets_open > 0 ? "connected" : "disconnected") + "\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                actions +
-                "</div>";
-        }
-        // Update with new player data
-        if (payload !== "") {
-            document.getElementById("sbr_ele_players").innerHTML = payload;
-        }
-        // If the user is a spectator, update title name
-        if (!found_player) {
-            document.getElementById("sbr_ele_usertop").innerHTML = "Spectator <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 ml-0.5 align-middle bg-gray-500\"></span>";
-        }
-    }
+// Name : frontend-game.sbr_update_options(lobby_details)
+// Desc : updates lobby options
+function sbr_update_options(lobby_details) {
+    // Grouping method
+    document.getElementById("grp_method_random").checked = lobby_details.grp_method === "random";
+    document.getElementById("grp_method_wins").checked = lobby_details.grp_method === "wins";
+    document.getElementById("grp_method_random").disabled = !session_user.is_host;
+    document.getElementById("grp_method_wins").disabled = !session_user.is_host;
+    // Room size
+    document.getElementById("room_size_2").checked = lobby_details.room_size === 2;
+    document.getElementById("room_size_3").checked = lobby_details.room_size === 3;
+    document.getElementById("room_size_4").checked = lobby_details.room_size === 4;
+    document.getElementById("room_size_5").checked = lobby_details.room_size === 5;
+    document.getElementById("room_size_6").checked = lobby_details.room_size === 6;
+    document.getElementById("room_size_2").disabled = !session_user.is_host;
+    document.getElementById("room_size_3").disabled = !session_user.is_host;
+    document.getElementById("room_size_4").disabled = !session_user.is_host;
+    document.getElementById("room_size_5").disabled = !session_user.is_host;
+    document.getElementById("room_size_6").disabled = !session_user.is_host;
+    // Auto play timeout
+    document.getElementById("play_timeout_inf").checked = lobby_details.play_timeout === -1;
+    document.getElementById("play_timeout_30").checked = lobby_details.play_timeout === 30;
+    document.getElementById("play_timeout_60").checked = lobby_details.play_timeout === 60;
+    document.getElementById("play_timeout_120").checked = lobby_details.play_timeout === 120;
+    document.getElementById("play_timeout_inf").disabled = !session_user.is_host;
+    document.getElementById("play_timeout_30").disabled = !session_user.is_host;
+    document.getElementById("play_timeout_60").disabled = !session_user.is_host;
+    document.getElementById("play_timeout_120").disabled = !session_user.is_host;
+    // Remove host from games
+    document.getElementById("include_host").checked = !lobby_details.include_host;
+    document.getElementById("include_host").disabled = !session_user.is_host;
 }
-
-// Name : frontend-game.sbr_update_pstatus(lobby_details)
-// Desc : updates only the status symbol of players
-function sbr_update_pstatus(lobby_details) {
-    // Loop through each player and update status
-    for (let i = 0; i < lobby_details.games.length; i++) {
-        for (let j = 0; j < lobby_details.games[i].players.length; j++) {
-            // Check if we found current user, append to top
-            if (lobby_details.games[i].players[j]._id === session_user._id) {
-                document.getElementById("sbr_stat_usertop_" + lobby_details.games[i].players[j]._id).className = stat_dot_class(lobby_details.games[i].players[j].sockets_open, "mx-1.5");
-            }
-            // Update status for players element
-            document.getElementById("sbr_stat_player_dot_" + lobby_details.games[i].players[j]._id).className = stat_dot_class(lobby_details.games[i].players[j].sockets_open, "mx-0.5");
-            document.getElementById("sbr_stat_player_details_" + lobby_details.games[i].players[j]._id).innerHTML = (lobby_details.games[i].in_progress ? "In game" : lobby_details.games[i].is_completed ? "In queue" : "Matchmaking") + ", " + (lobby_details.games[i].players[j].sockets_open > 0 ? "connected" : "disconnected");
-        }
-    }
-}
-
 
 // Name : frontend-game.sbr_update_packs(lobby_details)
 // Desc : updates which card packs are marked as imported
@@ -186,6 +133,87 @@ function sbr_update_packs(lobby_details) {
             "      </svg>\n" +
             "      Available\n" +
             "</button>";
+    }
+}
+
+// Name : frontend-game.sbr_update_players(lobby_details)
+// Desc : updates players, add host actions if able
+function sbr_update_players(lobby_details) {
+    let payload = "";
+    let found_player = false;
+    // Loop through each player and append to payload
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        // Check if we found current user, append to top
+        if (lobby_details.players[i]._id === session_user._id) {
+            document.getElementById("sbr_ele_usertop").innerHTML = lobby_details.players[i].nickname + create_stat_dot(lobby_details.players[i].sockets_open, "mx-1.5", "sbr_stat_usertop_" + lobby_details.players[i]._id);
+            found_player = true;
+        }
+        // If host, add make host and kick options to each player
+        let actions = "";
+        if (session_user.is_host && lobby_details.players[i]._id !== session_user._id) {
+            actions = "<div class=\"flex mt-0 ml-4\">\n" +
+                "    <span class=\"\">\n" +
+                "          <button onclick=\"make_host('" + lobby_details.players[i]._id + "')\" type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500\">\n" +
+                "                <svg class=\"-ml-1 mr-1 h-5 w-5 text-gray-500\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "                    <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z\" />\n" +
+                "                </svg>\n" +
+                "                Make Host\n" +
+                "          </button>\n" +
+                "    </span>\n" +
+                "    <span class=\"ml-3\">\n" +
+                "          <button onclick=\"kick_player('" + lobby_details.players[i]._id + "')\" type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500\">\n" +
+                "                <svg class=\"-ml-1 mr-1 h-5 w-5\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
+                "                    <path fill-rule=\"evenodd\" d=\"M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z\" clip-rule=\"evenodd\" />\n" +
+                "                </svg>\n" +
+                "                Kick\n" +
+                "          </button>\n" +
+                "    </span>\n" +
+                "</div>";
+        }
+        // Construct name for each player
+        let name = lobby_details.players[i].nickname;
+        if (lobby_details.players[i].is_host) {
+            name += ", Host"
+        } else if (lobby_details.players[i]._id === session_user._id) {
+            name += ", You"
+        }
+        // Add sidebar html to payload
+        payload += "<div class=\"flex items-center justify-between mb-2\">\n" +
+            "    <div class=\"flex-1 min-w-0\">\n" +
+            "        <h3 class=\"text-md font-bold text-gray-900 truncate\">\n" +
+            "            " + name + " " + create_stat_dot(lobby_details.players[i].sockets_open, "mx-0.5", "sbr_stat_player_dot_" + lobby_details.players[i]._id) + "\n" +
+            "        </h3>\n" +
+            "        <div class=\"mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6\">\n" +
+            "            <div class=\"flex items-center text-sm text-gray-500\" id=\"sbr_stat_player_details_" + lobby_details.players[i]._id + "\">\n" +
+            (lobby_details.players[i].is_dead ? "Exploded" : lobby_details.in_progress ? "In game" : lobby_details.players[i].is_host && !lobby_details.include_host ? "Spectating" : "Matchmaking") + ", " + (lobby_details.players[i].sockets_open > 0 ? "connected" : "disconnected") + "\n" +
+            "            </div>\n" +
+            "        </div>\n" +
+            "    </div>\n" +
+            actions +
+            "</div>";
+        // Update with new player data
+        if (payload !== "") {
+            document.getElementById("sbr_ele_players").innerHTML = payload;
+        }
+        // If the user is a spectator, update title name
+        if (!found_player) {
+            document.getElementById("sbr_ele_usertop").innerHTML = "Spectator <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 ml-0.5 align-middle bg-gray-500\"></span>";
+        }
+    }
+}
+
+// Name : frontend-game.sbr_update_pstatus(lobby_details)
+// Desc : updates only the status symbol of players
+function sbr_update_pstatus(lobby_details) {
+    // Loop through each player and update status
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        // Check if we found current user, append to top
+        if (lobby_details.players[i]._id === session_user._id) {
+            document.getElementById("sbr_stat_usertop_" + lobby_details.players[i]._id).className = stat_dot_class(lobby_details.players[i].sockets_open, "mx-1.5");
+        }
+        // Update status for players element
+        document.getElementById("sbr_stat_player_dot_" + lobby_details.players[i]._id).className = stat_dot_class(lobby_details.players[i].sockets_open, "mx-0.5");
+        document.getElementById("sbr_stat_player_details_" + lobby_details.players[i]._id).innerHTML = (lobby_details.players[i].is_dead ? "Exploded" : lobby_details.in_progress ? "In game" : lobby_details.players[i].is_host && !lobby_details.include_host ? "Spectating" : "Matchmaking") + ", " + (lobby_details.players[i].sockets_open > 0 ? "connected" : "disconnected");
     }
 }
 

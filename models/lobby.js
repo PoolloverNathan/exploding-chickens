@@ -56,7 +56,10 @@ let lobbySchema = mongoose.Schema({
     },
     games: [Game],
     players: [Player],
-    packs: [String],
+    packs: {
+        type: [String],
+        default: ["base"]
+    },
     events: [Event]
 });
 

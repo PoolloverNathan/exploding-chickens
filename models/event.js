@@ -25,6 +25,10 @@ module.exports = mongoose.Schema({
         type: String,
         required: false
     },
+    rel_val: {
+        type: String,
+        required: false
+    },
     created: {
         type: Date,
         default: Date.now

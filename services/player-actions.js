@@ -313,30 +313,34 @@ exports.sort_hand = async function (game_details, player_id) {
 // Desc : prepares player data for export to client
 // Author(s) : RAk3rman
 exports.player_export = async function (lobby_details, player_pos) {
-    // Get game details
-    let game_details;
-    lobby_details.games.every(game => {
-        if (game._id.equals(lobby_details.players[player_pos].game_assign)) {
-            game_details = game;
-            return false;
-        }
-        return true;
-    });
-    // Filter card hand
-    let card_array = await card_actions.filter_cards(lobby_details.players[player_pos]._id, game_details.cards);
-    // Sort card hand in reverse order
-    card_array.sort(function(a, b) {
-        return b.pos - a.pos;
-    });
-    // Check if the lobby_details.players[player_pos] is exploding
+    let game_details = [];
+    let card_array = [];
     let is_exploding = false;
-    card_array.every(card => {
-        if (card.action === "chicken") {
-            is_exploding = true;
-            return false;
-        }
-        return true;
-    });
+    // Check host removal condition
+    if (lobby_details.players[player_pos].is_host && lobby_details.include_host) {
+        // Get game details
+        lobby_details.games.every(game => {
+            if (game._id.equals(lobby_details.players[player_pos].game_assign)) {
+                game_details = game;
+                return false;
+            }
+            return true;
+        });
+        // Filter card hand
+        card_array = await card_actions.filter_cards(lobby_details.players[player_pos]._id, game_details.cards);
+        // Sort card hand in reverse order
+        card_array.sort(function(a, b) {
+            return b.pos - a.pos;
+        });
+        // Check if the player is exploding
+        card_array.every(card => {
+            if (card.action === "chicken") {
+                is_exploding = true;
+                return false;
+            }
+            return true;
+        });
+    }
     // Return pretty lobby_details.players[player_pos] details
     return {
         _id: lobby_details.players[player_pos]._id,
