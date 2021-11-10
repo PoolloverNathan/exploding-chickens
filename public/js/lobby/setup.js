@@ -91,7 +91,7 @@ function setup_user_prompt(lobby_details, err, nickname) {
             // Validate input
             let selected_nickname = document.getElementById("nickname_swal").value;
             if (selected_avatar === "default.png") {
-                setup_user_prompt(lobby_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please select an avatar", selected_nickname);
+                setup_user_prompt(lobby_details, "Please select an avatar", selected_nickname);
             } else {
                 // Create new player
                 socket.emit('create-player', {

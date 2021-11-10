@@ -39,7 +39,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
     setup_session_check(data);
     // Update events log
     events_data = data.events;
-    events_length = data.events.length;
+    events_length = data.events_length;
     sbr_update_log();
     // Update elements based on update trigger
     if (data.trigger === "player-online") { // Existing player connected
@@ -47,6 +47,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
         itr_update_pstatus(data);
     } else if (data.trigger === "create-player") { // New player was created
         sbr_update_widgets(data);
+        sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
         itr_update_games(data);
@@ -122,8 +123,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
 // Name : frontend-game.socket.on.player-created
 // Desc : whenever an event occurs stating that a player was created
 socket.on("player-created", function (data) {
-    // Update player_id
-    session_user._id = data;
+    // Save data into cache
     lscache.set('ec_session_' + window.location.pathname.substr(7), JSON.stringify({
         slug: window.location.pathname.substr(7),
         player_id: data
@@ -137,9 +137,9 @@ socket.on(window.location.pathname.substr(7) + "-lobby-error", function (data) {
     if (data.msg === "LOBBY-DNE") {
         window.location.href = "/";
     } else if (data.msg === "PLYR-NAME") {
-        setup_user_prompt(data.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please enter a valid nickname (letters only)", "");
+        setup_user_prompt(data.lobby_details, "Please enter a valid nickname <br> (letters only, < 12 chars, not already used)", "");
     } else if (data.msg === "PLYR-AVTR") {
-        setup_user_prompt(data.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please select an avatar", "");
+        setup_user_prompt(data.lobby_details, "Please select an avatar", "");
     } else {
         toast_alert.fire({
             icon: 'error',

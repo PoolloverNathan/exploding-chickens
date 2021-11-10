@@ -224,6 +224,7 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
         players: players_payload,
         packs: lobby_details.packs,
         events: events_payload,
+        events_length: lobby_details.events.length,
         req_player_id: req_player_id,
         trigger: source.trim()
     }

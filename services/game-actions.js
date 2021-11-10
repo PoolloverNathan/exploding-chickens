@@ -515,6 +515,7 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
         created: moment(game_details.created),
         players: players_payload,
         events: events_payload,
+        events_length: game_details.events.length,
         discard_deck: discard_deck,
         packs: lobby_details.packs,
         req_player_id: req_player_id,
