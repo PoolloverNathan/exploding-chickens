@@ -475,13 +475,13 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
     // Prepare events payload
     let events_payload = [];
     for (let i = game_details.events.length - 1; i >= 0 && i >= (game_details.events.length - 20); i--) {
-        events_payload.push(await event_actions.parse_event(game_details.events[i]));
+        events_payload.push(await event_actions.parse_event(lobby_details, game_details.events[i]));
     }
     // Prepare players payload
     let players_payload = [];
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.players[i].game_assign.equals(game_details._id)) {
-            players_payload.push(await player_actions.player_export(lobby_details, lobby_details.players[i]));
+            players_payload.push(await player_actions.player_export(lobby_details, i));
         }
     }
     // Sort players by seat

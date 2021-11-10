@@ -1290,6 +1290,11 @@ html {
   background-color: hsla(var(--in)/var(--tw-bg-opacity,1));
 }
 
+.progress-success::-moz-progress-bar {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--su)/var(--tw-bg-opacity,1));
+}
+
 .progress::-webkit-progress-bar {
   --tw-bg-opacity: 1;
   --tw-bg-opacity: 0.2;
@@ -1306,6 +1311,11 @@ html {
 .progress-info::-webkit-progress-value {
   --tw-bg-opacity: 1;
   background-color: hsla(var(--in)/var(--tw-bg-opacity,1));
+}
+
+.progress-success::-webkit-progress-value {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--su)/var(--tw-bg-opacity,1));
 }
 
 .radio {
@@ -3252,6 +3262,11 @@ html {
   --tw-ring-color: rgba(255, 255, 255, var(--tw-ring-opacity));
 }
 
+.focus\:ring-gray-700:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgba(55, 65, 81, var(--tw-ring-opacity));
+}
+
 .focus\:ring-red-500:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgba(239, 68, 68, var(--tw-ring-opacity));
@@ -3265,11 +3280,6 @@ html {
 .focus\:ring-green-500:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgba(16, 185, 129, var(--tw-ring-opacity));
-}
-
-.focus\:ring-green-600:focus {
-  --tw-ring-opacity: 1;
-  --tw-ring-color: rgba(5, 150, 105, var(--tw-ring-opacity));
 }
 
 .focus\:ring-blue-500:focus {
@@ -3519,6 +3529,10 @@ html {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .md\:grid-cols-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
@@ -3608,6 +3622,10 @@ html {
 
   .xl\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .xl\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

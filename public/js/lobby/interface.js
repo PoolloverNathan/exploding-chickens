@@ -14,6 +14,22 @@ const toast_turn = Swal.mixin({
 // Name : frontend-game.itr_update_games(lobby_details)
 // Desc : updates game rooms
 function itr_update_games(lobby_details) {
+    // Check base case, no games
+    if (lobby_details.games.length === 0) {
+        document.getElementById("itr_ele_groups").innerHTML = "<div class=\"flex flex-col items-center justify-center h-screen\">\n" +
+            "    <h3 class=\"text-3xl text-gray-700 pb-3 text-center\"><strong>Waiting for players to join...</strong></h3>\n" +
+            "    <h3 class=\"text-md text-gray-700 px-2 text-center\">Welcome to <strong>Exploding Chickens</strong>! Lobby: <i>" + lobby_details.slug + "</i></h3>\n" +
+            "    <h3 class=\"text-md text-gray-700 px-2 pb-3 text-center\">Invite your friends by clicking on the invite link below.</h3>\n" +
+            "    <button type=\"button\" onclick=\"sbr_copy_url()\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\">\n" +
+            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" />\n" +
+            "        </svg>\n" +
+            "        Invite Link\n" +
+            "    </button>\n" +
+            "</div>";
+        return;
+    }
+    // Prepare game grid payload
     let game_grid_payload = "";
     // Loop through each game
     for (let i = 0; i < lobby_details.games.length; i++) {
@@ -72,10 +88,34 @@ function itr_update_games(lobby_details) {
     } else if (lobby_details.games.length === 3) {
         grid_break = "grid-cols-1 md:grid-cols-3";
     }
+    // Host action btn
+    let host_action_payload = "";
+    if (session_user.is_host) {
+        if (lobby_details.in_progress) {
+            host_action_payload = "<div class=\"flex justify-center mt-4 mb-6\">\n" +
+                "    <button type=\"button\" class=\"inline-flex items-center px-2 py-1 rounded-md shadow-sm text-lg font-medium text-white border border-gray-100 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\" onclick=\"reset_game()\">\n" +
+                "        <svg class=\"-ml-1 mr-1 h-6 w-6\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\" />\n" +
+                "        </svg>" +
+                "        Reset Game\n" +
+                "    </button>\n" +
+                "</div>"
+        } else {
+            host_action_payload = "<div class=\"flex justify-center mt-4 mb-6\">\n" +
+                "    <button type=\"button\" class=\"inline-flex items-center px-2 py-1 rounded-md shadow-sm text-lg font-medium text-white border border-gray-100 bg-gradient-to-r from-green-500 to-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\" onclick=\"start_game()\">\n" +
+                "        <svg class=\"-ml-1 mr-1 h-6 w-6\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9\" />\n" +
+                "        </svg>\n" +
+                "        Start Game\n" +
+                "    </button>\n" +
+                "</div>"
+        }
+    }
     // Construct payload
     document.getElementById("itr_ele_groups").innerHTML = "<div class=\"grid " + grid_break + " gap-x-6 gap-y-6 p-4\">" +
         game_grid_payload +
-        "</div>";
+        "</div>" +
+        host_action_payload;
 }
 
 // Name : frontend-game.itr_update_pstatus(game_details)

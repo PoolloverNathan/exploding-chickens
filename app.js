@@ -124,30 +124,11 @@ fastify.get('/lobby/:_id', {
 }, async function (req, reply) {
     // Make sure lobby exists
     if (await Lobby.exists({ slug: req.params._id, created: { $gte: moment().subtract(12, "hours").toISOString() } })) {
-        reply.view('/templates/lobby.hbs', { slug_1: req.params._id, slug_2: req.params._id, slug_3: req.params._id, version: pkg.version, bnr_short_desc: bnr_config.short_desc, bnr_long_desc: bnr_config.long_desc, bnr_tag: bnr_config.tag })
+        reply.view('/templates/lobby.hbs', { slug_1: req.params._id, slug_2: req.params._id, slug_3: req.params._id, slug_4: req.params._id, version: pkg.version, bnr_short_desc: bnr_config.short_desc, bnr_long_desc: bnr_config.long_desc, bnr_tag: bnr_config.tag })
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.green('200')} Lobby exists, rendering lobby page`));
     } else {
         reply.status(404).view('/templates/error.hbs', { error_code: "404", title: "Lobby does not exist", desc_1: "Unfortunately, we could not find the lobby you are looking for.", desc_2: "Try a different link or create a new lobby on the home page." });
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.red('404')} Lobby does not exist, rendering error page`));
-    }
-})
-
-// Game page
-fastify.get('/game/:_id', {
-    config: {
-        rateLimit: {
-            max: 15,
-            timeWindow: '1 minute'
-        }
-    }
-}, async function (req, reply) {
-    // Make sure game exists
-    if (await Game.exists({ slug: req.params._id, created: { $gte: moment().subtract(12, "hours").toISOString() } })) {
-        reply.view('/templates/game.hbs', { slug_1: req.params._id, slug_2: req.params._id, slug_3: req.params._id, version: pkg.version, bnr_short_desc: bnr_config.short_desc, bnr_long_desc: bnr_config.long_desc, bnr_tag: bnr_config.tag })
-        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.green('200')} Game exists, rendering game page`));
-    } else {
-        reply.status(404).view('/templates/error.hbs', { error_code: "404", title: "Game does not exist", desc_1: "Unfortunately, we could not find the game you are looking for.", desc_2: "Try a different link or create a new lobby on the home page." });
-        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.red('404')} Game does not exist, rendering error page`));
     }
 })
 

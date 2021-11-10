@@ -155,7 +155,7 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
     // Prepare events payload
     let events_payload = [];
     for (let i = lobby_details.events.length - 1; i >= 0 && i >= (lobby_details.events.length - 20); i--) {
-        events_payload.push(await event_actions.parse_event(lobby_details.events[i]));
+        events_payload.push(await event_actions.parse_event(lobby_details, lobby_details.events[i]));
     }
     // Prepare games payload
     let games_payload = [];
@@ -171,7 +171,7 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
     for (let i = 0; i < lobby_details.players.length; i++) {
         // Make sure player isn't disabled
         if (!lobby_details.players[i].is_disabled) {
-            players_payload.push(await player_actions.player_export(lobby_details, lobby_details.players[i]));
+            players_payload.push(await player_actions.player_export(lobby_details, i));
         }
     }
     // Return pretty lobby details

@@ -304,44 +304,46 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //         }
         //     ], wf_final_game_callback);
         // })
-        //
-        // // Name : socket.on.kick-player
-        // // Desc : kicks a target player from a game
-        // // Author(s) : RAk3rman
-        // socket.on('kick-player', async function (data) {
-        //     let action = "kick-player     ";
-        //     if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to kick player`));
-        //     waterfall([
-        //         async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-        //         wf_get_game, // Get game_details
-        //         wf_validate_host, // Validate req player is host
-        //         async function(game_details, req_data, action, socket_id, callback) { // Kick player
-        //             await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, (await player_actions.get_player(game_details, req_data.kick_player_id)).nickname);
-        //             await player_actions.kick_player(game_details, req_data.player_id, req_data.kick_player_id);
-        //             await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-        //             callback(false, `Kicked player: ` + req_data.kick_player_id, req_data.slug, action, socket_id, req_data.player_id);
-        //         }
-        //     ], wf_final_game_callback);
-        // })
-        //
-        // // Name : socket.on.make-host
-        // // Desc : makes a new player the host
-        // // Author(s) : RAk3rman
-        // socket.on('make-host', async function (data) {
-        //     let action = "make-host       ";
-        //     if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to transfer host role`));
-        //     waterfall([
-        //         async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-        //         wf_get_game, // Get game_details
-        //         wf_validate_host, // Validate req player is host
-        //         async function(game_details, req_data, action, socket_id, callback) { // Make host
-        //             await player_actions.make_host(game_details, req_data.player_id, req_data.suc_player_id);
-        //             await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, (await player_actions.get_player(game_details, req_data.suc_player_id)).nickname);
-        //             await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-        //             callback(false, `Transferred host role from: ` + req_data.player_id + ` -> ` + req_data.suc_player_id, req_data.slug, action, socket_id, req_data.player_id);
-        //         }
-        //     ], wf_final_game_callback);
-        // })
+
+        // Name : socket.on.kick-player
+        // Desc : kicks a target player from a lobby
+        // Author(s) : RAk3rman
+        socket.on('kick-player', async function (data) {
+            let action = "kick-player     ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to kick player`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_get_lobby, // Get lobby_details
+                wf_validate_host, // Validate req player is host
+                async function(lobby_details, req_data, action, socket_id, callback) { // Kick player
+                    await player_actions.kick_player(lobby_details, req_data.player_id, req_data.kick_player_id);
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, req_data.kick_player_id, "");
+                    await lobby_details.save();
+                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                    callback(false, `Kicked player: ` + req_data.kick_player_id, lobby_details, req_data, action, socket_id);
+                }
+            ], wf_final_lobby_callback);
+        })
+
+        // Name : socket.on.make-host
+        // Desc : makes a new player the host
+        // Author(s) : RAk3rman
+        socket.on('make-host', async function (data) {
+            let action = "make-host       ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to transfer host role`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_get_lobby, // Get lobby_details
+                wf_validate_host, // Validate req player is host
+                async function(lobby_details, req_data, action, socket_id, callback) { // Make host
+                    await player_actions.make_host(lobby_details, req_data.player_id, req_data.suc_player_id);
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, req_data.suc_player_id, "");
+                    await lobby_details.save();
+                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                    callback(false, `Transferred host role from: ` + req_data.player_id + ` -> ` + req_data.suc_player_id, lobby_details, req_data, action, socket_id);
+                }
+            ], wf_final_lobby_callback);
+        })
 
         // Name : socket.on.import-pack
         // Desc : imports a new pack into a game

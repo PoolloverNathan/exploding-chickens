@@ -9,9 +9,10 @@ function sbr_update_widgets(lobby_details) {
     // Status widget variables
     let stat_header = "<div class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 dark:bg-gray-900 dark:border-gray-800\">\n";
     let stat_icon;
-    let stat_text = "...";
-    let stat_color_a = "";
-    let stat_color_b = "";
+    let stat_text;
+    let stat_color_a;
+    let stat_color_b;
+    let itr_stat;
     // Construct status widget
     if (session_user.is_host) {
         if (lobby_details.in_progress) {
@@ -20,12 +21,14 @@ function sbr_update_widgets(lobby_details) {
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\" />\n" +
                 "</svg>";
             stat_text = "Reset <span class=\"hidden sm:inline-block\">game</span>";
+            itr_stat = "Games in Play";
         } else {
             stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 bg-gradient-to-r from-green-500 to-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\" onclick=\"start_game()\">\n";
             stat_icon = "<svg class=\"stroke-current text-white\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9\" />\n" +
                 "</svg>";
             stat_text = "Start <span class=\"hidden sm:inline-block\">game</span>";
+            itr_stat = "Matchmaking";
         }
         stat_color_a = "text-white";
         stat_color_b = "text-white";
@@ -35,11 +38,13 @@ function sbr_update_widgets(lobby_details) {
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
                 "</svg>\n";
             stat_text = "In game";
+            itr_stat = "Games in Play";
         } else {
             stat_icon = "<svg class=\"stroke-current text-blue-500\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
                 "</svg>\n";
             stat_text = "In lobby";
+            itr_stat = "Matchmaking";
         }
         stat_color_a = "text-gray-500";
         stat_color_b = "text-black";
@@ -61,6 +66,7 @@ function sbr_update_widgets(lobby_details) {
     document.getElementById("sbr_ele_players_ctn").innerHTML = lobby_details.players.length;
     document.getElementById("sbr_ele_rooms_ctn").innerHTML = lobby_details.games.length;
     document.getElementById("sbr_ele_games_ctn").innerHTML = lobby_details.games_completed;
+    document.getElementById("itr_ele_status").innerHTML = itr_stat;
 }
 
 // Name : frontend-game.sbr_update_players(lobby_details)
@@ -100,7 +106,7 @@ function sbr_update_players(lobby_details) {
             }
             // Construct name for each player
             let name = lobby_details.games[i].players[j].nickname;
-            if (lobby_details.games[i].players[j].type === "host") {
+            if (lobby_details.games[i].players[j].is_host) {
                 name += ", Host"
             } else if (lobby_details.games[i].players[j]._id === session_user._id) {
                 name += ", You"
@@ -172,6 +178,13 @@ function sbr_update_packs(lobby_details) {
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6v6m0 0v6m0-6h6m-6 0H6\" />\n" +
             "      </svg>\n" +
             "      Add Pack\n" +
+            "</button>";
+    } else {
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none\">\n" +
+            "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z\" />\n" +
+            "      </svg>\n" +
+            "      Available\n" +
             "</button>";
     }
 }

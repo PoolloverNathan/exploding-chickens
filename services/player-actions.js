@@ -184,89 +184,104 @@ exports.next_seat = async function (game_details) {
     }
 }
 
-// Name : player_actions.kick_player(game_details, host_player_id, kick_player_id)
+// Name : player_actions.kick_player(lobby_details, host_player_id, kick_player_id)
 // Desc : remove a player from the game
 // Author(s) : RAk3rman
-exports.kick_player = async function (game_details, host_player_id, kick_player_id) {
+exports.kick_player = async function (lobby_details, host_player_id, kick_player_id) {
     // Make sure they aren't kicking themselves
     if (host_player_id === kick_player_id) {
         return;
     }
-    // Check if chicken is in hand and find # of players in play
-    let is_exploding = false;
-    let in_play_ctn = 0;
-    for (let i = 0; i < game_details.players.length; i++) {
-        if (game_details.players[i]._id === kick_player_id) {
-            // Check if player is exploding
-            if (game_details.players[i].status === "exploding") {
-                is_exploding = true;
-            }
-        }
-        // Get number of players in game
-        if (game_details.players[i].status !== "dead") {
-            in_play_ctn++;
-        }
-    }
-    // Remove player from game and release cards
-    await card_actions.kill_player(game_details, kick_player_id);
-    // Find player to delete
-    for (let i = 0; i < game_details.players.length; i++) {
-        if (game_details.players[i]._id === kick_player_id) {
-            // Check if player is playing
-            if (game_details.players[i].seat === game_details.seat_playing) {
-                await game_actions.advance_turn(game_details);
-            }
-            // Remove player from game
-            game_details.players.splice(i, 1);
+    // Mark player as disabled
+    let kick_player_pos = 0;
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.players[i]._id === kick_player_id) {
+            lobby_details.players[i].is_disabled = true;
+            kick_player_pos = i;
             break;
         }
     }
-    // Reset game if we have 1 player left
-    if (game_details.players.length <= 1 || in_play_ctn < 3) {
-        await game_actions.reset_game(game_details, "idle", "in_lobby");
+    // Check if lobby is in progress (we can do this the easy way or the hard way)
+    if (!lobby_details.in_progress) {
+        // Partition players
+        await lobby_actions.partition_players(lobby_details);
     } else {
-        // Remove an ec from the deck
-        if (!is_exploding) {
-            for (let i = 0; i < game_details.cards.length; i++) {
-                if (game_details.cards[i].action === "chicken" && game_details.cards[i].assignment === "draw_deck") {
-                    game_details.cards[i].assignment = "out_of_play";
-                    break;
+        // We have to do this the hard way, find the game
+        for (let i = 0; i < lobby_details.games.length; i++) {
+            if (lobby_details.games[i]._id === lobby_details.players[kick_player_pos].game_assign) {
+                // Check the status of the game they are in
+                if (!lobby_details.games[i].is_completed) {
+                    // TODO Implement case
                 }
+                break;
             }
         }
-        // Reset player seat positions
-        await player_actions.randomize_seats(game_details);
     }
+
+    // // Check if chicken is in hand and find # of players in play
+    // let is_exploding = false;
+    // let in_play_ctn = 0;
+    // for (let i = 0; i < game_details.players.length; i++) {
+    //     if (game_details.players[i]._id === kick_player_id) {
+    //         // Check if player is exploding
+    //         if (game_details.players[i].status === "exploding") {
+    //             is_exploding = true;
+    //         }
+    //     }
+    //     // Get number of players in game
+    //     if (game_details.players[i].status !== "dead") {
+    //         in_play_ctn++;
+    //     }
+    // }
+    // // Remove player from game and release cards
+    // await card_actions.kill_player(game_details, kick_player_id);
+    // // Find player to delete
+    // for (let i = 0; i < game_details.players.length; i++) {
+    //     if (game_details.players[i]._id === kick_player_id) {
+    //         // Check if player is playing
+    //         if (game_details.players[i].seat === game_details.seat_playing) {
+    //             await game_actions.advance_turn(game_details);
+    //         }
+    //         // Remove player from game
+    //         game_details.players.splice(i, 1);
+    //         break;
+    //     }
+    // }
+    // // Reset game if we have 1 player left
+    // if (game_details.players.length <= 1 || in_play_ctn < 3) {
+    //     await game_actions.reset_game(game_details, "idle", "in_lobby");
+    // } else {
+    //     // Remove an ec from the deck
+    //     if (!is_exploding) {
+    //         for (let i = 0; i < game_details.cards.length; i++) {
+    //             if (game_details.cards[i].action === "chicken" && game_details.cards[i].assignment === "draw_deck") {
+    //                 game_details.cards[i].assignment = "out_of_play";
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     // Reset player seat positions
+    //     await player_actions.randomize_seats(game_details);
+    // }
 }
 
-// Name : player_actions.make_host(game_details, curr_player_id, suc_player_id)
+// Name : player_actions.make_host(lobby_details, curr_player_id, suc_player_id)
 // Desc : make a new player the host
 // Author(s) : RAk3rman
-exports.make_host = async function (game_details, curr_player_id, suc_player_id) {
+exports.make_host = async function (lobby_details, curr_player_id, suc_player_id) {
     // Make sure they aren't making themselves a host
     if (curr_player_id === suc_player_id) {
         return;
     }
     // Find both players and modify type
-    for (let i = 0; i < game_details.players.length; i++) {
+    for (let i = 0; i < lobby_details.players.length; i++) {
         // Check if the player id's match, update changes
-        if (game_details.players[i]._id === curr_player_id) {
-            game_details.players[i].type = "player";
-        } else if (game_details.players[i]._id === suc_player_id) {
-            game_details.players[i].type = "host";
+        if (lobby_details.players[i]._id === curr_player_id) {
+            lobby_details.players[i].is_host = false;
+        } else if (lobby_details.players[i]._id === suc_player_id) {
+            lobby_details.players[i].is_host = true;
         }
     }
-    // Create new promise for game save
-    return await new Promise((resolve, reject) => {
-        //Save updated game
-        game_details.save({}, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
 }
 
 // Name : player_actions.sort_hand(game_details, player_id)
@@ -294,26 +309,26 @@ exports.sort_hand = async function (game_details, player_id) {
     }
 }
 
-// Name : game_actions.player_export(lobby_details, player)
+// Name : game_actions.player_export(lobby_details, player_pos)
 // Desc : prepares player data for export to client
 // Author(s) : RAk3rman
-exports.player_export = async function (lobby_details, player) {
+exports.player_export = async function (lobby_details, player_pos) {
     // Get game details
     let game_details;
     lobby_details.games.every(game => {
-        if (game._id.equals(player.game_assign)) {
+        if (game._id.equals(lobby_details.players[player_pos].game_assign)) {
             game_details = game;
             return false;
         }
         return true;
     });
     // Filter card hand
-    let card_array = await card_actions.filter_cards(player._id, game_details.cards);
+    let card_array = await card_actions.filter_cards(lobby_details.players[player_pos]._id, game_details.cards);
     // Sort card hand in reverse order
     card_array.sort(function(a, b) {
         return b.pos - a.pos;
     });
-    // Check if the player is exploding
+    // Check if the lobby_details.players[player_pos] is exploding
     let is_exploding = false;
     card_array.every(card => {
         if (card.action === "chicken") {
@@ -322,21 +337,21 @@ exports.player_export = async function (lobby_details, player) {
         }
         return true;
     });
-    // Return pretty player details
+    // Return pretty lobby_details.players[player_pos] details
     return {
-        _id: player._id,
+        _id: lobby_details.players[player_pos]._id,
         game_assign: game_details.slug,
-        nickname: player.nickname,
-        avatar: player.avatar,
-        seat_pos: player.seat_pos,
-        wins: player.wins,
-        sockets_open: player.sockets_open,
-        is_connected: player.is_connected,
-        is_host: player.is_host,
+        nickname: lobby_details.players[player_pos].nickname,
+        avatar: lobby_details.players[player_pos].avatar,
+        seat_pos: lobby_details.players[player_pos].seat_pos,
+        wins: lobby_details.players[player_pos].wins,
+        sockets_open: lobby_details.players[player_pos].sockets_open,
+        is_connected: lobby_details.players[player_pos].is_connected,
+        is_host: lobby_details.players[player_pos].is_host,
         is_exploding: is_exploding,
-        is_dead: player.is_dead,
+        is_dead: lobby_details.players[player_pos].is_dead,
         cards: card_array,
-        created: moment(player.created)
+        created: moment(lobby_details.players[player_pos].created)
     };
 }
 
