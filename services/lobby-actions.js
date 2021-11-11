@@ -76,7 +76,7 @@ exports.save_lobby = async function (lobby_details) {
 }
 
 // Name : lobby_actions.partition_players(lobby_details)
-// Desc : takes a lobby and partitions players into game rooms based on grouping settings
+// Desc : takes a lobby and partitions players into open game rooms based on grouping settings
 // Author(s) : RAk3rman
 exports.partition_players = async function (lobby_details) {
     // Find player groupings
@@ -85,7 +85,9 @@ exports.partition_players = async function (lobby_details) {
     let player_bucket = [];
     for (let i = 0; i < lobby_details.players.length; i++) {
         // Make sure player isn't disabled and isn't included as host if param set
-        if (!lobby_details.players[i].is_disabled && (lobby_details.players[i].is_host ? lobby_details.include_host : true)) {
+        // TODO Don't include player in bucket if in an active game
+        if (!lobby_details.players[i].is_disabled &&
+            (lobby_details.players[i].is_host ? lobby_details.include_host : true)) {
             player_bucket.push(lobby_details.players[i]);
         }
     }
@@ -149,6 +151,35 @@ exports.partition_players = async function (lobby_details) {
     }
 }
 
+// Name : lobby_actions.start_games(lobby_details)
+// Desc : starts all games in lobby that aren't completed
+// Author(s) : RAk3rman
+exports.start_games = async function (lobby_details) {
+    // Loop through each game
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Game isn't in progress (not started) and not completed
+        if (!lobby_details.games[i].in_progress && !lobby_details.games[i].is_completed) {
+            // Reset game and update in_progress
+            await game_actions.reset_game(lobby_details, i);
+            lobby_details.games[i].in_progress = true;
+            // Create hands and randomize seats
+            await player_actions.create_hand(lobby_details, i);
+            await player_actions.randomize_seats(lobby_details, i);
+            // Add prelim events to game
+            let host_id = "";
+            for (let j = 0; j < lobby_details.players.length; j++) {
+                if (lobby_details.players[j].game_assign?.equals(lobby_details.games[i]._id)) {
+                    await event_actions.log_event(lobby_details.games[i], "include-player", lobby_details.players[j]._id, "", "", "");
+                }
+                if (lobby_details.players[j].is_host) host_id = lobby_details.players[j]._id;
+            }
+            await event_actions.log_event(lobby_details.games[i], "start-game", host_id, "", "", "");
+        }
+    }
+    // Update lobby settings
+    lobby_details.in_progress = true;
+}
+
 // Name : lobby_actions.update_option(lobby_details, option, value)
 // Desc : updates an option from the client
 // Author(s) : RAk3rman
@@ -197,7 +228,7 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
     let games_payload = [];
     let games_completed = 0;
     for (let i = 0; i < lobby_details.games.length; i++) {
-        if (!lobby_details.games[i].is_completed && !lobby_details.games[i].in_progress) {
+        if (!lobby_details.games[i].is_completed) {
             games_payload.push(await game_actions.game_export(lobby_details, i, source, req_player_id));
         }
         if (lobby_details.games[i].is_completed) games_completed++;

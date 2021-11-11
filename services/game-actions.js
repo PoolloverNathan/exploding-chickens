@@ -436,36 +436,24 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
     }
 }
 
-// Name : game_actions.reset_game(game_details, player_status, game_status)
+// Name : game_actions.reset_game(lobby_details, game_pos)
 // Desc : resets the game to default
 // Author(s) : Vincent Do, RAk3rman
-exports.reset_game = async function (game_details, player_status, game_status) {
+exports.reset_game = async function (lobby_details, game_pos) {
     // Reset cards
-    for (let i = 0; i <= game_details.cards.length - 1; i++) {
-        game_details.cards[i].assignment = "draw_deck";
-        game_details.cards[i].position = i;
-        game_details.cards[i].placed_by_id = "";
-    }
-    // Reset players
-    for (let i = 0; i <= game_details.players.length - 1; i++) {
-        game_details.players[i].status = player_status;
+    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+        lobby_details.games[game_pos].cards[i].assignment = "draw_deck";
+        lobby_details.games[game_pos].cards[i].position = i;
+        lobby_details.games[game_pos].cards[i].placed_by_id = "";
     }
     // Reset game variables
-    game_details.turn_direction = "forward";
-    game_details.seat_playing = 0;
-    game_details.turns_remaining = 1;
-    game_details.status = game_status;
-    // Create new promise for game save
-    await new Promise((resolve, reject) => {
-        //Save updated game
-        game_details.save({}, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
+    lobby_details.games[game_pos].in_progress = false;
+    lobby_details.games[game_pos].is_completed = false;
+    lobby_details.games[game_pos].turns_seat_pos = 0;
+    lobby_details.games[game_pos].turn_dir = "forward";
+    lobby_details.games[game_pos].turn_remain = 1;
+    lobby_details.games[game_pos].created = Date.now();
+    lobby_details.games[game_pos].events = [];
 }
 
 // Name : game_actions.game_export(lobby_details, game_pos, source, req_player_id)
@@ -506,7 +494,7 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
     return {
         slug: game_details.slug,
         in_progress: game_details.in_progress,
-        turn_plyr_id: game_details.turn_plyr_id,
+        turn_seat_pos: game_details.turn_seat_pos,
         turn_dir: game_details.turn_dir,
         turns_remain: game_details.turns_remain,
         cards_total: game_details.cards.length,

@@ -16,14 +16,14 @@ function sbr_update_widgets(lobby_details) {
     // Construct status widget
     if (session_user.is_host) {
         if (lobby_details.in_progress) {
-            stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_game()\">\n";
+            stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_games()\">\n";
             stat_icon = "<svg class=\"stroke-current text-white\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\" />\n" +
                 "</svg>";
             stat_text = "Reset <span class=\"hidden sm:inline-block\">game</span>";
             itr_stat = "Games in Play";
         } else {
-            stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 bg-gradient-to-r from-green-500 to-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\" onclick=\"start_game()\">\n";
+            stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 bg-gradient-to-r from-green-500 to-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\" onclick=\"start_games()\">\n";
             stat_icon = "<svg class=\"stroke-current text-white\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9\" />\n" +
                 "</svg>";
@@ -75,31 +75,31 @@ function sbr_update_options(lobby_details) {
     // Grouping method
     document.getElementById("grp_method_random").checked = lobby_details.grp_method === "random";
     document.getElementById("grp_method_wins").checked = lobby_details.grp_method === "wins";
-    document.getElementById("grp_method_random").disabled = !session_user.is_host;
-    document.getElementById("grp_method_wins").disabled = !session_user.is_host;
+    document.getElementById("grp_method_random").disabled = !session_user.is_host || lobby_details.in_progress;
+    document.getElementById("grp_method_wins").disabled = !session_user.is_host || lobby_details.in_progress;
     // Room size
     document.getElementById("room_size_2").checked = lobby_details.room_size === 2;
     document.getElementById("room_size_3").checked = lobby_details.room_size === 3;
     document.getElementById("room_size_4").checked = lobby_details.room_size === 4;
     document.getElementById("room_size_5").checked = lobby_details.room_size === 5;
     document.getElementById("room_size_6").checked = lobby_details.room_size === 6;
-    document.getElementById("room_size_2").disabled = !session_user.is_host;
-    document.getElementById("room_size_3").disabled = !session_user.is_host;
-    document.getElementById("room_size_4").disabled = !session_user.is_host;
-    document.getElementById("room_size_5").disabled = !session_user.is_host;
-    document.getElementById("room_size_6").disabled = !session_user.is_host;
+    document.getElementById("room_size_2").disabled = !session_user.is_host || lobby_details.in_progress;
+    document.getElementById("room_size_3").disabled = !session_user.is_host || lobby_details.in_progress;
+    document.getElementById("room_size_4").disabled = !session_user.is_host || lobby_details.in_progress;
+    document.getElementById("room_size_5").disabled = !session_user.is_host || lobby_details.in_progress;
+    document.getElementById("room_size_6").disabled = !session_user.is_host || lobby_details.in_progress;
     // Auto play timeout
     document.getElementById("play_timeout_inf").checked = lobby_details.play_timeout === -1;
     document.getElementById("play_timeout_30").checked = lobby_details.play_timeout === 30;
     document.getElementById("play_timeout_60").checked = lobby_details.play_timeout === 60;
     document.getElementById("play_timeout_120").checked = lobby_details.play_timeout === 120;
-    document.getElementById("play_timeout_inf").disabled = !session_user.is_host;
-    document.getElementById("play_timeout_30").disabled = !session_user.is_host;
-    document.getElementById("play_timeout_60").disabled = !session_user.is_host;
-    document.getElementById("play_timeout_120").disabled = !session_user.is_host;
+    document.getElementById("play_timeout_inf").disabled = !session_user.is_host || lobby_details.in_progress;
+    document.getElementById("play_timeout_30").disabled = !session_user.is_host || lobby_details.in_progress;
+    document.getElementById("play_timeout_60").disabled = !session_user.is_host || lobby_details.in_progress;
+    document.getElementById("play_timeout_120").disabled = !session_user.is_host || lobby_details.in_progress;
     // Remove host from games
     document.getElementById("include_host").checked = !lobby_details.include_host;
-    document.getElementById("include_host").disabled = !session_user.is_host;
+    document.getElementById("include_host").disabled = !session_user.is_host || lobby_details.in_progress;
 }
 
 // Name : frontend-game.sbr_update_packs(lobby_details)

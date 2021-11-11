@@ -51,13 +51,14 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
         sbr_update_players(data);
         sbr_update_packs(data);
         itr_update_games(data);
-    } else if (data.trigger === "start-game") { // Game started
+    } else if (data.trigger === "start-games") { // Game started
         sbr_update_widgets(data);
+        sbr_update_options(data);
         sbr_update_pstatus(data);
         itr_update_games(data);
         toast_alert.fire({
             icon: 'info',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Game has started</h1>'
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">Games have started</h1>'
         });
     } else if (data.trigger === "make-host") {
         // Update host designation in session_user
@@ -189,20 +190,19 @@ socket.on("disconnect", function (data) {
  PLAYER ACTION FUNCTIONS
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-// Name : frontend-game.start_game()
-// Desc : emits the start-game event when the host clicks the start game button
-function start_game() {
-    sbr_update_widgets({status: "starting"});
-    socket.emit('start-game', {
+// Name : frontend-game.start_games()
+// Desc : emits the start-games event when the host clicks the start game button
+function start_games() {
+    socket.emit('start-games', {
         slug: window.location.pathname.substr(7),
         player_id: session_user._id
     })
 }
 
-// Name : frontend-game.reset_game()
-// Desc : emits the reset-game event when the host clicks the reset game button
-function reset_game() {
-    socket.emit('reset-game', {
+// Name : frontend-game.reset_games()
+// Desc : emits the reset-games event when the host clicks the reset game button
+function reset_games() {
+    socket.emit('reset-games', {
         slug: window.location.pathname.substr(7),
         player_id: session_user._id
     })

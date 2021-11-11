@@ -203,39 +203,28 @@ exports.ask_favor = async function (game_details, player_id, target, used_gator,
     };
 }
 
-// Name : card_actions.shuffle_draw_deck(game_details)
+// Name : card_actions.shuffle_draw_deck(lobby_details, game_pos)
 // Desc : shuffles the positions of all cards in the draw deck
 // Author(s) : RAk3rman
-exports.shuffle_draw_deck = async function (game_details) {
+exports.shuffle_draw_deck = async function (lobby_details, game_pos) {
     // Loop through each card to create array
     let bucket = [];
     let cards_in_deck = 0;
-    for (let i = 0; i <= game_details.cards.length - 1; i++) {
+    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
         //Check to see if card in draw deck
-        if (game_details.cards[i].assignment === "draw_deck") {
+        if (lobby_details.games[game_pos].cards[i].assign === "draw_deck") {
             bucket.push(cards_in_deck);
             cards_in_deck++;
         }
     }
     // Loop though each card and reassign position
-    for (let i = 0; i <= game_details.cards.length - 1; i++) {
+    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
         //Check to see if card in draw deck and not chicken
-        if (game_details.cards[i].assignment === "draw_deck") {
-            game_details.cards[i].position = rand_bucket(bucket);
-            game_details.cards[i].placed_by_id = "";
+        if (lobby_details.games[game_pos].cards[i].assign === "draw_deck") {
+            lobby_details.games[game_pos].cards[i].pos = rand_bucket(bucket);
+            lobby_details.games[game_pos].cards[i].placed_by_plyr_id = "";
         }
     }
-    // Create new promise for game save
-    return await new Promise((resolve, reject) => {
-        //Save updated game
-        game_details.save({}, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
 }
 
 // Name : card_actions.reverse(game_details)

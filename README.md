@@ -11,7 +11,7 @@ The rules are simple. Each player takes turns drawing a card or playing a card, 
 From there, the drawing deck slowly shrinks and the explosions only become more frequent. **So, who will be the last one standing?**
 
 - **2-6 players** per game room
-- Utilizes a **53-card** base deck
+- Utilizes a **52-card** base deck
 - **3-10 min** average game time
 
 ![Home UI](public/home_ui.png)

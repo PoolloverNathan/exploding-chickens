@@ -34,8 +34,22 @@ exports.parse_event = async function (lobby_details, event) {
     if (event.tag === "create-player") {
         return {
             icon_path: "<path d=\"M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z\"/>",
-            icon_color: "text-purple-500",
+            icon_color: "text-blue-500",
             desc: "<strong class=\"text-gray-700\">" + (await player_actions.get_player(lobby_details, event.req_plyr_id)).nickname + "</strong> joined the lobby",
+            created: moment(event.created).format()
+        };
+    } else if (event.tag === "include-player") {
+        return {
+            icon_path: "<path d=\"M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z\"/>",
+            icon_color: "text-blue-500",
+            desc: "<strong class=\"text-gray-700\">" + (await player_actions.get_player(lobby_details, event.req_plyr_id)).nickname + "</strong> joined the game",
+            created: moment(event.created).format()
+        };
+    } else if (event.tag === "start-games") {
+        return {
+            icon_path: "<path fill-rule=\"evenodd\" d=\"M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z\" clip-rule=\"evenodd\"/>",
+            icon_color: "text-green-500",
+            desc: "<strong class=\"text-gray-700\">" + (await player_actions.get_player(lobby_details, event.req_plyr_id)).nickname + "</strong> started all games",
             created: moment(event.created).format()
         };
     } else if (event.tag === "start-game") {
@@ -45,11 +59,11 @@ exports.parse_event = async function (lobby_details, event) {
             desc: "<strong class=\"text-gray-700\">" + (await player_actions.get_player(lobby_details, event.req_plyr_id)).nickname + "</strong> started the game",
             created: moment(event.created).format()
         };
-    } else if (event.tag === "reset-game") {
+    } else if (event.tag === "reset-games") {
         return {
             icon_path: "<path fill-rule=\"evenodd\" d=\"M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z\" clip-rule=\"evenodd\"/>",
             icon_color: "text-yellow-400",
-            desc: "<strong class=\"text-gray-700\">" + (await player_actions.get_player(lobby_details, event.req_plyr_id)).nickname + "</strong> reset the game",
+            desc: "<strong class=\"text-gray-700\">" + (await player_actions.get_player(lobby_details, event.req_plyr_id)).nickname + "</strong> reset all games",
             created: moment(event.created).format()
         };
     } else if (event.tag === "play-card") {

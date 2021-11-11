@@ -106,9 +106,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         callback(true, `PLYR-NAME`, lobby_details, req_data, action, socket_id);
                     } else if (req_data.avatar === "default.png" && options.includes(req_data.avatar)) { // Make sure a valid avatar was chosen
                         callback(true, `PLYR-AVTR`, lobby_details, req_data, action, socket_id);
-                    } else {
-                        callback(false, lobby_details, req_data, action, socket_id);
                     }
+                    callback(false, lobby_details, req_data, action, socket_id);
                 },
                 async function(lobby_details, req_data, action, socket_id, callback) { // Create player
                     req_data.player_id = await player_actions.create_player(lobby_details, req_data.nickname, req_data.avatar);
@@ -122,32 +121,29 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             ], wf_final_lobby_callback);
         })
 
-        // // Name : socket.on.start-game
-        // // Desc : runs when the host requests the game to start
-        // // Author(s) : RAk3rman
-        // socket.on('start-game', async function (data) {
-        //     let action = "start-game      ";
-        //     if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to start game`));
-        //     waterfall([
-        //         async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-        //         wf_get_game, // Get game_details
-        //         wf_validate_host, // Validate req player is host
-        //         async function(game_details, req_data, action, socket_id, callback) { // Start game if player cap is satisfied
-        //             if (game_details.players.length > 1 && game_details.players.length <= game_details.player_cap) {
-        //                 game_details.start_time = moment();
-        //                 await game_actions.reset_game(game_details, "playing", "in_game");
-        //                 await player_actions.create_hand(game_details);
-        //                 await player_actions.randomize_seats(game_details);
-        //                 await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
-        //                 await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-        //                 callback(false, `Game has been started`, req_data.slug, action, socket_id, req_data.player_id);
-        //             } else {
-        //                 callback(true, `You must have 2-` + game_details.player_cap + ` players`, req_data.slug, action, socket_id, req_data.player_id);
-        //             }
-        //         }
-        //     ], wf_final_game_callback);
-        // })
-        //
+        // Name : socket.on.start-games
+        // Desc : runs when the host requests the lobby to start all games
+        // Author(s) : RAk3rman
+        socket.on('start-games', async function (data) {
+            let action = "start-games     ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to start games`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_get_lobby, // Get lobby_details
+                wf_validate_host, // Validate req player is host
+                wf_validate_not_in_progress, // Validate we are not in progress
+                async function(lobby_details, req_data, action, socket_id, callback) { // Start game if player cap is satisfied
+                    if (lobby_details.players.length === 3 && lobby_details.room_size === 2) {
+                        callback(true, `ONE-OUT`, lobby_details, req_data, action, socket_id);
+                    }
+                    await lobby_actions.start_games(lobby_details);
+                    await lobby_details.save();
+                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                    callback(false, `All active lobby games have ${chalk.dim.green('started')}`, lobby_details, req_data, action, socket_id);
+                }
+            ], wf_final_lobby_callback);
+        })
+
         // // Name : socket.on.reset-game
         // // Desc : runs when the host requests the game to reset back to the lobby
         // // Author(s) : RAk3rman
@@ -320,6 +316,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_lobby, // Get lobby_details
                 wf_validate_host, // Validate req player is host
+                wf_validate_not_in_progress, // Validate we are not in progress
                 async function(lobby_details, req_data, action, socket_id, callback) { // Update option
                     let result = await lobby_actions.update_option(lobby_details, req_data.option, req_data.value);
                     if (!result) callback(true, `Invalid option`, lobby_details, req_data, action, socket_id);

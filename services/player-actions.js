@@ -65,89 +65,77 @@ exports.get_player = async function (lobby_details, player_id) {
     return null;
 }
 
-// Name : player_actions.create_hand(game_details)
+// Name : player_actions.create_hand(lobby_details, game_pos)
 // Desc : gives each player a defuse card and 4 random cards from the draw_deck, rations ec
 // Author(s) : RAk3rman
-exports.create_hand = async function (game_details) {
+exports.create_hand = async function (lobby_details, game_pos) {
     // Create array containing the position of each defuse card and regular card
     let defuse_bucket = [];
     let exploding_bucket = [];
     let card_bucket = [];
-    for (let i = 0; i <= game_details.cards.length - 1; i++) {
-        if (game_details.cards[i].action === "defuse") {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        if (lobby_details.games[game_pos].cards[i].action === "defuse") {
             defuse_bucket.push(i);
-        } else if (game_details.cards[i].action === "chicken") {
+        } else if (lobby_details.games[game_pos].cards[i].action === "chicken") {
             exploding_bucket.push(i);
-            game_details.cards[i].assignment = "out_of_play";
+            lobby_details.games[game_pos].cards[i].assign = "out_of_play";
         } else {
             card_bucket.push(i);
         }
     }
     // Assign defuse card to player id in first position
-    for (let i = 0; i <= game_details.players.length - 1; i++) {
-        let rand_defuse_pos = rand_bucket(defuse_bucket);
-        game_details.cards[rand_defuse_pos].assignment = game_details.players[i]._id;
-        game_details.cards[rand_defuse_pos].position = 0;
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
+            let rand_defuse_pos = rand_bucket(defuse_bucket);
+            lobby_details.games[game_pos].cards[rand_defuse_pos].assign = lobby_details.players[i]._id;
+            lobby_details.games[game_pos].cards[rand_defuse_pos].pos = 0;
+        }
     }
     // Add remaining defuse cards to card bucket
     for (let i = 0; i <= defuse_bucket.length - 1; i++) {
         card_bucket.push(defuse_bucket[i]);
     }
     // Assign remaining 4 cards to each player
-    for (let i = 0; i <= game_details.players.length - 1; i++) {
-        // Over 4 cards on the same player
-        for (let j = 1; j <= 4; j++) {
-            let rand_card_pos = rand_bucket(card_bucket);
-            game_details.cards[rand_card_pos].assignment = game_details.players[i]._id;
-            game_details.cards[rand_card_pos].position = j;
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
+            // Over 4 cards on the same player
+            for (let j = 1; j <= 4; j++) {
+                let rand_card_pos = rand_bucket(card_bucket);
+                lobby_details.games[game_pos].cards[rand_card_pos].assign = lobby_details.players[i]._id;
+                lobby_details.games[game_pos].cards[rand_card_pos].pos = j;
+            }
         }
     }
     // Assign exploding chickens to deck
-    for (let i = 0; i < game_details.players.length - 1; i++) {
-        // Randomly pick ec
-        let rand_card_pos = rand_bucket(exploding_bucket);
-        game_details.cards[rand_card_pos].assignment = "draw_deck";
+    for (let i = 0; i < lobby_details.players.length - 1; i++) {
+        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
+            // Randomly pick ec
+            let rand_card_pos = rand_bucket(exploding_bucket);
+            lobby_details.games[game_pos].cards[rand_card_pos].assign = "draw_deck";
+        }
     }
-    // Create new promise
-    await new Promise((resolve, reject) => {
-        // Save updated game
-        game_details.save({}, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
     // Shuffle draw deck once we are done
-    await card_actions.shuffle_draw_deck(game_details);
+    await card_actions.shuffle_draw_deck(lobby_details, game_pos);
 }
 
 
-// Name : player_actions.randomize_seats(game_details)
+// Name : player_actions.randomize_seats(lobby_details, game_pos)
 // Desc : given a game_slug, gives each player a random seat position (without replacement)
 // Author(s) : SengdowJones, RAk3rman
-exports.randomize_seats = async function (game_details) {
+exports.randomize_seats = async function (lobby_details, game_pos) {
     // Create array containing each available seat
     let bucket = [];
-    for (let i = 0; i <= game_details.players.length - 1; i++) {
-        bucket.push(i)
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
+            bucket.push(i);
+        }
     }
     // Update seat number for each player
-    for (let i = 0; i <= game_details.players.length - 1; i++) {
-        game_details.players[i].seat = rand_bucket(bucket);
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
+            lobby_details.players[i].seat = rand_bucket(bucket);
+        }
     }
-    // Create new promise
-    return await new Promise((resolve, reject) => {
-        //Save updated game
-        game_details.save({}, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
 }
 
 // Name : player_actions.next_seat(game_details)
@@ -317,7 +305,7 @@ exports.player_export = async function (lobby_details, player_pos) {
     let card_array = [];
     let is_exploding = false;
     // Check host removal condition
-    if (lobby_details.players[player_pos].is_host && lobby_details.include_host) {
+    if (!lobby_details.players[player_pos].is_host || (lobby_details.players[player_pos].is_host && lobby_details.include_host)) {
         // Get game details
         lobby_details.games.every(game => {
             if (game._id.equals(lobby_details.players[player_pos].game_assign)) {
@@ -341,7 +329,7 @@ exports.player_export = async function (lobby_details, player_pos) {
             return true;
         });
     }
-    // Return pretty lobby_details.players[player_pos] details
+    // Return pretty player details
     return {
         _id: lobby_details.players[player_pos]._id,
         game_assign: game_details.slug,
