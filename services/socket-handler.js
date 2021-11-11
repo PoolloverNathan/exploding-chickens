@@ -126,43 +126,48 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('start-games', async function (data) {
             let action = "start-games     ";
-            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to start games`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to start all games`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_lobby, // Get lobby_details
                 wf_validate_host, // Validate req player is host
                 wf_validate_not_in_progress, // Validate we are not in progress
                 async function(lobby_details, req_data, action, socket_id, callback) { // Start game if player cap is satisfied
+                    if (lobby_details.players.length < 1) {
+                        callback(true, `PLYR-REQ`, lobby_details, req_data, action, socket_id);
+                    }
                     if (lobby_details.players.length === 3 && lobby_details.room_size === 2) {
                         callback(true, `ONE-OUT`, lobby_details, req_data, action, socket_id);
                     }
                     await lobby_actions.start_games(lobby_details);
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", "", "");
                     await lobby_details.save();
                     await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
-                    callback(false, `All active lobby games have ${chalk.dim.green('started')}`, lobby_details, req_data, action, socket_id);
+                    callback(false, `All active lobby games have been ${chalk.dim.green('started')}`, lobby_details, req_data, action, socket_id);
                 }
             ], wf_final_lobby_callback);
         })
 
-        // // Name : socket.on.reset-game
-        // // Desc : runs when the host requests the game to reset back to the lobby
-        // // Author(s) : RAk3rman
-        // socket.on('reset-game', async function (data) {
-        //     let action = "reset-game      ";
-        //     if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to reset game`));
-        //     waterfall([
-        //         async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-        //         wf_get_game, // Get game_details
-        //         wf_validate_host, // Validate req player is host
-        //         async function(game_details, req_data, action, socket_id, callback) { // Reset game
-        //             await game_actions.reset_game(game_details, "idle", "in_lobby");
-        //             await game_actions.log_event(game_details, action.trim(), "", "", (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
-        //             await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
-        //             callback(false, `Game has been reset`, req_data.slug, action, socket_id, req_data.player_id);
-        //         }
-        //     ], wf_final_game_callback);
-        // })
-        //
+        // Name : socket.on.reset-games
+        // Desc : runs when the host requests the game to reset back to the lobby
+        // Author(s) : RAk3rman
+        socket.on('reset-games', async function (data) {
+            let action = "reset-games     ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Received request to reset all games`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_get_lobby, // Get lobby_details
+                wf_validate_host, // Validate req player is host
+                async function(lobby_details, req_data, action, socket_id, callback) { // Reset all games
+                    await lobby_actions.reset_games(lobby_details);
+                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", "", "");
+                    await lobby_details.save();
+                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                    callback(false, `All active lobby games have been ${chalk.dim.yellow('reset')}`, lobby_details, req_data, action, socket_id);
+                }
+            ], wf_final_lobby_callback);
+        })
+
         // // Name : socket.on.play-card
         // // Desc : runs when a card is played on the client
         // // Author(s) : RAk3rman

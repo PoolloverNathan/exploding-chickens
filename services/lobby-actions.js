@@ -180,6 +180,22 @@ exports.start_games = async function (lobby_details) {
     lobby_details.in_progress = true;
 }
 
+// Name : lobby_actions.reset_games(lobby_details)
+// Desc : resets all games in lobby
+// Author(s) : RAk3rman
+exports.reset_games = async function (lobby_details) {
+    // Loop through each game
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Game is not completed
+        if (!lobby_details.games[i].is_completed) {
+            // Reset game
+            await game_actions.reset_game(lobby_details, i);
+        }
+    }
+    // Update lobby settings
+    lobby_details.in_progress = false;
+}
+
 // Name : lobby_actions.update_option(lobby_details, option, value)
 // Desc : updates an option from the client
 // Author(s) : RAk3rman

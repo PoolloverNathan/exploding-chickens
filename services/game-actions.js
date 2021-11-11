@@ -442,9 +442,9 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
 exports.reset_game = async function (lobby_details, game_pos) {
     // Reset cards
     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
-        lobby_details.games[game_pos].cards[i].assignment = "draw_deck";
-        lobby_details.games[game_pos].cards[i].position = i;
-        lobby_details.games[game_pos].cards[i].placed_by_id = "";
+        lobby_details.games[game_pos].cards[i].assign = "draw_deck";
+        lobby_details.games[game_pos].cards[i].pos = i;
+        lobby_details.games[game_pos].cards[i].placed_by_plyr_id = "";
     }
     // Reset game variables
     lobby_details.games[game_pos].in_progress = false;
