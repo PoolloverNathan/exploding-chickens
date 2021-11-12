@@ -493,6 +493,7 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
     // Return pretty game details
     return {
         slug: game_details.slug,
+        lobby_slug: lobby_details.slug,
         in_progress: game_details.in_progress,
         turn_seat_pos: game_details.turn_seat_pos,
         turn_dir: game_details.turn_dir,
@@ -506,6 +507,7 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
         events_length: game_details.events.length,
         discard_deck: discard_deck,
         packs: lobby_details.packs,
+        play_timeout: lobby_details.play_timeout,
         req_player_id: req_player_id,
         trigger: source.trim()
     }

@@ -977,6 +977,30 @@ html {
   --tw-text-opacity: 0.2;
 }
 
+.tab {
+  cursor: pointer;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  height: 2rem;
+  font-size: .875rem;
+  line-height: 1.25rem;
+  line-height: 2;
+  --tab-padding: 1rem;
+  --tw-text-opacity: 1;
+  --tw-text-opacity: 0.5;
+  color: hsla(var(--bc)/var(--tw-text-opacity,1));
+  padding-left: var(--tab-padding,1rem);
+  padding-right: var(--tab-padding,1rem);
+}
+
 .table {
   position: relative;
   text-align: left;
@@ -1388,6 +1412,19 @@ html {
   --tw-placeholder-opacity: 1;
   --tw-placeholder-opacity: 0.2;
   color: hsla(var(--bc)/var(--tw-placeholder-opacity,1));
+}
+
+.tab:hover {
+  --tw-text-opacity: 1;
+}
+
+.tab:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.tab:focus-visible {
+  box-shadow: inset 0 0 0 2px currentColor;
 }
 
 .table td,.table th {

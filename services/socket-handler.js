@@ -539,10 +539,10 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Determine if we should filter by slug and player_id
         let filter = req_data.player_id === "spectator" ? { slug: req_data.slug } : { slug: req_data.slug, "players._id": req_data.player_id };
         // Determine if game exists
-        if (await game.exists(filter)) {
-            callback(false, await game_actions.game_details_slug(req_data.slug), req_data, action, socket_id);
+        if (await lobby.exists(filter)) {
+            callback(false, await lobby_actions.lobby_details_slug(req_data.slug), req_data, action, socket_id);
         } else {
-            callback(true, "GAME-DNE", req_data.slug, action, socket_id, req_data.player_id);
+            callback(true, "LOBBY-DNE", undefined, req_data, action, socket_id);
         }
     }
 

@@ -287,16 +287,21 @@ function game_start_prompt(lobby_details) {
                         "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
                         "        </svg>\n" +
                         "        " + moment(lobby_details.games[i].created).calendar() +
-                        "    </h1>\n",
+                        "    </h1>\n" + (session_user.is_host ? "<h1 class=\"text-gray-700 text-sm pt-2\"><strong>Host:</strong> Joining the game will open a new tab for you to play in. The lobby dashboard (this tab) will remain open for you to check up on the progress of all active games.</h1>" : ""),
                     showCancelButton: false,
                     confirmButtonColor: '#fbbf24',
                     confirmButtonText: 'Join Game',
-                    allowOutsideClick: false
+                    allowOutsideClick: false,
+                    timer: session_user.is_host ? undefined : 4000,
+                    timerProgressBar: true,
+                    didOpen: () => {
+                        if (!session_user.is_host) Swal.showLoading();
+                    }
                 }).then((result) => {
                     if (session_user.is_host) {
-                        window.open("/game/" + lobby_details.games[i].players[j].game_assign + "?lobby=" + lobby_details.slug, '_blank');
+                        window.open("/lobby/" + lobby_details.slug + "/game/" + lobby_details.games[i].players[j].game_assign, '_blank');
                     } else {
-                        window.location.href = "/game/" + lobby_details.games[i].players[j].game_assign + "?lobby=" + lobby_details.slug;
+                        window.location.href = "/lobby/" + lobby_details.slug + "/game/" + lobby_details.games[i].players[j].game_assign;
                     }
                 })
                 break;
