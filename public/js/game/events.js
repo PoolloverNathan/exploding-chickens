@@ -33,7 +33,7 @@ let session_user = {
 
 // Name : frontend-game.socket.on.{slug}-update
 // Desc : whenever an event occurs containing a game update
-socket.on(window.location.pathname.substr(6) + "-update", function (data) {
+socket.on(window.location.pathname.split('/')[4] + "-game-update", function (data) {
     console.log(data.trigger);
     // Check browser session and update log
     setup_session_check(data);
@@ -104,7 +104,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
         // Update host designation in session_user
         for (let i = 0; i < data.players.length; i++) {
             // Check if individual player exists
-            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(6))).player_id) {
+            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[4])).player_id) {
                 // Update session_user _id and is_host
                 session_user = {
                     _id: data.players[i]._id,
@@ -164,7 +164,7 @@ socket.on(window.location.pathname.substr(6) + "-update", function (data) {
 
 // Name : frontend-game.socket.on.{slug}-callback
 // Desc : whenever an event occurs related to an error
-socket.on(window.location.pathname.substr(6) + "-callback", function (data) {
+socket.on(window.location.pathname.split('/')[4] + "-callback", function (data) {
     cooldown = false;
     // See the future callback
     if (data.trigger === "seethefuture") {
@@ -188,20 +188,9 @@ socket.on(window.location.pathname.substr(6) + "-callback", function (data) {
     }
 });
 
-// Name : frontend-game.socket.on.player-created
-// Desc : whenever an event occurs stating that a player was created
-socket.on("player-created", function (data) {
-    // Update player_id
-    session_user._id = data;
-    lscache.set('ec_session_' + window.location.pathname.substr(6), JSON.stringify({
-        slug: window.location.pathname.substr(6),
-        player_id: data
-    }), 12);
-});
-
 // Name : frontend-game.socket.on.{slug}-game-error
 // Desc : whenever an event occurs related to an error
-socket.on(window.location.pathname.substr(6) + "-game-error", function (data) {
+socket.on(window.location.pathname.split('/')[4] + "-game-error", function (data) {
     cooldown = false;
     console.log(data);
     if (data.msg === "GAME-DNE") {
@@ -220,21 +209,21 @@ socket.on(window.location.pathname.substr(6) + "-game-error", function (data) {
 
 // Name : frontend-game.socket.on.{slug}-draw-card
 // Desc : whenever the player draws a card, triggers animation
-socket.on(window.location.pathname.substr(6) + "-draw-card", function (data) {
+socket.on(window.location.pathname.split('/')[4] + "-draw-card", function (data) {
     anm_draw_card(data);
     cooldown = false;
 });
 
 // Name : frontend-game.socket.on.{slug}-play-card
 // Desc : whenever the player plays a card, triggers animation
-socket.on(window.location.pathname.substr(6) + "-play-card", function (data) {
+socket.on(window.location.pathname.split('/')[4] + "-play-card", function (data) {
     anm_play_card(data);
     cooldown = false;
 });
 
 // Name : frontend-game.socket.on.{slug}-explode-tick
 // Desc : whenever the player plays a card, triggers animation
-socket.on(window.location.pathname.substr(6) + "-explode-tick", function (data) {
+socket.on(window.location.pathname.split('/')[4] + "-explode-tick", function (data) {
     console.log("explode-tick");
     itr_trigger_exp(data.count, data.placed_by_name, data.card_url);
 });
@@ -246,7 +235,8 @@ socket.on("connect", function (data) {
     session_user._id = undefined;
     // Request game update
     socket.emit('retrieve-game', {
-        slug: window.location.pathname.substr(6),
+        lobby_slug: window.location.pathname.split('/')[2],
+        game_slug: window.location.pathname.split('/')[4],
         player_id: "spectator"
     })
     // Update status dot
@@ -280,21 +270,12 @@ socket.on("disconnect", function (data) {
  PLAYER ACTION FUNCTIONS
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-// Name : frontend-game.start_game()
-// Desc : emits the start-game event when the host clicks the start game button
-function start_game() {
-    sbr_update_widgets({status: "starting"});
-    socket.emit('start-game', {
-        slug: window.location.pathname.substr(6),
-        player_id: session_user._id
-    })
-}
-
 // Name : frontend-game.reset_game()
 // Desc : emits the reset-game event when the host clicks the reset game button
 function reset_game() {
     socket.emit('reset-game', {
-        slug: window.location.pathname.substr(6),
+        lobby_slug: window.location.pathname.split('/')[2],
+        game_slug: window.location.pathname.split('/')[4],
         player_id: session_user._id
     })
 }
@@ -306,7 +287,8 @@ function play_card(card_id, target) {
         cooldown = true;
         setTimeout(function () {cooldown = false;}, 1000);
         socket.emit('play-card', {
-            slug: window.location.pathname.substr(6),
+            lobby_slug: window.location.pathname.split('/')[2],
+            game_slug: window.location.pathname.split('/')[4],
             player_id: session_user._id,
             card_id: card_id,
             target: target
@@ -326,7 +308,8 @@ function draw_card() {
         cooldown = true;
         setTimeout(function () {cooldown = false;}, 1000);
         socket.emit('draw-card', {
-            slug: window.location.pathname.substr(6),
+            lobby_slug: window.location.pathname.split('/')[2],
+            game_slug: window.location.pathname.split('/')[4],
             player_id: session_user._id
         })
     } else {
@@ -335,46 +318,6 @@ function draw_card() {
             html: '<h1 class="text-lg font-bold pl-2 pr-1">You cannot draw a card now</h1>'
         });
     }
-}
-
-// Name : frontend-game.kick_player(target_player_id)
-// Desc : emits the kick-player event to kick a target player
-function kick_player(target_player_id) {
-    socket.emit('kick-player', {
-        slug: window.location.pathname.substr(6),
-        player_id: session_user._id,
-        kick_player_id: target_player_id
-    })
-}
-
-// Name : frontend-game.make_host(target_player_id)
-// Desc : emits the make-host event to update the host
-function make_host(target_player_id) {
-    socket.emit('make-host', {
-        slug: window.location.pathname.substr(6),
-        player_id: session_user._id,
-        suc_player_id: target_player_id
-    })
-}
-
-// Name : frontend-game.import_pack(pack_name)
-// Desc : emits the import-pack event to import a pack
-function import_pack(pack_name) {
-    socket.emit('import-pack', {
-        slug: window.location.pathname.substr(6),
-        player_id: session_user._id,
-        pack_name: pack_name
-    })
-}
-
-// Name : frontend-game.export_pack(pack_name)
-// Desc : emits the export-pack event to export a pack
-function export_pack(pack_name) {
-    socket.emit('export-pack', {
-        slug: window.location.pathname.substr(6),
-        player_id: session_user._id,
-        pack_name: pack_name
-    })
 }
 
 /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\

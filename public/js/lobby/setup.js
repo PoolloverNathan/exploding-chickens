@@ -16,17 +16,17 @@ function setup_session_check(lobby_details) {
     if (!lscache.get('ec_session_' + window.location.pathname.substr(7))) {
         // Reset local storage and session player since game data doesn't exist
         lscache.set('ec_session_' + window.location.pathname.substr(7), JSON.stringify({
-            slug: window.location.pathname.substr(7),
+            lobby_slug: window.location.pathname.substr(7),
             player_id: undefined
         }), 12);
         session_user = {
             _id: undefined,
             is_host: false
         };
-    } else if (JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(7))).slug !== window.location.pathname.substr(7)) {
+    } else if (JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(7))).lobby_slug !== window.location.pathname.substr(7)) {
         // Reset local storage and session player since slugs don't match
         lscache.set('ec_session_' + window.location.pathname.substr(7), JSON.stringify({
-            slug: window.location.pathname.substr(7),
+            lobby_slug: window.location.pathname.substr(7),
             player_id: undefined
         }), 12);
         session_user = {
@@ -41,7 +41,7 @@ function setup_session_check(lobby_details) {
                 if (session_user._id === undefined) {
                     // Tell server that a valid player connected
                     socket.emit('player-online', {
-                        slug: window.location.pathname.substr(7),
+                        lobby_slug: window.location.pathname.substr(7),
                         player_id: lobby_details.players[i]._id
                     })
                 }
@@ -95,7 +95,7 @@ function setup_user_prompt(lobby_details, err, nickname) {
             } else {
                 // Create new player
                 socket.emit('create-player', {
-                    slug: window.location.pathname.substr(7),
+                    lobby_slug: window.location.pathname.substr(7),
                     nickname: selected_nickname,
                     avatar: selected_avatar,
                     player_id: "spectator"

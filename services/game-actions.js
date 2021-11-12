@@ -35,6 +35,19 @@ exports.create_game = async function (lobby_details) {
     return lobby_details.games.length - 1;
 }
 
+// Name : game_actions.get_game(lobby_details, game_slug)
+// Desc : return the details for a target game
+// Author(s) : RAk3rman
+exports.get_game = async function (lobby_details, game_slug) {
+    // Find game and return details
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        if (lobby_details.games[i].slug === game_slug) {
+            return lobby_details.games[i];
+        }
+    }
+    return null;
+}
+
 // Name : game_actions.import_cards(lobby_details, game_pos, pack_name)
 // Desc : bulk import cards via json file
 // Author(s) : RAk3rman
@@ -460,6 +473,7 @@ exports.reset_game = async function (lobby_details, game_pos) {
 // Desc : prepares game data for export to client
 // Author(s) : RAk3rman
 exports.game_export = async function (lobby_details, game_pos, source, req_player_id) {
+    if (!lobby_details) return;
     // Reference to game details
     let game_details = lobby_details.games[game_pos];
     // Prepare events payload
