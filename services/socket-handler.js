@@ -646,11 +646,11 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (pretty_game_details !== {}) {
             // Send game data
             if (target === "") {
-                fastify.io.emit(pretty_game_details.slug + "-game-update", pretty_game_details);
+                fastify.io.emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
             } else {
-                fastify.io.to(target).emit(pretty_game_details.slug + "-game-update", pretty_game_details);
+                fastify.io.to(target).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
             }
-            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_game_details.slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} Emitted game update event`));
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_game_details.game_slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} Emitted game update event`));
         }
     }
 };

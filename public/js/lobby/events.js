@@ -45,13 +45,13 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
     } else if (data.trigger === "create-player") { // New player was created
-        sbr_update_widgets(data);
+        sbr_update_lobby_widgets(data);
         sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
         itr_update_games(data);
     } else if (data.trigger === "start-games") { // Game started
-        sbr_update_widgets(data);
+        sbr_update_lobby_widgets(data);
         sbr_update_options(data);
         sbr_update_pstatus(data);
         itr_update_games(data);
@@ -69,7 +69,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
                 break;
             }
         }
-        sbr_update_widgets(data);
+        sbr_update_lobby_widgets(data);
         sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
@@ -79,7 +79,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Host was updated</h1>'
         });
     } else if (data.trigger === "kick-player") {
-        sbr_update_widgets(data);
+        sbr_update_lobby_widgets(data);
         sbr_update_players(data);
         itr_update_games(data);
         toast_turn.close();
@@ -88,7 +88,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Player was kicked</h1>'
         });
     } else if (data.trigger === "import-pack") {
-        sbr_update_widgets(data);
+        sbr_update_lobby_widgets(data);
         sbr_update_packs(data);
         itr_update_games(data);
         toast_turn.close();
@@ -97,7 +97,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was imported</h1>'
         });
     } else if (data.trigger === "export-pack") {
-        sbr_update_widgets(data);
+        sbr_update_lobby_widgets(data);
         sbr_update_packs(data);
         itr_update_games(data);
         toast_turn.close();
@@ -109,7 +109,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
     } else { // Update entire ui
-        sbr_update_widgets(data);
+        sbr_update_lobby_widgets(data);
         sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
@@ -291,7 +291,7 @@ function game_start_prompt(lobby_details) {
                     confirmButtonColor: '#fbbf24',
                     confirmButtonText: 'Join Game',
                     allowOutsideClick: false,
-                    timer: session_user.is_host ? undefined : 4000,
+                    timer: session_user.is_host ? undefined : 3000,
                     timerProgressBar: true,
                     didOpen: () => {
                         if (!session_user.is_host) Swal.showLoading();

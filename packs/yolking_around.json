@@ -5,92 +5,74 @@
   },
   {
     "_id": "defuse-7",
-    "file_name": "defuse-7.png",
     "action": "defuse"
   },
   {
     "_id": "defuse-8",
-    "file_name": "defuse-8.png",
     "action": "defuse"
   },
   {
     "_id": "hotpotato-1",
-    "file_name": "hotpotato-1.png",
     "action": "hotpotato"
   },
   {
     "_id": "favorgator-1",
-    "file_name": "favorgator-1.png",
     "action": "favorgator"
   },
   {
     "_id": "favorgator-2",
-    "file_name": "favorgator-2.png",
     "action": "favorgator"
   },
   {
     "_id": "scrambledeggs-1",
-    "file_name": "scrambledeggs-1.png",
     "action": "scrambledeggs"
   },
   {
     "_id": "scrambledeggs-2",
-    "file_name": "scrambledeggs-2.png",
     "action": "scrambledeggs"
   },
   {
     "_id": "superskip-1",
-    "file_name": "superskip-1.png",
     "action": "superskip"
   },
   {
     "_id": "superskip-2",
-    "file_name": "superskip-2.png",
     "action": "superskip"
   },
   {
     "_id": "superskip-3",
-    "file_name": "superskip-3.png",
     "action": "superskip"
   },
   {
     "_id": "safetydraw-1",
-    "file_name": "safetydraw-1.png",
     "action": "safetydraw"
   },
   {
     "_id": "safetydraw-2",
-    "file_name": "safetydraw-2.png",
     "action": "safetydraw"
   },
   {
     "_id": "safetydraw-3",
-    "file_name": "safetydraw-3.png",
     "action": "safetydraw"
   },
   {
     "_id": "safetydraw-4",
-    "file_name": "safetydraw-4.png",
     "action": "safetydraw"
   },
   {
     "_id": "drawbottom-1",
-    "file_name": "drawbottom-1.png",
     "action": "drawbottom"
   },
   {
     "_id": "drawbottom-2",
-    "file_name": "drawbottom-2.png",
     "action": "drawbottom"
   },
   {
     "_id": "drawbottom-3",
-    "file_name": "drawbottom-3.png",
     "action": "drawbottom"
   },
   {
     "_id": "drawbottom-4",
-    "file_name": "drawbottom-4.png",
     "action": "drawbottom"
   }
 ]

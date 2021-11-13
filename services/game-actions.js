@@ -506,7 +506,7 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
     let discard_deck = await card_actions.filter_cards("discard_deck", game_details.cards);
     // Return pretty game details
     return {
-        slug: game_details.slug,
+        game_slug: game_details.slug,
         lobby_slug: lobby_details.slug,
         in_progress: game_details.in_progress,
         turn_seat_pos: game_details.turn_seat_pos,

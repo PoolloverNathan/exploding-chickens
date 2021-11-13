@@ -51,12 +51,12 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
         if (user_prompt_open) {
             setup_update_options(data);
         }
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         sbr_update_players(data);
         sbr_update_packs(data);
         itr_update_players(data);
     } else if (data.trigger === "start-game") { // Game started
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         sbr_update_pstatus(data);
         itr_update_players(data);
         itr_update_pcards(data);
@@ -67,7 +67,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Game has started</h1>'
         });
     } else if (data.trigger === "reset-game") { // Game was reset or there is a winner
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
         itr_update_pcards(data);
@@ -93,11 +93,11 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
             itr_update_discard(data);
             itr_update_hand(data);
         }
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         itr_update_players(data);
         itr_update_pcards(data);
     } else if (data.trigger === "draw-card") { // A card was drawn by a player
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         itr_update_pcards(data);
         itr_update_hand(data);
     } else if (data.trigger === "make-host") {
@@ -114,7 +114,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
                 break;
             }
         }
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         sbr_update_players(data);
         sbr_update_packs(data);
         toast_turn.close();
@@ -123,7 +123,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Host was updated</h1>'
         });
     } else if (data.trigger === "kick-player") {
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         sbr_update_players(data);
         itr_update_players(data);
         itr_update_discard(data);
@@ -134,7 +134,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Player was kicked</h1>'
         });
     } else if (data.trigger === "import-pack") {
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         sbr_update_packs(data);
         toast_turn.close();
         toast_alert.fire({
@@ -142,7 +142,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
             html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was imported</h1>'
         });
     } else if (data.trigger === "export-pack") {
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         sbr_update_packs(data);
         toast_turn.close();
         toast_alert.fire({
@@ -153,7 +153,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
     } else { // Update entire ui
-        sbr_update_widgets(data);
+        sbr_update_game_widgets(data);
         sbr_update_players(data);
         sbr_update_packs(data);
         itr_update_players(data);
@@ -174,7 +174,7 @@ socket.on(window.location.pathname.split('/')[4] + "-callback", function (data) 
     } else if (data.trigger === "chicken_target") {
         itr_trigger_chicken_target(parseInt(data.payload.max_pos), data.payload.card_id);
     } else if (data.trigger === "favor_taken") {
-        sbr_update_widgets(data.payload.game_details);
+        sbr_update_game_widgets(data.payload.game_details);
         itr_update_players(data.payload.game_details);
         itr_update_pcards(data.payload.game_details);
         itr_update_discard(data.payload.game_details);

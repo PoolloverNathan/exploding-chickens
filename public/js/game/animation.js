@@ -20,7 +20,7 @@ function anm_draw_card(data) {
         easing: 'sineInOut',
         onstart () {
             temp.style.display = '';
-            temp.style.backgroundImage = 'url(/' + data.image_loc + ')';
+            temp.style.backgroundImage = 'url(' + card_url(data.pack) + ')';
             target.style.visibility = 'hidden';
         },
         onprogress: (e) => {
@@ -44,7 +44,7 @@ function anm_play_card(data) {
         easing: 'sineInOut',
         onstart () {
             temp.style.display = '';
-            temp.style.backgroundImage = 'url(/' + data.card.image_loc + ')';
+            temp.style.backgroundImage = 'url(' + card_url(data.card) + ')';
             target.style.visibility = 'hidden';
         },
         onprogress: (e) => {

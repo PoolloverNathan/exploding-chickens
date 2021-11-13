@@ -23,21 +23,21 @@ function itr_update_players(game_details) {
         // Construct top player payload
         top_payload += "<img class=\"inline-block h-6 w-6 rounded-full\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">";
         // Construct center player payload
-        let turns = game_details.seat_playing === game_details.players[i].seat ? game_details.turns_remaining : 0;
+        let turns = game_details.turn_seat_pos === game_details.players[i].seat_pos ? game_details.turns_remain : 0;
         // Check for dead filter
-        let filter = game_details.players[i].status === "dead" ? "filter grayscale" : "";
+        let filter = game_details.players[i].is_dead ? "filter grayscale" : "";
         center_payload += "<div class=\"block text-center mb-1\">\n" +
             "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
-            "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].status, game_details.players[i].connection, "", "itr_stat_player_dot_" + game_details.players[i]._id) + "\n" +
+            "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].sockets_open, "", "itr_stat_player_dot_" + game_details.players[i]._id) + "\n" +
             "    </h1>\n" +
             "    <div class=\"flex flex-col items-center -space-y-3 px-3\" id=\"itr_stat_player_halo_" + game_details.players[i]._id + "\">\n" +
             "        <img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
-            card_icon(game_details, game_details.players[i], turns) +
+            card_icon(game_details, i, turns) +
             "    </div>\n" +
             "</div>";
         // If we are not at the end of the number of players, indicate direction
         if (i < game_details.players.length - 1) {
-            if (game_details.turn_direction === "forward") {
+            if (game_details.turn_dir === "forward") {
                 center_payload += "<button class=\"mx-2 mb-3 bg-gray-400 p-1 rounded-full text-white hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white\">\n" +
                     "    <svg class=\"h-3 w-3\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                     "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 5l7 7-7 7M5 5l7 7-7 7\" />\n" +
@@ -64,7 +64,7 @@ function itr_update_players(game_details) {
 function itr_update_pstatus(game_details) {
     // Loop through each player and update status
     for (let i = 0; i < game_details.players.length; i++) {
-        document.getElementById("itr_stat_player_dot_" + game_details.players[i]._id).className = stat_dot_class(game_details.players[i].connection, "mx-0.5");
+        document.getElementById("itr_stat_player_dot_" + game_details.players[i]._id).className = stat_dot_class(game_details.players[i].sockets_open, "mx-0.5");
     }
 }
 
@@ -74,12 +74,12 @@ function itr_update_pcards(game_details) {
     // Loop through each player and update card icon
     for (let i = 0; i < game_details.players.length; i++) {
         let turns = 0;
-        if (game_details.seat_playing === game_details.players[i].seat) {
-            turns = game_details.turns_remaining;
+        if (game_details.turn_seat_pos === game_details.players[i].seat_pos) {
+            turns = game_details.turns_remain;
         }
         // Check for dead filter
-        let filter = game_details.players[i].status === "dead" ? "filter grayscale" : "";
-        document.getElementById("itr_stat_player_halo_" + game_details.players[i]._id).innerHTML = "<img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" + card_icon(game_details, game_details.players[i], turns);
+        let filter = game_details.players[i].is_dead ? "filter grayscale" : "";
+        document.getElementById("itr_stat_player_halo_" + game_details.players[i]._id).innerHTML = "<img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" + card_icon(game_details, i, turns);
     }
 }
 
@@ -87,7 +87,7 @@ function itr_update_pcards(game_details) {
 // Desc : updates discard deck
 function itr_update_discard(game_details) {
     if (game_details.discard_deck.length !== 0) {
-        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-sm center-card bg-center bg-contain\" id=\"anim_discard\" style=\"background-image: url('/" + game_details.discard_deck[game_details.discard_deck.length-1].image_loc + "')\"></div>";
+        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-sm center-card bg-center bg-contain\" id=\"anim_discard\" style=\"background-image: url('" + card_url(game_details.discard_deck[game_details.discard_deck.length - 1]) + "')\"></div>";
     } else {
         document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1 border-dashed border-4 border-gray-400\" id=\"anim_discard\">\n" +
             "    <h1 class=\"text-gray-400 font-bold flex items-center justify-center center-card-text\">Discard Pile</h1>\n" +
@@ -117,24 +117,24 @@ function itr_update_hand(game_details) {
             for (let j = 0; j < game_details.players[i].cards.length; j++) {
                 let play_card_funct = "";
                 // Allow to play if seat is playing AND if the card is a defuse or hotpotato allow play while exploding, else don't allow
-                if (game_details.seat_playing === game_details.players[i].seat &&
-                    (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato" || game_details.players[i].status !== "exploding")) {
+                if (game_details.turn_seat_pos === game_details.players[i].seat_pos &&
+                    (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato" || !game_details.players[i].is_exploding)) {
                     play_card_funct = "play_card('" + game_details.players[i].cards[j]._id + "', '')";
                 }
                 if (chicken_active && (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato")) {
-                    payload = "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "');\"></div>" + payload;
+                    payload = "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('" + card_url(game_details.players[i].cards[j]) + "');\"></div>" + payload;
                 } else {
-                    payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[j].image_loc + "');\"></div>";
+                    payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('" + card_url(game_details.players[i].cards[j]) + "');\"></div>";
                 }
             }
             // Toggle turn banner
-            if (game_details.seat_playing === game_details.players[i].seat && !is_turn && game_details.status === "in_game") {
+            if (game_details.turn_seat_pos === game_details.players[i].seat_pos && !is_turn && game_details.in_progress) {
                 toast_turn.fire({
                     icon: 'info',
                     html: '<h1 class="text-lg font-bold pl-2 pr-1">Your turn</h1>'
                 });
                 is_turn = true;
-            } else if (game_details.seat_playing !== game_details.players[i].seat && game_details.status === "in_game") {
+            } else if (game_details.turn_seat_pos !== game_details.players[i].seat_pos && game_details.in_progress) {
                 toast_turn.close();
                 is_turn = false;
                 session_user.can_draw = false;
@@ -155,11 +155,11 @@ function itr_deal_hand(game_details, payload, pos) {
             // Add cards to hand, recursively
             let play_card_funct = "";
             // Allow to play if seat is playing AND if the card is a defuse or hotpotato allow play while exploding, else don't allow
-            if (game_details.seat_playing === game_details.players[i].seat &&
-                (game_details.players[i].cards[pos].action === "defuse" || game_details.players[i].cards[pos].action === "hotpotato" || game_details.players[i].status !== "exploding")) {
+            if (game_details.turn_seat_pos === game_details.players[i].seat_pos &&
+                (game_details.players[i].cards[pos].action === "defuse" || game_details.players[i].cards[pos].action === "hotpotato" || !game_details.players[i].is_exploding)) {
                 play_card_funct = "play_card('" + game_details.players[i].cards[pos]._id + "', '')";
             }
-            payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[pos]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('/" + game_details.players[i].cards[pos].image_loc + "');\"></div>";
+            payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[pos]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('" + card_url(game_details.players[i].cards[pos]) + "');\"></div>";
             document.getElementById("itr_ele_player_hand").innerHTML = payload;
             anm_draw_card(game_details.players[i].cards[pos]);
             pos += 1;
@@ -212,14 +212,14 @@ function itr_trigger_stf(top_3) {
     let card_payload;
     // Check number of cards left in deck, prepare payload
     if (top_3.length > 2) {
-        card_payload = "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain mt-2 -rotate-12\" style=\"background-image: url('/" + top_3[top_3.length - 1].image_loc + "')\"></div>\n" +
-            "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain mb-2\" style=\"background-image: url('/" + top_3[top_3.length - 2].image_loc + "')\"></div>\n" +
-            "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain mt-2 rotate-12\" style=\"background-image: url('/" + top_3[top_3.length - 3].image_loc + "')\"></div>\n";
+        card_payload = "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain mt-2 -rotate-12\" style=\"background-image: url('" + card_url(top_3[top_3.length - 1]) + "')\"></div>\n" +
+            "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain mb-2\" style=\"background-image: url('" + card_url(top_3[top_3.length - 2]) + "')\"></div>\n" +
+            "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain mt-2 rotate-12\" style=\"background-image: url('" + card_url(top_3[top_3.length - 3]) + "')\"></div>\n";
     } else if (top_3.length > 1) {
-        card_payload = "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain -rotate-6\" style=\"background-image: url('/" + top_3[top_3.length - 1].image_loc + "')\"></div>\n" +
-            "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain rotate-6\" style=\"background-image: url('/" + top_3[top_3.length - 2].image_loc + "')\"></div>\n";
+        card_payload = "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain -rotate-6\" style=\"background-image: url('" + card_url(top_3[top_3.length - 1]) + "')\"></div>\n" +
+            "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain rotate-6\" style=\"background-image: url('" + card_url(top_3[top_3.length - 2]) + "')\"></div>\n";
     } else if (top_3.length > 0) {
-        card_payload = "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain\" style=\"background-image: url('/" + top_3[top_3.length - 1].image_loc + "')\"></div>\n";
+        card_payload = "<div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain\" style=\"background-image: url('" + card_url(top_3[top_3.length - 1]) + "')\"></div>\n";
     }
     // Fire swal
     Swal.fire({
@@ -351,14 +351,14 @@ function itr_trigger_pselect(game_details, card_id) {
     let payload = "";
     // Check number of cards left in deck, prepare payload
     for (let i = 0; i < game_details.players.length; i++) {
-        if (game_details.players[i].status === "playing" && session_user._id !== game_details.players[i]._id) {
+        if (!game_details.players[i].is_dead && session_user._id !== game_details.players[i]._id) {
             payload += "<div class=\"block text-center p-3\" onclick=\"play_card('" + card_id + "', '" + game_details.players[i]._id + "');swal.close();\">\n" +
                 "    <h1 class=\"text-white font-medium text-sm\">\n" +
-                "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].status, game_details.players[i].connection, "", "") +
+                "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].sockets_open, "", "") +
                 "    </h1>\n" +
                 "    <div class=\"flex flex-col items-center -space-y-3\">\n" +
                 "        <img class=\"h-12 w-12 rounded-full\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
-                card_icon(game_details, game_details.players[i], 0) +
+                card_icon(game_details, i, 0) +
                 "    </div>\n" +
                 "</div>";
         }
@@ -425,91 +425,4 @@ function itr_display_winner(game_details, name, count) {
         particleCount: Math.random() * (100 - 50) + 50,
         origin: { y: 0.6 }
     });
-}
-
-/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
- GAME UI HELPER FUNCTIONS
-\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
-
-// Name : frontend-game.create_stat_dot(status, connection, margin, id)
-// Desc : returns the html for a pulsating status dot
-function create_stat_dot(status, connection, margin, id) {
-    return "<span class=\"" + stat_dot_class(connection, margin) + "\" id=\"" + id + "\"></span>"
-}
-
-// Name : frontend-game.stat_dot_class(connection, margin)
-// Desc : returns the class for a status dot
-function stat_dot_class(connection, margin) {
-    if (connection === "connected") {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-green-500"
-    } else if (connection === "offline") {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-yellow-500"
-    } else {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-gray-500"
-    }
-}
-
-// Name : frontend-game.cards_icon(game_details, player_details, turns)
-// Desc : returns the html for cards in a players hand (as well as blue card for turns)
-function card_icon(game_details, player_details, turns) {
-    let turns_payload = "";
-    // Check to see if we are in lobby
-    if (game_details.status === "in_lobby") {
-        if (player_details.status === "winner") {
-            return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-yellow-500 shadow-md h-5 w-4\">\n" +
-                "    <h1 class=\"text-white text-sm\"><i class=\"fas fa-award\"></i></h1>\n" +
-                "</div></div><div class=\"transform inline-block rounded-md bg-green-500 shadow-md h-5 w-4 ml-1\">\n" +
-                "    <h1 class=\"text-white text-sm\">" + player_details.wins + "</h1>\n" +
-                "</div></div>\n"
-        } else {
-            if (player_details.wins > 0) {
-                return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-green-500 shadow-md h-5 w-4\">\n" +
-                    "    <h1 class=\"text-white text-sm\">" + player_details.wins + "</h1>\n" +
-                    "</div></div></div>\n"
-            } else {
-                return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4\">\n" +
-                    "    <h1 class=\"text-white text-sm\">" + player_details.wins + "</h1>\n" +
-                    "</div></div></div>\n"
-            }
-        }
-    }
-    // Check to see if target player has any turns remaining
-    if (turns !== 0 && game_details.status === "in_game") {
-        turns_payload = "<div class=\"transform inline-block rounded-md bg-blue-500 shadow-md h-5 w-4 ml-1\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + turns + "</h1>\n" +
-            "</div>\n"
-    }
-    // Check if exploding
-    let card1_color = player_details.status === "exploding" ? "bg-red-500" : "bg-gray-500";
-    let card2_color = player_details.status === "exploding" ? "bg-red-600" : "bg-gray-600";
-    let card3_color = player_details.status === "exploding" ? "bg-red-700" : "bg-gray-700";
-    let card4_color = player_details.status === "exploding" ? "bg-red-800" : "bg-gray-800";
-    // Determine number of cards in hand
-    if (player_details.status === "dead") {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4\">\n" +
-            "    <h1 class=\"text-white text-sm\"><i class=\"fas fa-skull-crossbones\"></i></h1>\n" +
-            "</div></div></div>\n"
-    } else if (player_details.card_num === 2) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4 rotate-6\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + player_details.card_num + "</h1>\n" +
-            "</div></div>" +  turns_payload + "</div>\n"
-    } else if (player_details.card_num === 3) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card3_color + " shadow-md h-5 w-4 -rotate-12\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4 rotate-12\">\n" +
-            "    <h1 class=\"text-white text-sm \">" + player_details.card_num + "</h1>\n" +
-            "</div></div>" +  turns_payload + "</div>\n"
-    } else if (player_details.card_num >= 4) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card4_color + " shadow-md h-5 w-4\" style=\"--tw-rotate: -18deg\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card3_color + " shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4 rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4\" style=\"--tw-rotate: 18deg\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + player_details.card_num + "</h1>\n" +
-            "</div></div>" +  turns_payload + "</div>\n"
-    } else {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + player_details.card_num + "</h1>\n" +
-            "</div></div>" +  turns_payload + "</div>\n"
-    }
 }

@@ -46,13 +46,13 @@ function itr_update_games(lobby_details) {
                 "    </h1>\n" +
                 "    <div class=\"flex flex-col items-center -space-y-3\">\n" +
                 "        <img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + lobby_details.games[i].players[j].avatar + "\" alt=\"\">\n" +
-                card_icon(lobby_details, i, j, turns) +
+                card_icon(lobby_details.games[i], j, turns) +
                 "    </div>\n" +
                 "</div>";
         }
         game_grid_payload += "<div class=\"block text-center\">\n" +
             "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
-            "        Game Room: " + lobby_details.games[i].slug + " <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-" + (lobby_details.games[i].in_progress ? "green" : "blue") + "-500\"></span>\n" +
+            "        Game Room: " + lobby_details.games[i].game_slug + " <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-" + (lobby_details.games[i].in_progress ? "green" : "blue") + "-500\"></span>\n" +
             "    </h1>\n" +
             "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
             "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 text-blue-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
@@ -126,84 +126,5 @@ function itr_update_pstatus(lobby_details) {
         for (let j = 0; j < lobby_details.games[i].players.length; j++) {
             document.getElementById("itr_stat_player_dot_" + lobby_details.games[i].players[j]._id).className = stat_dot_class(lobby_details.games[i].players[j].sockets_open, "mx-0.5");
         }
-    }
-}
-
-/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
- GAME UI HELPER FUNCTIONS
-\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
-
-// Name : frontend-game.create_stat_dot(sockets_open, margin, id)
-// Desc : returns the html for a pulsating status dot
-function create_stat_dot(sockets_open, margin, id) {
-    return "<span class=\"" + stat_dot_class(sockets_open, margin) + "\" id=\"" + id + "\"></span>"
-}
-
-// Name : frontend-game.stat_dot_class(sockets_open, margin)
-// Desc : returns the class for a status dot
-function stat_dot_class(sockets_open, margin) {
-    if (sockets_open > 0) {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-green-500"
-    } else if (sockets_open <= 0) {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-yellow-500"
-    } else {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-gray-500"
-    }
-}
-
-// Name : frontend-game.cards_icon(game_details, player_details, turns)
-// Desc : returns the html for cards in a players hand (as well as blue card for turns)
-function card_icon(lobby_details, game_pos, player_pos, turns) {
-    let turns_payload = "";
-    // Display win count if game is completed or lobby is in matchmaking
-    if (!lobby_details.in_progress || lobby_details.games[game_pos].is_completed) {
-        if (lobby_details.games[game_pos].players[player_pos].wins > 0) {
-            return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-green-500 shadow-md h-5 w-4\">\n" +
-                "    <h1 class=\"text-white text-sm\">" + lobby_details.games[game_pos].players[player_pos].wins + "</h1>\n" +
-                "</div></div></div>\n"
-        } else {
-            return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-gray-500 shadow-md h-5 w-4\">\n" +
-                "    <h1 class=\"text-white text-sm\">" + lobby_details.games[game_pos].players[player_pos].wins + "</h1>\n" +
-                "</div></div></div>\n"
-        }
-    }
-    // Check to see if target player has any turns remaining
-    if (turns !== 0 && lobby_details.games[game_pos].in_progress) {
-        turns_payload = "<div class=\"transform inline-block rounded-md bg-blue-500 shadow-md h-5 w-4 ml-1\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + turns + "</h1>\n" +
-            "</div>\n"
-    }
-    // Check if exploding
-    let card1_color = lobby_details.games[game_pos].players[player_pos].is_exploding ? "bg-red-500" : "bg-gray-500";
-    let card2_color = lobby_details.games[game_pos].players[player_pos].is_exploding ? "bg-red-600" : "bg-gray-600";
-    let card3_color = lobby_details.games[game_pos].players[player_pos].is_exploding ? "bg-red-700" : "bg-gray-700";
-    let card4_color = lobby_details.games[game_pos].players[player_pos].is_exploding ? "bg-red-800" : "bg-gray-800";
-    // Determine number of cards in hand
-    if (lobby_details.games[game_pos].players[player_pos].is_dead) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4\">\n" +
-            "    <h1 class=\"text-white text-sm\"><i class=\"fas fa-skull-crossbones\"></i></h1>\n" +
-            "</div></div></div>\n"
-    } else if (lobby_details.games[game_pos].players[player_pos].cards.length === 2) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4 rotate-6\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + lobby_details.games[game_pos].players[player_pos].cards.length + "</h1>\n" +
-            "</div></div>" +  turns_payload + "</div>\n"
-    } else if (lobby_details.games[game_pos].players[player_pos].cards.length === 3) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card3_color + " shadow-md h-5 w-4 -rotate-12\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4 rotate-12\">\n" +
-            "    <h1 class=\"text-white text-sm \">" + lobby_details.games[game_pos].players[player_pos].cards.length + "</h1>\n" +
-            "</div></div>" +  turns_payload + "</div>\n"
-    } else if (lobby_details.games[game_pos].players[player_pos].cards.length >= 4) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card4_color + " shadow-md h-5 w-4\" style=\"--tw-rotate: -18deg\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card3_color + " shadow-md h-5 w-4 -rotate-6\"><h1 class=\"text-gray-700 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card2_color + " shadow-md h-5 w-4 rotate-6\"><h1 class=\"text-gray-600 text-sm\">1</h1></div>\n" +
-            "<div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4\" style=\"--tw-rotate: 18deg\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + lobby_details.games[game_pos].players[player_pos].cards.length + "</h1>\n" +
-            "</div></div>" +  turns_payload + "</div>\n"
-    } else {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md " + card1_color + " shadow-md h-5 w-4\">\n" +
-            "    <h1 class=\"text-white text-sm\">" + lobby_details.games[game_pos].players[player_pos].cards.length + "</h1>\n" +
-            "</div></div>" +  turns_payload + "</div>\n"
     }
 }
