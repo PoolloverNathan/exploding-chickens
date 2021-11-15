@@ -31,7 +31,7 @@ let session_user = {
 
 // Name : frontend-game.socket.on.{slug}-update
 // Desc : whenever an event occurs containing a game update
-socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) {
+socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (data) {
     console.log(data.trigger);
     console.log(data);
     // Check browser session
@@ -60,7 +60,7 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
         // Update host designation in session_user
         for (let i = 0; i < data.players.length; i++) {
             // Check if individual player exists
-            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(7))).player_id) {
+            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).player_id) {
                 // Update session_user _id and is_host
                 session_user = {
                     _id: data.players[i]._id,
@@ -121,15 +121,15 @@ socket.on(window.location.pathname.substr(7) + "-lobby-update", function (data) 
 // Desc : whenever an event occurs stating that a player was created
 socket.on("player-created", function (data) {
     // Save data into cache
-    lscache.set('ec_session_' + window.location.pathname.substr(7), JSON.stringify({
-        lobby_slug: window.location.pathname.substr(7),
+    lscache.set('ec_session_' + window.location.pathname.split('/')[2], JSON.stringify({
+        lobby_slug: window.location.pathname.split('/')[2],
         player_id: data
     }), 12);
 });
 
 // Name : frontend-game.socket.on.{slug}-lobby-error
 // Desc : whenever an event occurs related to an error
-socket.on(window.location.pathname.substr(7) + "-lobby-error", function (data) {
+socket.on(window.location.pathname.split('/')[2] + "-lobby-error", function (data) {
     console.log(data);
     if (data.msg === "LOBBY-DNE") {
         window.location.href = "/";
@@ -154,7 +154,7 @@ socket.on("connect", function (data) {
     session_user._id = undefined;
     // Request game update
     socket.emit('retrieve-lobby', {
-        lobby_slug: window.location.pathname.substr(7),
+        lobby_slug: window.location.pathname.split('/')[2],
         player_id: "spectator"
     })
     // Update status dot
@@ -192,7 +192,7 @@ socket.on("disconnect", function (data) {
 // Desc : emits the start-games event when the host clicks the start game button
 function start_games() {
     socket.emit('start-games', {
-        lobby_slug: window.location.pathname.substr(7),
+        lobby_slug: window.location.pathname.split('/')[2],
         player_id: session_user._id
     })
 }
@@ -201,7 +201,7 @@ function start_games() {
 // Desc : emits the reset-games event when the host clicks the reset game button
 function reset_games() {
     socket.emit('reset-games', {
-        lobby_slug: window.location.pathname.substr(7),
+        lobby_slug: window.location.pathname.split('/')[2],
         player_id: session_user._id
     })
 }
@@ -211,7 +211,7 @@ function reset_games() {
 function update_option(option, value) {
     if (session_user.is_host) {
         socket.emit('update-option', {
-            lobby_slug: window.location.pathname.substr(7),
+            lobby_slug: window.location.pathname.split('/')[2],
             player_id: session_user._id,
             option: option,
             value: value
@@ -223,7 +223,7 @@ function update_option(option, value) {
 // Desc : emits the kick-player event to kick a target player
 function kick_player(target_player_id) {
     socket.emit('kick-player', {
-        lobby_slug: window.location.pathname.substr(7),
+        lobby_slug: window.location.pathname.split('/')[2],
         player_id: session_user._id,
         kick_player_id: target_player_id
     })
@@ -233,7 +233,7 @@ function kick_player(target_player_id) {
 // Desc : emits the make-host event to update the host
 function make_host(target_player_id) {
     socket.emit('make-host', {
-        lobby_slug: window.location.pathname.substr(7),
+        lobby_slug: window.location.pathname.split('/')[2],
         player_id: session_user._id,
         suc_player_id: target_player_id
     })
@@ -243,7 +243,7 @@ function make_host(target_player_id) {
 // Desc : emits the import-pack event to import a pack
 function import_pack(pack_name) {
     socket.emit('import-pack', {
-        lobby_slug: window.location.pathname.substr(7),
+        lobby_slug: window.location.pathname.split('/')[2],
         player_id: session_user._id,
         pack_name: pack_name
     })
@@ -253,7 +253,7 @@ function import_pack(pack_name) {
 // Desc : emits the export-pack event to export a pack
 function export_pack(pack_name) {
     socket.emit('export-pack', {
-        lobby_slug: window.location.pathname.substr(7),
+        lobby_slug: window.location.pathname.split('/')[2],
         player_id: session_user._id,
         pack_name: pack_name
     })

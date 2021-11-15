@@ -64,6 +64,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_lobby, // Get lobby_details
                 async function(lobby_details, req_data, action, socket_id, callback) { // Send lobby data
+                    socket.join(lobby_details.slug);
                     await update_lobby_ui(lobby_details, socket_id, action, socket_id, req_data.player_id);
                     callback(false, `Retrieved and sent lobby data`, lobby_details, req_data, action, socket_id);
                 }
@@ -632,7 +633,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (pretty_lobby_details !== {}) {
             // Send lobby data
             if (target === "") {
-                fastify.io.emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
+                fastify.io.to(lobby_details.slug).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
             } else {
                 fastify.io.to(target).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
             }
@@ -649,7 +650,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (pretty_game_details !== {}) {
             // Send game data
             if (target === "") {
-                fastify.io.emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
+                fastify.io.to(lobby_details.slug).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
             } else {
                 fastify.io.to(target).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
             }
