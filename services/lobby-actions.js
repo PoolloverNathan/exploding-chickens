@@ -15,7 +15,6 @@ const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-na
 const dataStore = require('data-store');
 const config_storage = new dataStore({path: './config/config.json'});
 const pkg = require('../package.json');
-const { nanoid } = require('nanoid');
 
 // Services
 let lobby_actions = require('./lobby-actions.js');
@@ -31,8 +30,7 @@ exports.create_lobby = async function () {
     // Create new lobby
     try {
         return await Lobby.create({
-            slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2}),
-            auth_token: nanoid(6)
+            slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2})
         });
     } catch (err) {
         throw new Error(err);
@@ -272,6 +270,7 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
         packs: lobby_details.packs,
         events: events_payload,
         events_length: lobby_details.events.length,
+        auth_token: req_player_id !== "spectator" ? lobby_details.auth_token : "undefined",
         req_player_id: req_player_id,
         trigger: source.trim()
     }

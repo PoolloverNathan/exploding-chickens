@@ -14,7 +14,8 @@ const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-na
 let Game = require('../models/game.js');
 let Player = require('../models/player.js');
 let Event = require('../models/event.js');
-const {nanoid} = require("nanoid");
+const { customAlphabet } = require("nanoid");
+const nanoid = customAlphabet('123456789ABCDEF', 6);
 
 // Lobby schema
 let lobbySchema = mongoose.Schema({
@@ -48,7 +49,7 @@ let lobbySchema = mongoose.Schema({
     },
     auth_token: {
         type: String,
-        default: nanoid(6)
+        default: () => nanoid()
     },
     created: {
         type: Date,

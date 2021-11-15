@@ -5,6 +5,7 @@ Desc     : handles setup for player settings in browser
 
 // Global variables
 let allow_user_prompt = true;
+let selected_nickname = "";
 let selected_avatar = "default.png";
 let user_prompt_open = false;
 
@@ -12,21 +13,23 @@ let user_prompt_open = false;
 // Desc : check local user configuration on browser
 function setup_session_check(lobby_details) {
     lscache.flushExpired();
+    // Update auth_token
+    auth_token = lobby_details.auth_token;
     // Get browser session details
-    if (!lscache.get('ec_session_' + window.location.pathname.substr(7))) {
+    if (!lscache.get('ec_session_' + window.location.pathname.split('/')[2])) {
         // Reset local storage and session player since game data doesn't exist
-        lscache.set('ec_session_' + window.location.pathname.substr(7), JSON.stringify({
-            lobby_slug: window.location.pathname.substr(7),
+        lscache.set('ec_session_' + window.location.pathname.split('/')[2], JSON.stringify({
+            lobby_slug: window.location.pathname.split('/')[2],
             player_id: undefined
         }), 12);
         session_user = {
             _id: undefined,
             is_host: false
         };
-    } else if (JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(7))).lobby_slug !== window.location.pathname.substr(7)) {
+    } else if (JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).lobby_slug !== window.location.pathname.split('/')[2]) {
         // Reset local storage and session player since slugs don't match
-        lscache.set('ec_session_' + window.location.pathname.substr(7), JSON.stringify({
-            lobby_slug: window.location.pathname.substr(7),
+        lscache.set('ec_session_' + window.location.pathname.split('/')[2], JSON.stringify({
+            lobby_slug: window.location.pathname.split('/')[2],
             player_id: undefined
         }), 12);
         session_user = {
@@ -37,13 +40,15 @@ function setup_session_check(lobby_details) {
         // Check to make sure that the player is valid
         for (let i = 0; i < lobby_details.players.length; i++) {
             // Check if individual player exists
-            if (lobby_details.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.substr(7))).player_id) {
+            if (lobby_details.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).player_id) {
                 if (session_user._id === undefined) {
                     // Tell server that a valid player connected
                     socket.emit('player-online', {
-                        lobby_slug: window.location.pathname.substr(7),
+                        lobby_slug: window.location.pathname.split('/')[2],
                         player_id: lobby_details.players[i]._id
                     })
+                    // Replace url without auth_token
+                    window.history.replaceState({}, document.title, "/lobby/" + window.location.pathname.split('/')[2]);
                 }
                 // Update session_user _id and is_host
                 session_user = {
@@ -64,6 +69,7 @@ function setup_session_check(lobby_details) {
 // Name : frontend-game.setup_user_prompt(lobby_details, err, nickname)
 // Desc : fire a swal prompt to add user to lobby
 function setup_user_prompt(lobby_details, err, nickname) {
+    let auth_token = (new URLSearchParams(window.location.search)).get("auth_token");
     // Trigger Swal
     Swal.fire({
         html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">Welcome to <a class=\"text-yellow-400\">EXPLODING</a> CHICKENS</h1>\n" +
@@ -73,6 +79,11 @@ function setup_user_prompt(lobby_details, err, nickname) {
             "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-white text-gray-700 placeholder-gray-400 rounded-sm text-base border-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n" +
             "        type=\"text\" id=\"nickname_swal\" maxlength=\"12\" value=\"" + nickname + "\" placeholder=\"What's your name?\">\n" +
             "</div>" +
+            (auth_token === null ? ("<div class=\"my-3 flex w-full max-w-sm mx-auto space-x-3 shadow-md\">\n" +
+            "    <input\n" +
+            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-white text-gray-700 placeholder-gray-400 rounded-sm text-base border-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n" +
+            "        type=\"text\" id=\"auth_token_swal\" maxlength=\"6\" placeholder=\"What's the password?\">\n" +
+            "</div>") : "") +
             "<div class=\"flex flex-wrap justify-center items-center py-2\" id=\"avatar_options_swal\">\n" +
             "</div>\n",
         showCancelButton: true,
@@ -84,18 +95,18 @@ function setup_user_prompt(lobby_details, err, nickname) {
         didOpen: function() {
             user_prompt_open = true;
             setup_update_options();
-
         }
     }).then((result) => {
         if (result.isConfirmed) {
             // Validate input
-            let selected_nickname = document.getElementById("nickname_swal").value;
+            selected_nickname = document.getElementById("nickname_swal").value;
             if (selected_avatar === "default.png") {
                 setup_user_prompt(lobby_details, "Please select an avatar", selected_nickname);
             } else {
                 // Create new player
                 socket.emit('create-player', {
-                    lobby_slug: window.location.pathname.substr(7),
+                    lobby_slug: window.location.pathname.split('/')[2],
+                    auth_token: auth_token === null ? document.getElementById("auth_token_swal").value : auth_token,
                     nickname: selected_nickname,
                     avatar: selected_avatar,
                     player_id: "spectator"

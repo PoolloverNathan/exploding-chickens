@@ -106,8 +106,11 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         callback(true, `PLYR-NAME`, lobby_details, req_data, action, socket_id);
                     } else if (req_data.avatar === "default.png" && options.includes(req_data.avatar)) { // Make sure a valid avatar was chosen
                         callback(true, `PLYR-AVTR`, lobby_details, req_data, action, socket_id);
+                    } else if (req_data.auth_token !== lobby_details.auth_token) { // Make sure auth_token matches
+                        callback(true, `AUTH-TOKN`, lobby_details, req_data, action, socket_id);
+                    } else {
+                        callback(false, lobby_details, req_data, action, socket_id);
                     }
-                    callback(false, lobby_details, req_data, action, socket_id);
                 },
                 async function(lobby_details, req_data, action, socket_id, callback) { // Create player
                     req_data.player_id = await player_actions.create_player(lobby_details, req_data.nickname, req_data.avatar);
@@ -133,17 +136,17 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 wf_validate_host, // Validate req player is host
                 wf_validate_not_in_progress, // Validate we are not in progress
                 async function(lobby_details, req_data, action, socket_id, callback) { // Start game if player cap is satisfied
-                    if (lobby_details.players.length < 2) {
-                        callback(true, `PLYR-REQ`, lobby_details, req_data, action, socket_id);
+                    if (lobby_details.players.length < (lobby_details.include_host ? 2 : 3)) {
+                        callback(true, `At least 2 players are required`, lobby_details, req_data, action, socket_id);
+                    } else if (lobby_details.players.length % 2 === 1 && lobby_details.room_size === 2) {
+                        callback(true, `Uneven number of players`, lobby_details, req_data, action, socket_id);
+                    } else {
+                        await lobby_actions.start_games(lobby_details);
+                        await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", "", "");
+                        await lobby_details.save();
+                        await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
+                        callback(false, `All active lobby games have been ${chalk.dim.green('started')}`, lobby_details, req_data, action, socket_id);
                     }
-                    if (lobby_details.players.length % 2 === 1 && lobby_details.room_size === 2) {
-                        callback(true, `ONE-OUT`, lobby_details, req_data, action, socket_id);
-                    }
-                    await lobby_actions.start_games(lobby_details);
-                    await event_actions.log_event(lobby_details, action.trim(), req_data.player_id, "", "", "");
-                    await lobby_details.save();
-                    await update_lobby_ui(lobby_details, "", action, socket_id, req_data.player_id);
-                    callback(false, `All active lobby games have been ${chalk.dim.green('started')}`, lobby_details, req_data, action, socket_id);
                 }
             ], wf_final_lobby_callback);
         })

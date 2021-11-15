@@ -7,6 +7,8 @@ Desc     : handles setup for player settings in browser
 // Desc : check local user configuration on browser
 function setup_session_check(game_details) {
     lscache.flushExpired();
+    // Update auth_token
+    auth_token = game_details.auth_token;
     // Get browser session details
     if (!lscache.get('ec_session_' + window.location.pathname.split('/')[2])) {
         // Reset local storage and session player since game data doesn't exist

@@ -3,6 +3,9 @@ Filename : exploding-chickens/public/js/lobby/sidebar.js
 Desc     : handles ui updates and actions on the sidebar
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
+// Global variables
+let auth_token = "undefined";
+
 // Name : frontend-game.sbr_update_lobby_widgets(lobby_details)
 // Desc : update status, players, rooms, and games widgets
 function sbr_update_lobby_widgets(lobby_details) {
@@ -155,7 +158,7 @@ function sbr_update_options(details) {
 // Name : frontend-game.sbr_update_packs(details)
 // Desc : updates which card packs are marked as imported
 function sbr_update_packs(details) {
-    if (details.packs.includes("yolking_around") && session_user.is_host && details.game_slug === undefined) {
+    if (details.packs.includes("yolking_around") && session_user.is_host && details.game_slug === undefined && !details.in_progress) {
         document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500\" onclick=\"export_pack('yolking_around')\">\n" +
             "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M18 12H6\" />\n" +
@@ -169,7 +172,7 @@ function sbr_update_packs(details) {
             "      </svg>\n" +
             "      Imported\n" +
             "</button>";
-    } else if (session_user.is_host  && details.game_slug === undefined) {
+    } else if (session_user.is_host && details.game_slug === undefined && !details.in_progress) {
         document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700\" onclick=\"import_pack('yolking_around')\">\n" +
             "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6v6m0 0v6m0-6h6m-6 0H6\" />\n" +
@@ -320,14 +323,86 @@ function sbr_update_log() {
 // Name : frontend-game.sbr_copy_url()
 // Desc : copies the game url to the clients clipboard
 function sbr_copy_url() {
-    let tempInput = document.createElement("input");
-    tempInput.value = window.location.href;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand("copy");
-    document.body.removeChild(tempInput);
-    toast_alert.fire({
-        icon: 'success',
-        html: '<h1 class="text-lg font-bold pl-2 pr-1">Copied game link</h1>'
-    });
+    // Trigger Swal
+    Swal.fire({
+        html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">" +
+            "Lobby <a class=\"text-blue-500\">Invite</a>" +
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-7 w-7 inline-block text-blue-500 ml-1\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "  <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" />\n" +
+            "</svg>" +
+            "</h1>\n" +
+            "<h1 class=\"text-sm text-gray-700\">Lobby Code: " + window.location.pathname.split('/')[2] + "</a></h1>\n" +
+            (auth_token !== "undefined" ? ("<div class=\"form-control\">\n" +
+                "  <label class=\"label\">\n" +
+                "    <span class=\"label-text\">Player Link</span>\n" +
+                "  </label> \n" +
+                "  <div class=\"relative\">\n" +
+                "    <input type=\"text\" value=\"" + window.location.protocol + "//" + window.location.host + "/lobby/" + window.location.pathname.split('/')[2] + "?auth_token=" + auth_token + "\" disabled=\"disabled\" id=\"player_link\" class=\"w-full pr-14 input input-sm input-primary input-bordered\"> \n" +
+                "    <button class=\"absolute top-0 right-0 rounded-l-none btn btn-sm btn-primary\" onclick=\"let ele = document.getElementById('player_link');ele.select();ele.setSelectionRange(0, 99999);navigator.clipboard.writeText(ele.value)\">" +
+                "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3\" />\n" +
+                "      </svg>" +
+                "    </button>\n" +
+                "  </div>\n" +
+                "  <label class=\"label\">\n" +
+                "    <span class=\"label-text-alt\">" +
+                "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block text-green-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\" />\n" +
+                "        </svg>" +
+                "        Can <strong>view</strong> lobby and games" +
+                "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block ml-1 text-green-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\" />\n" +
+                "        </svg>" +
+                "        Can <strong>join</strong> lobby and games" +
+                "    </span>\n" +
+                "  </label>" +
+                "</div>\n") : "") +
+            "<div class=\"form-control\">\n" +
+            "  <label class=\"label\">\n" +
+            "    <span class=\"label-text\">Spectator Link</span>\n" +
+            "  </label> \n" +
+            "  <div class=\"relative\">\n" +
+            "    <input type=\"text\" value=\"" + window.location.protocol + "//" + window.location.host + "/lobby/" + window.location.pathname.split('/')[2] + "\" disabled=\"disabled\" id=\"spectator_link\" class=\"w-full pr-14 input input-sm input-primary input-bordered\"> \n" +
+            "    <button class=\"absolute top-0 right-0 rounded-l-none btn btn-sm btn-primary\" onclick=\"let ele = document.getElementById('spectator_link');ele.select();ele.setSelectionRange(0, 99999);navigator.clipboard.writeText(ele.value)\">" +
+            "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3\" />\n" +
+            "      </svg>" +
+            "    </button>\n" +
+            "  </div>\n" +
+            "  <label class=\"label\">\n" +
+            "    <span class=\"label-text-alt\">" +
+            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block text-green-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\" />\n" +
+            "        </svg>" +
+            "        Can <strong>view</strong> lobby and games" +
+            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block ml-1 text-red-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\" />\n" +
+            "        </svg>" +
+            "        Can <strong>join</strong> lobby and games" +
+            "    </span>\n" +
+            "  </label>" +
+            "</div> " +
+            (auth_token !== "undefined" ? ("<div class=\"form-control\">\n" +
+                "  <label class=\"label\">\n" +
+                "    <span class=\"label-text\">Lobby Password</span>\n" +
+                "  </label> \n" +
+                "  <div class=\"relative\">\n" +
+                "    <input type=\"text\" value=\"" + auth_token + "\" disabled=\"disabled\" id=\"auth_link\" class=\"w-full pr-14 input input-sm input-primary input-bordered\"> \n" +
+                "    <button class=\"absolute top-0 right-0 rounded-l-none btn btn-sm btn-primary\" onclick=\"let ele = document.getElementById('auth_link');ele.select();ele.setSelectionRange(0, 99999);navigator.clipboard.writeText(ele.value)\">" +
+                "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3\" />\n" +
+                "      </svg>" +
+                "    </button>\n" +
+                "  </div>\n" +
+                "  <label class=\"label\">\n" +
+                "    <span class=\"label-text-alt text-left\">" +
+                "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block text-blue-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
+                "        </svg>" +
+                "        If a player joins through the home page or uses a spectator link, they may need this password to join the lobby" +
+                "    </span>\n" +
+                "  </label>" +
+                "</div>\n") : ""),
+        confirmButtonColor: '#3b82f6'
+    })
 }

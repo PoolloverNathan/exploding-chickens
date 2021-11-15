@@ -136,7 +136,9 @@ socket.on(window.location.pathname.substr(7) + "-lobby-error", function (data) {
     } else if (data.msg === "PLYR-NAME") {
         setup_user_prompt(data.lobby_details, "Please enter a valid nickname <br> (letters only, < 12 chars, not already used)", "");
     } else if (data.msg === "PLYR-AVTR") {
-        setup_user_prompt(data.lobby_details, "Please select an avatar", "");
+        setup_user_prompt(data.lobby_details, "Please select an avatar", selected_nickname);
+    } else if (data.msg === "AUTH-TOKN") {
+        setup_user_prompt(data.lobby_details, "Please enter a valid lobby password <br> (Active players can see this value by clicking <br> on 'Lobby Code' in the sidebar)", selected_nickname);
     } else {
         toast_alert.fire({
             icon: 'error',
