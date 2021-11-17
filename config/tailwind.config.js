@@ -29,26 +29,53 @@ module.exports = {
         themes: [
             {
                 'light': {
-                    'primary' : '#8B5CF6',           /* Primary color */
-                    'primary-focus' : '#7C3AED',     /* Primary color - focused */
-                    'primary-content' : '#ffffff',   /* Foreground content color to use on primary color */
+                    "primary": "#570df8",
+                    "primary-focus": "#4506cb",
+                    "primary-content": "#ffffff",
 
-                    'secondary' : '#F59E0B',         /* Secondary color */
-                    'secondary-focus' : '#D97706',   /* Secondary color - focused */
-                    'secondary-content' : '#ffffff', /* Foreground content color to use on secondary color */
+                    "secondary": "#f000b8",
+                    "secondary-focus": "#bd0091",
+                    "secondary-content": "#ffffff",
 
-                    'accent' : '#10B981',            /* Accent color */
-                    'accent-focus' : '#059669',      /* Accent color - focused */
-                    'accent-content' : '#ffffff',    /* Foreground content color to use on accent color */
+                    "accent": "#37cdbe",
+                    "accent-focus": "#2aa79b",
+                    "accent-content": "#ffffff",
 
-                    'neutral' : '#3d4451',           /* Neutral color */
-                    'neutral-focus' : '#2a2e37',     /* Neutral color - focused */
-                    'neutral-content' : '#ffffff',   /* Foreground content color to use on neutral color */
+                    "neutral": "#3d4451",
+                    "neutral-focus": "#2a2e37",
+                    "neutral-content": "#ffffff",
 
-                    'base-100' : '#ffffff',          /* Base color of page, used for blank backgrounds */
-                    'base-200' : '#f9fafb',          /* Base color, a little darker */
-                    'base-300' : '#d1d5db',          /* Base color, even more darker */
-                    'base-content' : '#1f2937',      /* Foreground content color to use on base color */
+                    "base-100": "#ffffff",
+                    "base-200": "#f9fafb",
+                    "base-300": "#d1d5db",
+                    "base-content": "#1f2937",
+
+                    'info' : '#3B82F6',              /* Info */
+                    'success' : '#10B981',           /* Success */
+                    'warning' : '#F59E0B',           /* Warning */
+                    'error' : '#EF4444',             /* Error */
+                },
+                'dark': {
+                    "primary": "#793ef9",
+                    "primary-focus": "#570df8",
+                    "primary-content": "#ffffff",
+
+                    "secondary": "#f000b8",
+                    "secondary-focus": "#bd0091",
+                    "secondary-content": "#ffffff",
+
+                    "accent": "#37cdbe",
+                    "accent-focus": "#2aa79b",
+                    "accent-content": "#ffffff",
+
+                    "neutral": "#2a2e37",
+                    "neutral-focus": "#16181d",
+                    "neutral-content": "#ffffff",
+
+                    "base-100": "#3d4451",
+                    "base-200": "#2a2e37",
+                    "base-300": "#16181d",
+                    "base-content": "#ebecf0",
 
                     'info' : '#3B82F6',              /* Info */
                     'success' : '#10B981',           /* Success */
