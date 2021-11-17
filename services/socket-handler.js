@@ -81,6 +81,8 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_get_game, // Get game_details
                 async function(lobby_details, game_pos, req_data, action, socket_id, callback) { // Send game data
+                    socket.join(lobby_details.slug);
+                    socket.join(lobby_details.games[game_pos].slug);
                     await update_game_ui(lobby_details, game_pos, socket_id, action, socket_id, req_data.player_id);
                     callback(false, `Retrieved and sent game data`, lobby_details, game_pos, req_data, action, socket_id);
                 }
@@ -650,7 +652,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         if (pretty_game_details !== {}) {
             // Send game data
             if (target === "") {
-                fastify.io.to(lobby_details.slug).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
+                fastify.io.to(lobby_details.games[game_pos].slug).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
             } else {
                 fastify.io.to(target).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
             }

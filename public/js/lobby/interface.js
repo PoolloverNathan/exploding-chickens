@@ -17,10 +17,10 @@ function itr_update_games(lobby_details) {
     // Check base case, no games
     if (lobby_details.games.length === 0) {
         document.getElementById("itr_ele_groups").innerHTML = "<div class=\"flex flex-col items-center justify-center h-screen\">\n" +
-            "    <h3 class=\"text-3xl text-gray-700 pb-3 text-center\"><strong>Waiting for players to join...</strong></h3>\n" +
-            "    <h3 class=\"text-md text-gray-700 px-2 text-center\">Welcome to <strong>Exploding Chickens</strong>! Lobby: <i>" + lobby_details.slug + "</i></h3>\n" +
-            "    <h3 class=\"text-md text-gray-700 px-2 pb-3 text-center\">Invite your friends by clicking on the invite link below.</h3>\n" +
-            "    <button type=\"button\" onclick=\"sbr_copy_url()\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\">\n" +
+            "    <h3 class=\"text-3xl text-base-content pb-3 text-center\"><strong>Waiting for players to join...</strong></h3>\n" +
+            "    <h3 class=\"text-md text-base-content px-2 text-center\">Welcome to <strong>Exploding Chickens</strong>! Lobby: <i>" + lobby_details.slug + "</i></h3>\n" +
+            "    <h3 class=\"text-md text-base-content px-2 pb-3 text-center\">Invite your friends by clicking on the invite link below.</h3>\n" +
+            "    <button type=\"button\" onclick=\"sbr_copy_url()\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\">\n" +
             "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" />\n" +
             "        </svg>\n" +
@@ -41,7 +41,7 @@ function itr_update_games(lobby_details) {
             // Check for dead filter
             let filter = lobby_details.games[i].players[j].is_dead ? "filter grayscale" : "";
             player_payload += "<div class=\"block text-center w-28\">\n" +
-                "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
+                "    <h1 class=\"text-base-content font-medium text-sm\">\n" +
                 "        " + lobby_details.games[i].players[j].nickname + " " + create_stat_dot(lobby_details.games[i].players[j].sockets_open, "", "itr_stat_player_dot_" + lobby_details.games[i].players[j]._id) + "\n" +
                 "    </h1>\n" +
                 "    <div class=\"flex flex-col items-center -space-y-3\">\n" +
@@ -51,10 +51,10 @@ function itr_update_games(lobby_details) {
                 "</div>";
         }
         game_grid_payload += "<div class=\"block text-center\">\n" +
-            "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
+            "    <h1 class=\"text-base-content font-medium text-sm\">\n" +
             "        Game Room: " + lobby_details.games[i].game_slug + " <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-" + (lobby_details.games[i].in_progress ? "green" : "blue") + "-500\"></span>\n" +
             "    </h1>\n" +
-            "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
+            "    <h1 class=\"text-base-content font-medium text-sm\">\n" +
             "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 text-blue-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z\" />\n" +
             "        </svg>\n" +
@@ -93,7 +93,7 @@ function itr_update_games(lobby_details) {
     if (session_user.is_host) {
         if (lobby_details.in_progress) {
             host_action_payload = "<div class=\"flex justify-center mt-4 mb-6\">\n" +
-                "    <button type=\"button\" class=\"inline-flex items-center px-2 py-1 rounded-md shadow-sm text-lg font-medium text-white border border-gray-100 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\" onclick=\"reset_games()\">\n" +
+                "    <button type=\"button\" class=\"inline-flex items-center px-2 py-1 rounded-md shadow-sm text-lg font-medium text-white border border-base-200 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\" onclick=\"reset_games()\">\n" +
                 "        <svg class=\"-ml-1 mr-1 h-6 w-6\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\" />\n" +
                 "        </svg>" +
@@ -102,7 +102,7 @@ function itr_update_games(lobby_details) {
                 "</div>"
         } else {
             host_action_payload = "<div class=\"flex justify-center mt-4 mb-6\">\n" +
-                "    <button type=\"button\" class=\"inline-flex items-center px-2 py-1 rounded-md shadow-sm text-lg font-medium text-white border border-gray-100 bg-gradient-to-r from-green-500 to-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\" onclick=\"start_games()\">\n" +
+                "    <button type=\"button\" class=\"inline-flex items-center px-2 py-1 rounded-md shadow-sm text-lg font-medium text-white border border-base-200 bg-gradient-to-r from-green-500 to-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\" onclick=\"start_games()\">\n" +
                 "        <svg class=\"-ml-1 mr-1 h-6 w-6\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9\" />\n" +
                 "        </svg>\n" +

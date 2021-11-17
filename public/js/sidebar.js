@@ -10,31 +10,29 @@ let auth_token = "undefined";
 // Desc : update status, players, rooms, and games widgets
 function sbr_update_lobby_widgets(lobby_details) {
     // Status widget variables
-    let stat_header = "<div class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 dark:bg-gray-900 dark:border-gray-800\">\n";
+    let stat_header = "<div class=\"widget w-full p-2.5 rounded-lg border border-base-200 dark:bg-gray-900 dark:border-gray-800\">\n";
     let stat_icon;
     let stat_text;
-    let stat_color_a;
-    let stat_color_b;
+    let stat_color;
     let itr_stat;
     // Construct status widget
     if (session_user.is_host) {
         if (lobby_details.in_progress) {
-            stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_games()\">\n";
+            stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg border border-base-200 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_games()\">\n";
             stat_icon = "<svg class=\"stroke-current text-white\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\" />\n" +
                 "</svg>";
             stat_text = "Reset <span class=\"hidden sm:inline-block\">game</span>";
             itr_stat = "Games in Play";
         } else {
-            stat_header = "<button type=\"button\" @click=\"sidebar_open = false\" class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 bg-gradient-to-r from-green-500 to-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\" onclick=\"start_games()\">\n";
+            stat_header = "<button type=\"button\" @click=\"sidebar_open = false\" class=\"widget w-full p-2.5 rounded-lg border border-base-200 bg-gradient-to-r from-green-500 to-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\" onclick=\"start_games()\">\n";
             stat_icon = "<svg class=\"stroke-current text-white\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9\" />\n" +
                 "</svg>";
             stat_text = "Start <span class=\"hidden sm:inline-block\">game</span>";
             itr_stat = "Matchmaking";
         }
-        stat_color_a = "text-white";
-        stat_color_b = "text-white";
+        stat_color = "text-white";
     } else {
         if (lobby_details.in_progress) {
             stat_icon = "<svg class=\"stroke-current text-blue-500\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
@@ -49,17 +47,16 @@ function sbr_update_lobby_widgets(lobby_details) {
             stat_text = "In lobby";
             itr_stat = "Matchmaking";
         }
-        stat_color_a = "text-gray-500";
-        stat_color_b = "text-black";
+        stat_color = "text-base-content";
     }
     // Update status widget
     document.getElementById("sbr_ele_status").innerHTML = stat_header +
         "    <div class=\"flex flex-row items-center justify-between\">\n" +
         "        <div class=\"flex flex-col text-left\">\n" +
-        "            <div class=\"text-xs uppercase truncate " + stat_color_a + "\">\n" +
+        "            <div class=\"text-xs uppercase truncate " + stat_color + "\">\n" +
         "                Status\n" +
         "            </div>\n" +
-        "            <div class=\"text-lg font-bold truncate " + stat_color_b + "\">\n" +
+        "            <div class=\"text-lg font-bold truncate " + stat_color + "\">\n" +
         "                " + stat_text + "\n" +
         "            </div>\n" +
         "        </div>\n" + stat_icon +
@@ -76,27 +73,27 @@ function sbr_update_lobby_widgets(lobby_details) {
 // Desc : update status, ec chance, and cards left widgets
 function sbr_update_game_widgets(game_details) {
     // Status widget variables
-    let stat_header = "<div class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 dark:bg-gray-900 dark:border-gray-800\">\n";
+    let stat_header = "<div class=\"widget w-full p-2.5 rounded-lg border border-base-200 dark:bg-gray-900 dark:border-gray-800\">\n";
     let stat_icon;
     let stat_text = "...";
     let stat_color_a = "";
     let stat_color_b = "";
     // Construct status widget
     if (session_user.is_host) {
-        stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg bg-white border border-gray-100 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_game()\">\n";
+        stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg border border-base-200 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_game()\">\n";
         stat_icon = "<svg class=\"stroke-current text-white\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\" />\n" +
             "</svg>";
         stat_text = "Reset <span class=\"hidden sm:inline-block\">game</span>";
-        stat_color_a = "text-white";
-        stat_color_b = "text-white";
+        stat_color_a = "text-base-content";
+        stat_color_b = "text-base-content";
     } else {
         stat_text = game_details.is_completed ? "Completed" : "In game";
         stat_icon = "<svg class=\"stroke-current text-blue-500\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
             "</svg>\n";
-        stat_color_a = "text-gray-500";
-        stat_color_b = "text-black";
+        stat_color_a = "text-base-content";
+        stat_color_b = "text-base-content";
     }
     // Update status widget
     document.getElementById("sbr_ele_status").innerHTML = stat_header +
@@ -173,14 +170,14 @@ function sbr_update_packs(details) {
             "      Imported\n" +
             "</button>";
     } else if (session_user.is_host && details.game_slug === undefined && !details.in_progress) {
-        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700\" onclick=\"import_pack('yolking_around')\">\n" +
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-base-content rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700\" onclick=\"import_pack('yolking_around')\">\n" +
             "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6v6m0 0v6m0-6h6m-6 0H6\" />\n" +
             "      </svg>\n" +
             "      Add Pack\n" +
             "</button>";
     } else {
-        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none\">\n" +
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-base-content rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 focus:outline-none\">\n" +
             "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z\" />\n" +
             "      </svg>\n" +
@@ -206,8 +203,8 @@ function sbr_update_players(details) {
         if (session_user.is_host && details.players[i]._id !== session_user._id) {
             actions = "<div class=\"flex mt-0 ml-4\">\n" +
                 "    <span class=\"\">\n" +
-                "          <button onclick=\"make_host('" + details.players[i]._id + "')\" type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500\">\n" +
-                "                <svg class=\"-ml-1 mr-1 h-5 w-5 text-gray-500\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "          <button onclick=\"make_host('" + details.players[i]._id + "')\" type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-base-content rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500\">\n" +
+                "                <svg class=\"-ml-1 mr-1 h-5 w-5 text-base-content\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "                    <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z\" />\n" +
                 "                </svg>\n" +
                 "                Make Host\n" +
@@ -233,11 +230,11 @@ function sbr_update_players(details) {
         // Add sidebar html to payload
         payload += "<div class=\"flex items-center justify-between mb-2\">\n" +
             "    <div class=\"flex-1 min-w-0\">\n" +
-            "        <h3 class=\"text-md font-bold text-gray-900 truncate\">\n" +
+            "        <h3 class=\"text-md font-bold text-base-content truncate\">\n" +
             "            " + name + " " + create_stat_dot(details.players[i].sockets_open, "mx-0.5", "sbr_stat_player_dot_" + details.players[i]._id) + "\n" +
             "        </h3>\n" +
             "        <div class=\"mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6\">\n" +
-            "            <div class=\"flex items-center text-sm text-gray-500\" id=\"sbr_stat_player_details_" + details.players[i]._id + "\">\n" +
+            "            <div class=\"flex items-center text-sm text-base-content\" id=\"sbr_stat_player_details_" + details.players[i]._id + "\">\n" +
             (details.players[i].is_dead ? "Exploded" : details.in_progress ? "In game" : details.players[i].is_host && !details.include_host ? "Spectating" : "Matchmaking") + ", " + (details.players[i].sockets_open > 0 ? "connected" : "disconnected") + "\n" +
             "            </div>\n" +
             "        </div>\n" +
@@ -304,7 +301,7 @@ function sbr_update_log() {
     }
     // Add remaining events text if over 20
     if (events_length > 20) {
-        payload += "<li class=\"flex items-start text-gray-500\">\n" +
+        payload += "<li class=\"flex items-start text-base-content\">\n" +
             "    <span class=\"h-6 flex items-center\">\n" +
             "        <svg class=\"flex-shrink-0 h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\">\n" +
             "            <path d=\"M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z\" />\n" +
@@ -325,13 +322,13 @@ function sbr_update_log() {
 function sbr_copy_url() {
     // Trigger Swal
     Swal.fire({
-        html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">" +
+        html: "<h1 class=\"text-4xl text-base-content mt-3\" style=\"font-family: Bebas Neue\">" +
             "Lobby <a class=\"text-blue-500\">Invite</a>" +
             "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-7 w-7 inline-block text-blue-500 ml-1\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "  <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" />\n" +
             "</svg>" +
             "</h1>\n" +
-            "<h1 class=\"text-sm text-gray-700\">Lobby Code: " + window.location.pathname.split('/')[2] + "</a></h1>\n" +
+            "<h1 class=\"text-sm text-base-content\">Lobby Code: " + window.location.pathname.split('/')[2] + "</a></h1>\n" +
             (auth_token !== "undefined" ? ("<div class=\"form-control\">\n" +
                 "  <label class=\"label\">\n" +
                 "    <span class=\"label-text\">Player Link</span>\n" +
@@ -403,6 +400,7 @@ function sbr_copy_url() {
                 "    </span>\n" +
                 "  </label>" +
                 "</div>\n") : ""),
+        background: "hsla(var(--b1) / var(--tw-bg-opacity))",
         confirmButtonColor: '#3b82f6'
     })
 }

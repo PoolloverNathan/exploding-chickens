@@ -583,7 +583,7 @@ html {
   --s: 314 100% 47.1%;
   --sf: 314 100% 37.1%;
   --sc: 0 0% 100%;
-  --a: 174 60% 51%;
+  --a: 160 84.1% 39.4%;
   --af: 174 59.8% 41%;
   --ac: 0 0% 100%;
   --n: 219 14.1% 27.8%;
@@ -607,7 +607,7 @@ html {
     --s: 314 100% 47.1%;
     --sf: 314 100% 37.1%;
     --sc: 0 0% 100%;
-    --a: 174 60% 51%;
+    --a: 160 84.1% 39.4%;
     --af: 174 59.8% 41%;
     --ac: 0 0% 100%;
     --n: 222 13.4% 19%;
@@ -631,7 +631,7 @@ html {
   --s: 314 100% 47.1%;
   --sf: 314 100% 37.1%;
   --sc: 0 0% 100%;
-  --a: 174 60% 51%;
+  --a: 160 84.1% 39.4%;
   --af: 174 59.8% 41%;
   --ac: 0 0% 100%;
   --n: 219 14.1% 27.8%;
@@ -654,7 +654,7 @@ html {
   --s: 314 100% 47.1%;
   --sf: 314 100% 37.1%;
   --sc: 0 0% 100%;
-  --a: 174 60% 51%;
+  --a: 160 84.1% 39.4%;
   --af: 174 59.8% 41%;
   --ac: 0 0% 100%;
   --n: 222 13.4% 19%;
@@ -2796,6 +2796,16 @@ html {
   border-color: rgba(5, 150, 105, var(--tw-border-opacity));
 }
 
+.border-base-200 {
+  --tw-border-opacity: 1;
+  border-color: hsla(var(--b2) / var(--tw-border-opacity));
+}
+
+.border-base-content {
+  --tw-border-opacity: 1;
+  border-color: hsla(var(--bc) / var(--tw-border-opacity));
+}
+
 .bg-transparent {
   background-color: transparent;
 }
@@ -2900,6 +2910,16 @@ html {
   background-color: rgba(139, 92, 246, var(--tw-bg-opacity));
 }
 
+.bg-base-100 {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--b1) / var(--tw-bg-opacity));
+}
+
+.bg-base-200 {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--b2) / var(--tw-bg-opacity));
+}
+
 .hover\:bg-gray-50:hover {
   --tw-bg-opacity: 1;
   background-color: rgba(249, 250, 251, var(--tw-bg-opacity));
@@ -2933,6 +2953,11 @@ html {
 .hover\:bg-purple-600:hover {
   --tw-bg-opacity: 1;
   background-color: rgba(124, 58, 237, var(--tw-bg-opacity));
+}
+
+.hover\:bg-base-200:hover {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--b2) / var(--tw-bg-opacity));
 }
 
 .bg-opacity-75 {
@@ -3343,11 +3368,6 @@ html {
   color: transparent;
 }
 
-.text-black {
-  --tw-text-opacity: 1;
-  color: rgba(0, 0, 0, var(--tw-text-opacity));
-}
-
 .text-white {
   --tw-text-opacity: 1;
   color: rgba(255, 255, 255, var(--tw-text-opacity));
@@ -3451,6 +3471,11 @@ html {
 .text-pink-500 {
   --tw-text-opacity: 1;
   color: rgba(236, 72, 153, var(--tw-text-opacity));
+}
+
+.text-base-content {
+  --tw-text-opacity: 1;
+  color: hsla(var(--bc) / var(--tw-text-opacity));
 }
 
 .hover\:text-white:hover {

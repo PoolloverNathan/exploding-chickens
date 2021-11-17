@@ -29,10 +29,10 @@ let session_user = {
  SOCKET.IO EVENTS
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-// Name : frontend-game.socket.on.{slug}-update
-// Desc : whenever an event occurs containing a game update
+// Name : frontend-game.socket.on.{slug}-lobby-update
+// Desc : whenever an event occurs containing a lobby update
 socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (data) {
-    console.log(data.trigger);
+    console.log("Lobby Trigger: " + data.trigger);
     console.log(data);
     // Check browser session
     setup_session_check(data);

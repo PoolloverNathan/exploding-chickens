@@ -30,12 +30,14 @@ let session_user = {
  SOCKET.IO EVENTS
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-// Name : frontend-game.socket.on.{slug}-update
-// Desc : whenever an event occurs containing a game update
-socket.on(window.location.pathname.split('/')[4] + "-game-update", function (data) {
-    console.log(data.trigger);
-    // Check browser session and update log
+// Name : frontend-game.socket.on.{slug}-lobby-update
+// Desc : whenever an event occurs containing a lobby update
+socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (data) {
+    console.log("Lobby Trigger: " + data.trigger);
+    console.log(data);
+    // Check browser session
     setup_session_check(data);
+    // Update events log
     events_data = data.events;
     events_length = data.events_length;
     sbr_update_log();
@@ -43,29 +45,62 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
     if (data.trigger === "player-online") { // Existing player connected
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
-        // if (data.req_player_id === session_user._id) {
-        //     itr_update_hand(data);
-        // }
-    } else if (data.trigger === "create-player") { // New player was created
-        if (user_prompt_open) {
-            setup_update_options(data);
+    } else if (data.trigger === "make-host") {
+        // Update host designation in session_user
+        for (let i = 0; i < data.players.length; i++) {
+            // Check if individual player exists
+            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).player_id) {
+                // Update session_user _id and is_host
+                session_user = {
+                    _id: data.players[i]._id,
+                    is_host: data.players[i].type === "host"
+                };
+                break;
+            }
         }
-        sbr_update_game_widgets(data);
+        sbr_update_lobby_widgets(data);
+        sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
-        itr_update_players(data);
-    } else if (data.trigger === "start-game") { // Game started
-        sbr_update_game_widgets(data);
-        sbr_update_pstatus(data);
-        itr_update_players(data);
-        itr_update_pcards(data);
-        itr_update_discard(data);
-        itr_deal_hand(data, "", 0);
+        toast_turn.close();
         toast_alert.fire({
             icon: 'info',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Game has started</h1>'
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">Host was updated</h1>'
         });
-    } else if (data.trigger === "reset-game") { // Game was reset or there is a winner
+    } else if (data.trigger === "kick-player") {
+        sbr_update_lobby_widgets(data);
+        sbr_update_players(data);
+        itr_update_games(data);
+        toast_turn.close();
+        toast_alert.fire({
+            icon: 'info',
+            html: '<h1 class="text-lg font-bold pl-2 pr-1">Player was kicked</h1>'
+        });
+    } else if (data.trigger === "player-offline") { // Existing player disconnected
+        sbr_update_pstatus(data);
+        itr_update_pstatus(data);
+    } else { // Update entire ui
+        sbr_update_lobby_widgets(data);
+        sbr_update_options(data);
+        sbr_update_players(data);
+        sbr_update_packs(data);
+        itr_update_games(data);
+    }
+});
+
+// Name : frontend-game.socket.on.{slug}-game-update
+// Desc : whenever an event occurs containing a game update
+socket.on(window.location.pathname.split('/')[4] + "-game-update", function (data) {
+    console.log("Game Trigger: " + data.trigger);
+    console.log(data);
+    // Check browser session
+    setup_session_check(data);
+    // Update events log
+    events_data = data.events;
+    events_length = data.events_length;
+    sbr_update_log();
+    // Update elements based on update trigger
+    if (data.trigger === "reset-game") { // Game was reset or there is a winner
         sbr_update_game_widgets(data);
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
@@ -99,58 +134,6 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
         sbr_update_game_widgets(data);
         itr_update_pcards(data);
         itr_update_hand(data);
-    } else if (data.trigger === "make-host") {
-        // Update host designation in session_user
-        for (let i = 0; i < data.players.length; i++) {
-            // Check if individual player exists
-            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[4])).player_id) {
-                // Update session_user _id and is_host
-                session_user = {
-                    _id: data.players[i]._id,
-                    is_host: data.players[i].type === "host",
-                    can_draw: session_user.can_draw
-                };
-                break;
-            }
-        }
-        sbr_update_game_widgets(data);
-        sbr_update_players(data);
-        sbr_update_packs(data);
-        toast_turn.close();
-        toast_alert.fire({
-            icon: 'info',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Host was updated</h1>'
-        });
-    } else if (data.trigger === "kick-player") {
-        sbr_update_game_widgets(data);
-        sbr_update_players(data);
-        itr_update_players(data);
-        itr_update_discard(data);
-        itr_update_hand(data);
-        toast_turn.close();
-        toast_alert.fire({
-            icon: 'info',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Player was kicked</h1>'
-        });
-    } else if (data.trigger === "import-pack") {
-        sbr_update_game_widgets(data);
-        sbr_update_packs(data);
-        toast_turn.close();
-        toast_alert.fire({
-            icon: 'success',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was imported</h1>'
-        });
-    } else if (data.trigger === "export-pack") {
-        sbr_update_game_widgets(data);
-        sbr_update_packs(data);
-        toast_turn.close();
-        toast_alert.fire({
-            icon: 'success',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was removed</h1>'
-        });
-    } else if (data.trigger === "player-offline") { // Existing player disconnected
-        sbr_update_pstatus(data);
-        itr_update_pstatus(data);
     } else { // Update entire ui
         sbr_update_game_widgets(data);
         sbr_update_players(data);

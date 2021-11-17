@@ -37,7 +37,7 @@ module.exports = {
                     "secondary-focus": "#bd0091",
                     "secondary-content": "#ffffff",
 
-                    "accent": "#37cdbe",
+                    "accent": "#10B981",
                     "accent-focus": "#2aa79b",
                     "accent-content": "#ffffff",
 
@@ -64,7 +64,7 @@ module.exports = {
                     "secondary-focus": "#bd0091",
                     "secondary-content": "#ffffff",
 
-                    "accent": "#37cdbe",
+                    "accent": "#10B981",
                     "accent-focus": "#2aa79b",
                     "accent-content": "#ffffff",
 
