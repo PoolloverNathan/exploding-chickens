@@ -13,11 +13,11 @@ function create_stat_dot(sockets_open, margin, id) {
 // Desc : returns the class for a status dot
 function stat_dot_class(sockets_open, margin) {
     if (sockets_open > 0) {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-green-500"
-    } else if (sockets_open <= 0) {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-yellow-500"
+        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-success"
+    } else if (sockets_open === 0) {
+        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-primary"
     } else {
-        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-gray-500"
+        return "animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 " + margin + " align-middle bg-error"
     }
 }
 
@@ -39,7 +39,7 @@ function card_icon(game_details, player_pos, turns) {
     }
     // Check to see if target player has any turns remaining
     if (turns !== 0 && game_details.in_progress) {
-        turns_payload = "<div class=\"transform inline-block rounded-md bg-blue-500 shadow-md h-5 w-4 ml-1\">\n" +
+        turns_payload = "<div class=\"transform inline-block rounded-md bg-info shadow-md h-5 w-4 ml-1\">\n" +
             "    <h1 class=\"text-white text-sm\">" + turns + "</h1>\n" +
             "</div>\n"
     }
@@ -50,7 +50,7 @@ function card_icon(game_details, player_pos, turns) {
     let card4_color = game_details.players[player_pos].is_exploding ? "bg-red-800" : "bg-gray-800";
     // Determine number of cards in hand
     if (game_details.players[player_pos].is_dead) {
-        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-red-500 shadow-md h-5 w-4\">\n" +
+        return "<div class=\"inline-block\"><div class=\"-space-x-4 rotate-12 inline-block\"><div class=\"transform inline-block rounded-md bg-error shadow-md h-5 w-4\">\n" +
             "    <h1 class=\"text-white text-sm\"><i class=\"fas fa-skull-crossbones\"></i></h1>\n" +
             "</div></div></div>\n"
     } else if (game_details.players[player_pos].cards.length === 2) {

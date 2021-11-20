@@ -10,7 +10,7 @@ let auth_token = "undefined";
 // Desc : update status, players, rooms, and games widgets
 function sbr_update_lobby_widgets(lobby_details) {
     // Status widget variables
-    let stat_header = "<div class=\"widget w-full p-2.5 rounded-lg border border-base-200 dark:bg-gray-900 dark:border-gray-800\">\n";
+    let stat_header = "<div class=\"widget w-full p-2.5 rounded-lg border border-base-200\">\n";
     let stat_icon;
     let stat_text;
     let stat_color;
@@ -35,13 +35,13 @@ function sbr_update_lobby_widgets(lobby_details) {
         stat_color = "text-white";
     } else {
         if (lobby_details.in_progress) {
-            stat_icon = "<svg class=\"stroke-current text-blue-500\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            stat_icon = "<svg class=\"stroke-current text-info\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
                 "</svg>\n";
             stat_text = "In game";
             itr_stat = "Games in Play";
         } else {
-            stat_icon = "<svg class=\"stroke-current text-blue-500\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            stat_icon = "<svg class=\"stroke-current text-info\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
                 "</svg>\n";
             stat_text = "In lobby";
@@ -89,7 +89,7 @@ function sbr_update_game_widgets(game_details) {
         stat_color_b = "text-base-content";
     } else {
         stat_text = game_details.is_completed ? "Completed" : "In game";
-        stat_icon = "<svg class=\"stroke-current text-blue-500\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+        stat_icon = "<svg class=\"stroke-current text-info\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
             "</svg>\n";
         stat_color_a = "text-base-content";
@@ -122,27 +122,29 @@ function sbr_update_game_widgets(game_details) {
 // Name : frontend-game.sbr_update_options(details)
 // Desc : updates lobby options
 function sbr_update_options(details) {
+    let btn_off = "btn btn-sm btn-outline no-animation";
+    let btn_on = "btn btn-sm no-animation btn-secondary";
     // Grouping method
-    document.getElementById("grp_method_random").checked = details.grp_method === "random";
-    document.getElementById("grp_method_wins").checked = details.grp_method === "wins";
+    document.getElementById("grp_method_random").className = details.grp_method === "random" ? btn_on : btn_off;
+    document.getElementById("grp_method_wins").className = details.grp_method === "wins" ? btn_on : btn_off;
     document.getElementById("grp_method_random").disabled = !session_user.is_host || details.in_progress;
     document.getElementById("grp_method_wins").disabled = !session_user.is_host || details.in_progress;
     // Room size
-    document.getElementById("room_size_2").checked = details.room_size === 2;
-    document.getElementById("room_size_3").checked = details.room_size === 3;
-    document.getElementById("room_size_4").checked = details.room_size === 4;
-    document.getElementById("room_size_5").checked = details.room_size === 5;
-    document.getElementById("room_size_6").checked = details.room_size === 6;
+    document.getElementById("room_size_2").className = details.room_size === 2 ? btn_on : btn_off;
+    document.getElementById("room_size_3").className = details.room_size === 3 ? btn_on : btn_off;
+    document.getElementById("room_size_4").className = details.room_size === 4 ? btn_on : btn_off;
+    document.getElementById("room_size_5").className = details.room_size === 5 ? btn_on : btn_off;
+    document.getElementById("room_size_6").className = details.room_size === 6 ? btn_on : btn_off;
     document.getElementById("room_size_2").disabled = !session_user.is_host || details.in_progress;
     document.getElementById("room_size_3").disabled = !session_user.is_host || details.in_progress;
     document.getElementById("room_size_4").disabled = !session_user.is_host || details.in_progress;
     document.getElementById("room_size_5").disabled = !session_user.is_host || details.in_progress;
     document.getElementById("room_size_6").disabled = !session_user.is_host || details.in_progress;
     // Auto play timeout
-    document.getElementById("play_timeout_inf").checked = details.play_timeout === -1;
-    document.getElementById("play_timeout_30").checked = details.play_timeout === 30;
-    document.getElementById("play_timeout_60").checked = details.play_timeout === 60;
-    document.getElementById("play_timeout_120").checked = details.play_timeout === 120;
+    document.getElementById("play_timeout_inf").className = details.play_timeout === -1 ? btn_on + " text-xl" : btn_off + " text-xl";
+    document.getElementById("play_timeout_30").className = details.play_timeout === 30 ? btn_on : btn_off;
+    document.getElementById("play_timeout_60").className = details.play_timeout === 60 ? btn_on : btn_off;
+    document.getElementById("play_timeout_120").className = details.play_timeout === 120 ? btn_on : btn_off;
     document.getElementById("play_timeout_inf").disabled = !session_user.is_host || details.in_progress;
     document.getElementById("play_timeout_30").disabled = !session_user.is_host || details.in_progress;
     document.getElementById("play_timeout_60").disabled = !session_user.is_host || details.in_progress;
@@ -156,21 +158,21 @@ function sbr_update_options(details) {
 // Desc : updates which card packs are marked as imported
 function sbr_update_packs(details) {
     if (details.packs.includes("yolking_around") && session_user.is_host && details.game_slug === undefined && !details.in_progress) {
-        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500\" onclick=\"export_pack('yolking_around')\">\n" +
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-danger-content bg-danger hover:bg-danger-focus focus:outline-none\" onclick=\"export_pack('yolking_around')\">\n" +
             "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M18 12H6\" />\n" +
             "      </svg>" +
             "      Remove\n" +
             "</button>";
     } else if (details.packs.includes("yolking_around")) {
-        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\">\n" +
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-success-content bg-success hover:bg-success-focus focus:outline-none\">\n" +
             "      <svg class=\"-ml-1 mr-1 h-5 w-5\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\" />\n" +
             "      </svg>\n" +
             "      Imported\n" +
             "</button>";
     } else if (session_user.is_host && details.game_slug === undefined && !details.in_progress) {
-        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-base-content rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700\" onclick=\"import_pack('yolking_around')\">\n" +
+        document.getElementById("pack_yolking_around").innerHTML = "<button type=\"button\" class=\"inline-flex items-center px-2 py-1 border border-base-content rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 focus:outline-none\" onclick=\"import_pack('yolking_around')\">\n" +
             "      <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6v6m0 0v6m0-6h6m-6 0H6\" />\n" +
             "      </svg>\n" +
@@ -247,7 +249,7 @@ function sbr_update_players(details) {
         }
         // If the user is a spectator, update title name
         if (!found_player) {
-            document.getElementById("sbr_ele_usertop").innerHTML = "Spectator <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 ml-0.5 align-middle bg-gray-500\"></span>";
+            document.getElementById("sbr_ele_usertop").innerHTML = "Spectator <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 ml-0.5 align-middle bg-neutral\"></span>";
         }
     }
 }
@@ -323,8 +325,8 @@ function sbr_copy_url() {
     // Trigger Swal
     Swal.fire({
         html: "<h1 class=\"text-4xl text-base-content mt-3\" style=\"font-family: Bebas Neue\">" +
-            "Lobby <a class=\"text-blue-500\">Invite</a>" +
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-7 w-7 inline-block text-blue-500 ml-1\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "Lobby <a class=\"text-info\">Invite</a>" +
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-7 w-7 inline-block text-info ml-1\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "  <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" />\n" +
             "</svg>" +
             "</h1>\n" +
@@ -393,7 +395,7 @@ function sbr_copy_url() {
                 "  </div>\n" +
                 "  <label class=\"label\">\n" +
                 "    <span class=\"label-text-alt text-left\">" +
-                "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block text-blue-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+                "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block text-info\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
                 "        </svg>" +
                 "        If a player joins through the home page or uses a spectator link, they may need this password to join the lobby" +

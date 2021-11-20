@@ -198,10 +198,10 @@ function itr_trigger_exp(count, placed_by_name, card_url) {
     }
     // Update counts
     if (count > 0) {
-        document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i> " + count + "</a>";
+        document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-error\"><i class=\"fas fa-bomb\"></i> " + count + "</a>";
         document.getElementById("itr_val_defuse_counter").innerHTML = count;
     } else if (count < 1) {
-        document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-red-500\"><i class=\"fas fa-bomb\"></i></a>";
+        document.getElementById("itr_ele_ec_count").innerHTML = "<a class=\"text-error\"><i class=\"fas fa-bomb\"></i></a>";
         document.getElementById("itr_val_defuse_counter").innerHTML = "<i class=\"fas fa-skull-crossbones\"></i>"
     }
 }
@@ -260,7 +260,7 @@ function itr_trigger_taken(player_name, card_url, used_gator) {
 // Desc : triggers the choose chicken position ui to appear
 function itr_trigger_chicken_target(max_pos, card_id) {
     // Check if we are at the bottom
-    let choice_btns = max_pos === 0 ? "" : "            <button onclick=\"Swal.close();place_chicken('" + card_id + "', 'random', '" + max_pos + "')\" class=\"mb-2 w-48 h-12 bg-yellow-500 hover:bg-yellow-600 text-white text-lg font-semibold border border-transparent rounded-xl focus:outline-none transition-colors duration-200\">\n" +
+    let choice_btns = max_pos === 0 ? "" : "            <button onclick=\"Swal.close();place_chicken('" + card_id + "', 'random', '" + max_pos + "')\" class=\"mb-2 w-48 h-12 bg-primary hover:bg-primary-focus text-primary-content text-lg font-semibold border border-transparent rounded-xl focus:outline-none transition-colors duration-200\">\n" +
         "                 <i class=\"fas fa-random pr-2\"></i>Place Randomly\n" +
         "            </button>\n" +
         "            <div class=\"bg-transparent mb-2\">\n" +
@@ -285,7 +285,7 @@ function itr_trigger_chicken_target(max_pos, card_id) {
             "    <div class=\"inline-block sm:flex items-center justify-center\">\n" +
             "        <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain\" style=\"background-image: url('/public/cards/base/chicken.png');width: 12rem;height: 16.9rem;border-radius: 1.8rem\"></div>\n" +
             "        <div class=\"mt-2 sm:ml-3\">" + choice_btns +
-            "            <button id=\"custom_chicken_pos\" onclick=\"Swal.close();place_chicken('" + card_id + "', 'custom', '" + max_pos + "')\" class=\"w-48 h-12 bg-purple-500 hover:bg-purple-600 text-white text-lg font-semibold border border-transparent rounded-xl focus:outline-none transition-colors duration-200\">\n" +
+            "            <button id=\"custom_chicken_pos\" onclick=\"Swal.close();place_chicken('" + card_id + "', 'custom', '" + max_pos + "')\" class=\"w-48 h-12 bg-secondary hover:bg-secondary-focus text-secondary-content text-lg font-semibold border border-transparent rounded-xl focus:outline-none transition-colors duration-200\">\n" +
             "                 Place on Top\n" +
             "            </button>\n" +
             "        </div>" +
@@ -385,7 +385,7 @@ function itr_display_winner(game_details, name, count) {
     if (count === 0) {
         if (!allow_user_prompt && session_user._id === undefined) {
             Swal.fire({
-                html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-yellow-400\">CHICKEN</a> DINNER</h1>\n" +
+                html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-primary\">CHICKEN</a> DINNER</h1>\n" +
                     "<h1 class=\"text-xl text-gray-700 mt-1 font-bold\">" + name + "</h1>\n" +
                     "<h1 class=\"text-md text-gray-700 mt-2\">After the smoke has cleared, it appears that " + name + " was the last one standing. Give them a challenge by joining the lobby.</h1>\n",
                 backdrop: "transparent",
@@ -403,7 +403,7 @@ function itr_display_winner(game_details, name, count) {
             })
         } else {
             Swal.fire({
-                html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-yellow-400\">CHICKEN</a> DINNER</h1>\n" +
+                html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-primary\">CHICKEN</a> DINNER</h1>\n" +
                     "<h1 class=\"text-xl text-gray-700 mt-1 font-bold\">" + name + "</h1>\n" +
                     "<h1 class=\"text-md text-gray-700 mt-2\">After the smoke has cleared, it appears that " + name + " was the last one standing. Test your odds again by staying in the lobby.</h1>\n",
                 showConfirmButton: false,

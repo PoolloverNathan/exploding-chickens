@@ -22,8 +22,8 @@
         <div class="flex mt-0 ml-4">
             <span class="">
                   <div class="inline-flex items-center btn-group">
-                      <input type="radio" name="grp_method" id="grp_method_random" data-title="Random" onclick="update_option('grp_method', 'random')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
-                      <input type="radio" name="grp_method" id="grp_method_wins" data-title="Win #" onclick="update_option('grp_method', 'wins')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <button id="grp_method_random" onclick="update_option('grp_method', 'random')" disabled="disabled" class="btn btn-sm btn-outline no-animation">Random</button>
+                      <button id="grp_method_wins" onclick="update_option('grp_method', 'wins')" disabled="disabled" class="btn btn-sm btn-outline no-animation">Win #</button>
                   </div>
             </span>
         </div>
@@ -46,11 +46,11 @@
         <div class="flex mt-0 ml-4">
             <span class="">
                   <div class="inline-flex items-center btn-group">
-                      <input type="radio" name="room_size" id="room_size_2" data-title="2" onclick="update_option('room_size', '2')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
-                      <input type="radio" name="room_size" id="room_size_3" data-title="3" onclick="update_option('room_size', '3')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
-                      <input type="radio" name="room_size" id="room_size_4" data-title="4" onclick="update_option('room_size', '4')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
-                      <input type="radio" name="room_size" id="room_size_5" data-title="5" onclick="update_option('room_size', '5')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
-                      <input type="radio" name="room_size" id="room_size_6" data-title="6" onclick="update_option('room_size', '6')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <button id="room_size_2" onclick="update_option('room_size', '2')" disabled="disabled" class="btn btn-sm btn-outline no-animation">2</button>
+                      <button id="room_size_3" onclick="update_option('room_size', '3')" disabled="disabled" class="btn btn-sm btn-outline no-animation">3</button>
+                      <button id="room_size_4" onclick="update_option('room_size', '4')" disabled="disabled" class="btn btn-sm btn-outline no-animation">4</button>
+                      <button id="room_size_5" onclick="update_option('room_size', '5')" disabled="disabled" class="btn btn-sm btn-outline no-animation">5</button>
+                      <button id="room_size_6" onclick="update_option('room_size', '6')" disabled="disabled" class="btn btn-sm btn-outline no-animation">6</button>
                   </div>
             </span>
         </div>
@@ -74,10 +74,10 @@
         <div class="flex mt-0 ml-4">
             <span class="">
                   <div class="inline-flex items-center btn-group">
-                      <input type="radio" name="play_timeout" id="play_timeout_inf" data-title="∞" onclick="update_option('play_timeout', '-1')" disabled="disabled" class="btn btn-sm text-xl btn-outline no-animation">
-                      <input type="radio" name="play_timeout" id="play_timeout_30" data-title="30s" onclick="update_option('play_timeout', '30')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
-                      <input type="radio" name="play_timeout" id="play_timeout_60" data-title="1m" onclick="update_option('play_timeout', '60')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
-                      <input type="radio" name="play_timeout" id="play_timeout_120" data-title="2m" onclick="update_option('play_timeout', '120')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <button id="play_timeout_inf" onclick="update_option('play_timeout', '-1')" disabled="disabled" class="btn btn-sm text-xl btn-outline no-animation">∞</button>
+                      <button id="play_timeout_30" onclick="update_option('play_timeout', '30')" disabled="disabled" class="btn btn-sm btn-outline no-animation">30s</button>
+                      <button id="play_timeout_60" onclick="update_option('play_timeout', '60')" disabled="disabled" class="btn btn-sm btn-outline no-animation">1m</button>
+                      <button id="play_timeout_120" onclick="update_option('play_timeout', '120')" disabled="disabled" class="btn btn-sm btn-outline no-animation">2m</button>
                   </div>
             </span>
         </div>
@@ -98,7 +98,7 @@
         </div>
         <div class="flex mt-0 ml-4">
             <span class="">
-                <input type="checkbox" id="include_host" onclick="update_option('include_host')" disabled="disabled" class="inline-flex items-center mt-2 toggle toggle-md toggle-accent">
+                <input type="checkbox" id="include_host" onclick="update_option('include_host')" disabled="disabled" class="inline-flex items-center mt-2 toggle toggle-md toggle-success">
             </span>
         </div>
     </div>

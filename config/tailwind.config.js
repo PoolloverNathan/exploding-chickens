@@ -1,6 +1,8 @@
 module.exports = {
     purge: [
         '../../templates/*.hbs',
+        '../../templates/partials/*.hbs',
+        '../../templates/partials/sidebar/*.hbs',
         '../js/*.js',
         '../js/game/*.js',
         '../js/lobby/*.js',
@@ -29,58 +31,58 @@ module.exports = {
         themes: [
             {
                 'light': {
-                    "primary": "#570df8",
-                    "primary-focus": "#4506cb",
+                    "primary": "#FBBF24", // Primary theme color (logo, buttons)
+                    "primary-focus": "#F59E0B",
                     "primary-content": "#ffffff",
 
-                    "secondary": "#f000b8",
-                    "secondary-focus": "#bd0091",
+                    "secondary": "#8B5CF6", // Secondary theme color (alt icons)
+                    "secondary-focus": "#7C3AED",
                     "secondary-content": "#ffffff",
 
-                    "accent": "#10B981",
-                    "accent-focus": "#2aa79b",
+                    "accent": "#EC4899", // Tertiary theme color (alt icons)
+                    "accent-focus": "#DB2777",
                     "accent-content": "#ffffff",
 
-                    "neutral": "#3d4451",
-                    "neutral-focus": "#2a2e37",
+                    "neutral": "#9CA3AF", // Muted theme color (alt buttons)
+                    "neutral-focus": "#6B7280",
                     "neutral-content": "#ffffff",
 
-                    "base-100": "#ffffff",
-                    "base-200": "#f9fafb",
-                    "base-300": "#d1d5db",
-                    "base-content": "#1f2937",
+                    "base-100": "#ffffff", // Base background, primary
+                    "base-200": "#f9fafb", // Base background, secondary
+                    "base-300": "#d1d5db", // Base background, tertiary
+                    "base-content": "#374151", // Base opposing color, used in elements (like text) on background
 
-                    'info' : '#3B82F6',              /* Info */
-                    'success' : '#10B981',           /* Success */
-                    'warning' : '#F59E0B',           /* Warning */
-                    'error' : '#EF4444',             /* Error */
+                    "info": "#3B82F6",
+                    "success": "#10B981",
+                    "warning": "#FBBF24",
+                    "error": "#EF4444",
                 },
                 'dark': {
-                    "primary": "#793ef9",
-                    "primary-focus": "#570df8",
+                    "primary": "#FBBF24", // Primary theme color (logo, buttons)
+                    "primary-focus": "#F59E0B",
                     "primary-content": "#ffffff",
 
-                    "secondary": "#f000b8",
-                    "secondary-focus": "#bd0091",
+                    "secondary": "#8B5CF6", // Secondary theme color (alt icons)
+                    "secondary-focus": "#7C3AED",
                     "secondary-content": "#ffffff",
 
-                    "accent": "#10B981",
-                    "accent-focus": "#2aa79b",
+                    "accent": "#EC4899", // Tertiary theme color (alt icons)
+                    "accent-focus": "#DB2777",
                     "accent-content": "#ffffff",
 
-                    "neutral": "#2a2e37",
-                    "neutral-focus": "#16181d",
+                    "neutral": "#9CA3AF", // Muted theme color (alt buttons)
+                    "neutral-focus": "#6B7280",
                     "neutral-content": "#ffffff",
 
-                    "base-100": "#3d4451",
-                    "base-200": "#2a2e37",
-                    "base-300": "#16181d",
-                    "base-content": "#ebecf0",
+                    "base-100": "#3d4451", // Base background, primary
+                    "base-200": "#2a2e37", // Base background, secondary
+                    "base-300": "#16181d", // Base background, tertiary
+                    "base-content": "#ebecf0", // Base opposing color, used in elements (like text) on background
 
-                    'info' : '#3B82F6',              /* Info */
-                    'success' : '#10B981',           /* Success */
-                    'warning' : '#F59E0B',           /* Warning */
-                    'error' : '#EF4444',             /* Error */
+                    "info": "#3B82F6",
+                    "success": "#10B981",
+                    "warning": "#FBBF24",
+                    "error": "#EF4444",
                 },
             },
         ],

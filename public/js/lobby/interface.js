@@ -20,7 +20,7 @@ function itr_update_games(lobby_details) {
             "    <h3 class=\"text-3xl text-base-content pb-3 text-center\"><strong>Waiting for players to join...</strong></h3>\n" +
             "    <h3 class=\"text-md text-base-content px-2 text-center\">Welcome to <strong>Exploding Chickens</strong>! Lobby: <i>" + lobby_details.slug + "</i></h3>\n" +
             "    <h3 class=\"text-md text-base-content px-2 pb-3 text-center\">Invite your friends by clicking on the invite link below.</h3>\n" +
-            "    <button type=\"button\" onclick=\"sbr_copy_url()\" class=\"inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500\">\n" +
+            "    <button type=\"button\" onclick=\"sbr_copy_url()\" class=\"inline-flex items-center px-2 py-1 border border-base-content rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 focus:outline-none\">\n" +
             "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"-ml-1 mr-1 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" />\n" +
             "        </svg>\n" +
@@ -52,18 +52,18 @@ function itr_update_games(lobby_details) {
         }
         game_grid_payload += "<div class=\"block text-center\">\n" +
             "    <h1 class=\"text-base-content font-medium text-sm\">\n" +
-            "        Game Room: " + lobby_details.games[i].game_slug + " <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-" + (lobby_details.games[i].in_progress ? "green" : "blue") + "-500\"></span>\n" +
+            "        Game Room: " + lobby_details.games[i].game_slug + " <span class=\"animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-" + (lobby_details.games[i].in_progress ? "success" : "info") + "\"></span>\n" +
             "    </h1>\n" +
             "    <h1 class=\"text-base-content font-medium text-sm\">\n" +
-            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 text-blue-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 text-info -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z\" />\n" +
             "        </svg>\n" +
             "        " + lobby_details.games[i].players.length + "/" + lobby_details.room_size + "\n" +
-            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 ml-1 text-purple-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 ml-1 text-secondary -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z\" />\n" +
             "        </svg>\n" +
             "        " + lobby_details.games[i].cards_remain + "/" + lobby_details.games[i].cards_total + " Cards\n" +
-            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 ml-1 text-red-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 ml-1 text-error -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z\" />\n" +
             "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z\" />\n" +
             "        </svg>\n" +
@@ -72,7 +72,7 @@ function itr_update_games(lobby_details) {
             "    <div class=\"px-2 pb-2\">\n" +
             "        <progress class=\"progress " + (lobby_details.games[i].is_completed ? "progress-success" : "progress-info") + "\" value=\"" + (lobby_details.games[i].is_completed ? 100 : Math.ceil((((lobby_details.games[i].cards_total - (lobby_details.games[i].players.length * 5 + (6 - lobby_details.games[i].players.length))) - lobby_details.games[i].cards_remain) / lobby_details.games[i].cards_total) * 100)) + "\" max=\"100\"></progress>\n" +
             "    </div>\n" +
-            "    <div class=\"rounded-2xl bg-contain mx-1 border-dashed border-4 border-gray-400\">\n" +
+            "    <div class=\"rounded-2xl bg-contain mx-1 border-dashed border-4 border-neutral\">\n" +
             "        <div class=\"grid grid-cols-2 gap-x-2 gap-y-4 py-6 px-4\">\n" +
             player_payload +
             "        </div>\n" +

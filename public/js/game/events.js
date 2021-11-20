@@ -235,8 +235,8 @@ socket.on("connect", function (data) {
 // Desc : whenever we disconnect from the backend
 socket.on("disconnect", function (data) {
     // Update status dot
-    document.getElementById("status_ping").innerHTML = "<span class=\"animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75\"></span>\n" +
-        "<span class=\"relative inline-flex rounded-full h-2 w-2 bg-red-500\"></span>"
+    document.getElementById("status_ping").innerHTML = "<span class=\"animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75\"></span>\n" +
+        "<span class=\"relative inline-flex rounded-full h-2 w-2 bg-error\"></span>"
     // Send alert
     toast_alert.fire({
         icon: 'error',
