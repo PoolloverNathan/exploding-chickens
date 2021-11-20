@@ -31,37 +31,8 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
 <!-- Exploding Chickens, game page // RAk3rman -->
-<body class='flex flex-col h-full anim-scene' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
-{{! Banner }}
-<div class="bg-indigo-600 hidden" id="banner">
-    <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between flex-wrap">
-            <div class="w-0 flex-1 flex items-center">
-                <span class="flex p-2 rounded-lg bg-indigo-800">
-                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                    </svg>
-                </span>
-                <p class="ml-3 font-medium text-white truncate">
-                    <span class="md:hidden">
-                        {{ bnr_short_desc }}
-                    </span>
-                    <span class="hidden md:inline">
-                        {{ bnr_long_desc }}
-                    </span>
-                </p>
-            </div>
-            <div class="order-2 flex-shrink-0 sm:order-3 sm:ml-3">
-                <button type="button" class="-mr-1 flex p-2 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-white sm:-mr-2" onclick="hide_banner()">
-                    <span class="sr-only">Dismiss</span>
-                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<body class='flex flex-col h-full anim-scene bg-base-100' x-data="{ sidebar_open: false }" @keydown.window.escape="sidebar_open = false">
+{{> banner }}
 {{! Navigation bar }}
 <nav class="anim-ele anim-ele-fadein">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -69,7 +40,7 @@
             {{! Exploding Chickens header }}
             <button class="flex items-center" onclick="window.location.href = '/'">
                 <div class="flex-shrink-0">
-                    <h1 class="h-8 text-3xl text-gray-700" style="font-family: Bebas Neue"><a class="text-yellow-400">EXPLODING</a> CHICKENS</h1>
+                    <h1 class="h-8 text-3xl text-base-content" style="font-family: Bebas Neue"><a class="text-yellow-400">EXPLODING</a> CHICKENS</h1>
                 </div>
             </button>
             {{! Right sidebar actions }}
@@ -77,7 +48,7 @@
                 <div class="ml-4 flex items-center md:ml-6">
                     <span class="relative inline-flex">
                         {{! EC chance & active users }}
-                        <div class="text-lg font-bold truncate text-gray-700 py-2" id="itr_ele_ec_count"></div>
+                        <div class="text-lg font-bold truncate text-base-content py-2" id="itr_ele_ec_count"></div>
                         <div class="inline-flex items-center -space-x-1 overflow-hidden p-2 hidden sm:block" id="itr_ele_players_top"></div>
                         {{! Slide over button }}
                         <button @click="sidebar_open = true" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
@@ -137,7 +108,7 @@
 {{! Sidebar }}
 <div class="fixed inset-0 overflow-hidden z-10 anim-ele anim-ele-fadein" x-show="sidebar_open">
     <div class="absolute inset-0 overflow-hidden" x-show="sidebar_open">
-        <div x-show="sidebar_open" x-description="Background overlay, show/hide based on slide-over state." x-transition:enter="ease-in-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in-out duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <div x-show="sidebar_open" x-description="Background overlay, show/hide based on slide-over state." x-transition:enter="ease-in-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in-out duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-base-200 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
         <section @click.away="sidebar_open = false" class="absolute inset-y-0 right-0 pl-10 max-w-full flex" aria-labelledby="slide-over-heading">
             <div class="relative w-screen max-w-md" x-description="Slide-over panel, show/hide based on slide-over state." x-show="sidebar_open" x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
                 <div x-description="Close button, show/hide based on slide-over state." x-show="sidebar_open" x-transition:enter="ease-in-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in-out duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute top-0 left-0 -ml-8 pt-4 pr-2 flex sm:-ml-10 sm:pr-4">
@@ -149,227 +120,14 @@
                     </button>
                 </div>
                 {{! Content }}
-                <div class="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
-                    {{! Game statistics }}
-                    <div class="relative flex flex-col px-5">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex-1 min-w-0">
-                                <h2 class="text-xl font-medium text-gray-700" id="sbr_ele_usertop">
-                                    Spectator <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 ml-0.5 align-middle bg-gray-500"></span>
-                                </h2>
-                            </div>
-                            <div class="flex mt-0 ml-4">
-                                <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" onclick="window.location.href = '/'">
-                                    <svg class="-ml-1 mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                    </svg>
-                                    Return Home
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative flex flex-col mx-5">
-                        <div class="flex flex-row w-full space-x-2 space-y-0 mb-2">
-                            <div style="width: 40%" id="sbr_ele_status">
-                                <div class="widget w-full p-2.5 rounded-lg bg-white border border-gray-100">
-                                    <div class="flex flex-row items-center justify-between">
-                                        <div class="flex flex-col text-left">
-                                            <div class="text-xs uppercase text-gray-500 truncate">
-                                                Status
-                                            </div>
-                                            <div class="text-lg font-bold">
-                                                ...
-                                            </div>
-                                        </div>
-                                        <svg class="stroke-current text-blue-500" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="width: 60%">
-                                <button type="button" class="widget w-full p-2.5 rounded-lg border border-gray-100 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500" onclick="sbr_copy_url()">
-                                    <div class="flex flex-row items-center justify-between">
-                                        <div class="flex flex-col text-left">
-                                            <div class="text-xs uppercase text-gray-500 truncate">
-                                                Game Code
-                                            </div>
-                                            <div class="text-lg font-bold" id="sidebar_game_code">
-                                                {{ slug_2 }}
-                                            </div>
-                                        </div>
-                                        <svg class="stroke-current text-purple-500" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                                        </svg>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="flex flex-row w-full space-x-2 space-y-0 mb-2">
-                            <div style="width: 60%">
-                                <div class="widget w-full p-2.5 rounded-lg bg-white border border-gray-100">
-                                    <div class="flex flex-row items-center justify-between">
-                                        <div class="flex flex-col">
-                                            <div class="text-xs uppercase text-gray-500 truncate">
-                                                Exploding Chickens
-                                            </div>
-                                            <div class="text-lg font-bold truncate" id="sbr_ele_ec_count">
-                                                ...
-                                            </div>
-                                        </div>
-                                        <svg class="stroke-current text-red-500" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="width: 40%">
-                                <div class="widget w-full p-2.5 rounded-lg bg-white border border-gray-100">
-                                    <div class="flex flex-row items-center justify-between">
-                                        <div class="flex flex-col">
-                                            <div class="text-xs uppercase text-gray-500 truncate">
-                                                Cards Left
-                                            </div>
-                                            <div class="text-lg font-bold truncate" id="sbr_ele_cards_remain">
-                                                ...
-                                            </div>
-                                        </div>
-                                        <svg class="stroke-current text-green-500" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {{! Sidebar players }}
-                    <div class="mt-4 px-5">
-                        <h2 class="text-xl font-medium text-gray-700">
-                            Players
-                        </h2>
-                    </div>
-                    <div class="mt-4 relative flex flex-col px-5" id="sbr_ele_players">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex-1 min-w-0">
-                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
-                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                    Waiting for players to join...
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                    {{! Sidebar card packs }}
-                    <div class="mt-4 px-5">
-                        <h2 class="text-xl font-medium text-gray-700">
-                            Card Packs
-                        </h2>
-                    </div>
-                    <div class="mt-4 relative flex flex-col px-5">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex-1 min-w-0">
-                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
-                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                    </svg>
-                                    Base Deck
-                                </h3>
-                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
-                                    <div class="flex items-center text-sm text-gray-500">
-                                        52 cards, 9 actions
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex mt-0 ml-4">
-                                <span class="">
-                                      <button type="button" class="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none">
-                                            <svg class="-ml-1 mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Imported
-                                      </button>
-                                </span>
-                            </div>
-                        </div>
-                        {{! Yolking around }}
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex-1 min-w-0">
-                                <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
-                                    <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                    </svg>
-                                    Yolking Around
-                                </h3>
-                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
-                                    <div class="flex items-center text-sm text-gray-500">
-                                        18 cards, 7 actions
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex mt-0 ml-4">
-                                <span class="" id="pack_yolking_around">
-                                      <button type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                            </svg>
-                                            Available
-                                      </button>
-                                </span>
-                            </div>
-                        </div>
-                        {{! Link to card desc }}
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex-1 min-w-0">
-                                <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
-                                    <div class="flex items-center text-xs text-gray-400">
-                                        <p>Confused on how to use a card? Refer to the <a class="text-blue-600" target="_blank" href="/#base-pack">card descriptions</a>.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {{! Event log }}
-                    <div class="mt-4 px-5">
-                        <h2 class="text-xl font-medium text-gray-700">
-                            Event Log
-                        </h2>
-                    </div>
-                    <div class="mt-4 mb-14 relative flex flex-col px-5">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="text-base leading-6 space-y-4 text-gray-500 w-full">
-                                <ul class="list-disc space-y-2" id="sbr_game_log">
-                                    <li class="flex items-start">
-                                        <h3 class="inline-flex text-md font-bold text-gray-900 truncate">
-                                            <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                            </svg>
-                                            Waiting for events to occur...
-                                        </h3>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="py-4 px-5 absolute bottom-0 w-full bg-white border-t-2 border-gray-100">
-                        <h2 class="text-xl font-medium text-gray-700 float-left">
-                            <button type="button" onclick="window.open('https://github.com/rak3rman/exploding-chickens', '_blank')" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                <svg class="-ml-1 mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                </svg>
-                                Release v{{ version }}
-                            </button>
-                        </h2>
-                        <h2 class="text-xl font-medium text-gray-700 float-right">
-                            <button data-tf-popup="qWPf6y4Z" data-tf-size="70" type="button" class="inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                <svg class="-ml-1 mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                </svg>
-                                Feedback
-                            </button>
-                        </h2>
-                    </div>
+                <div class="h-full flex flex-col py-6 bg-base-100 shadow-xl overflow-y-scroll">
+                    {{! Construct sidebar using partials }}
+                    {{> sbr_header }}
+                    {{> sbr_game_widgets }}
+                    {{> sbr_players }}
+                    {{> sbr_card_packs }}
+                    {{> sbr_event_log }}
+                    {{> sbr_footer }}
                 </div>
             </div>
         </section>
@@ -379,6 +137,7 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.2.2/cdn.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"></script>
 <script src="//embed.typeform.com/next/embed.js"></script>
 <script src="/public/js/lscache.js"></script>
 <script src="/public/js/moment.js"></script>

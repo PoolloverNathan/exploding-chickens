@@ -12,7 +12,8 @@ const toast_alert = Swal.mixin({
     showConfirmButton: false,
     timer: 3000,
     padding: '0.4rem',
-    timerProgressBar: true
+    timerProgressBar: true,
+    background: "hsla(var(--b1) / var(--tw-bg-opacity))"
 });
 // Set localStorage timeout
 lscache.setExpiryMilliseconds(3600000);
@@ -76,7 +77,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Host was updated</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Host was updated</h1>'
         });
     } else if (data.trigger === "kick-player") {
         sbr_update_lobby_widgets(data);
@@ -85,7 +86,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Player was kicked</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Player was kicked</h1>'
         });
     } else if (data.trigger === "import-pack") {
         sbr_update_lobby_widgets(data);
@@ -94,7 +95,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         toast_turn.close();
         toast_alert.fire({
             icon: 'success',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was imported</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Pack was imported</h1>'
         });
     } else if (data.trigger === "export-pack") {
         sbr_update_lobby_widgets(data);
@@ -103,7 +104,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         toast_turn.close();
         toast_alert.fire({
             icon: 'success',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Pack was removed</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Pack was removed</h1>'
         });
     } else if (data.trigger === "player-offline") { // Existing player disconnected
         sbr_update_pstatus(data);
@@ -142,7 +143,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-error", function (dat
     } else {
         toast_alert.fire({
             icon: 'error',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">' + data.msg + '</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">' + data.msg + '</h1>',
         });
     }
 });
@@ -164,7 +165,7 @@ socket.on("connect", function (data) {
     if (allow_connect_msg) {
         toast_alert.fire({
             icon: 'success',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Connected</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Connected</h1>'
         });
     } else {
         allow_connect_msg = true;
@@ -180,7 +181,7 @@ socket.on("disconnect", function (data) {
     // Send alert
     toast_alert.fire({
         icon: 'error',
-        html: '<h1 class="text-lg font-bold pl-2 pr-1">Disconnected</h1>'
+        html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Disconnected</h1>'
     });
 });
 
@@ -268,9 +269,9 @@ function game_start_prompt(lobby_details) {
             if (lobby_details.games[i].players[j]._id === session_user._id) {
                 // Trigger Swal
                 Swal.fire({
-                    html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">Your game has <a class=\"text-green-500\">started!</a></h1>\n" +
-                        "<h1 class=\"text-sm text-gray-700\">Lobby: " + lobby_details.slug + " → Game: " + lobby_details.games[i].players[j].game_assign + "</a></h1>\n" +
-                        "    <h1 class=\"text-gray-700 text-sm\">\n" +
+                    html: "<h1 class=\"text-4xl text-base-content mt-3\" style=\"font-family: Bebas Neue\">Your game has <a class=\"text-green-500\">started!</a></h1>\n" +
+                        "<h1 class=\"text-sm text-base-content\">Lobby: " + lobby_details.slug + " → Game: " + lobby_details.games[i].players[j].game_assign + "</a></h1>\n" +
+                        "    <h1 class=\"text-base-content text-sm\">\n" +
                         "        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 inline-block pb-0.5 text-blue-500 -mr-0.5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                         "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z\" />\n" +
                         "        </svg>\n" +
@@ -288,13 +289,14 @@ function game_start_prompt(lobby_details) {
                         "            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
                         "        </svg>\n" +
                         "        " + moment(lobby_details.games[i].created).calendar() +
-                        "    </h1>\n" + (session_user.is_host ? "<h1 class=\"text-gray-700 text-sm pt-2\"><strong>Host:</strong> Joining the game will open a new tab for you to play in. The lobby dashboard (this tab) will remain open for you to check up on the progress of all active games.</h1>" : ""),
+                        "    </h1>\n" + (session_user.is_host ? "<h1 class=\"text-base-content text-sm pt-2\"><strong>Host:</strong> Joining the game will open a new tab for you to play in. The lobby dashboard (this tab) will remain open for you to check up on the progress of all active games.</h1>" : ""),
                     showCancelButton: false,
                     confirmButtonColor: '#fbbf24',
                     confirmButtonText: 'Join Game',
                     allowOutsideClick: false,
                     timer: session_user.is_host ? undefined : 3000,
                     timerProgressBar: true,
+                    background: "hsla(var(--b1) / var(--tw-bg-opacity))",
                     didOpen: () => {
                         if (!session_user.is_host) Swal.showLoading();
                     }

@@ -1,0 +1,105 @@
+{{! Sidebar options }}
+<div class="mt-4 px-5">
+    <h2 class="text-xl font-medium text-base-content">
+        Options
+    </h2>
+</div>
+<div class="mt-4 relative flex flex-col px-5">
+    <div class="flex items-center justify-between mb-2">
+        <div class="flex-1 min-w-0">
+            <h3 class="inline-flex text-md font-bold text-base-content truncate">
+                <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                </svg>
+                Grouping Method
+            </h3>
+            <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                <div class="flex items-center text-sm text-base-content">
+                    How players are sorted between game rooms while in lobby
+                </div>
+            </div>
+        </div>
+        <div class="flex mt-0 ml-4">
+            <span class="">
+                  <div class="inline-flex items-center btn-group">
+                      <input type="radio" name="grp_method" id="grp_method_random" data-title="Random" onclick="update_option('grp_method', 'random')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <input type="radio" name="grp_method" id="grp_method_wins" data-title="Win #" onclick="update_option('grp_method', 'wins')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                  </div>
+            </span>
+        </div>
+    </div>
+    <div class="flex items-center justify-between mb-2">
+        <div class="flex-1 min-w-0">
+            <h3 class="inline-flex text-md font-bold text-base-content truncate">
+                <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                </svg>
+                Room Size
+            </h3>
+            <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                <div class="flex items-center text-sm text-base-content">
+                    Number of players per game room
+                </div>
+            </div>
+        </div>
+        <div class="flex mt-0 ml-4">
+            <span class="">
+                  <div class="inline-flex items-center btn-group">
+                      <input type="radio" name="room_size" id="room_size_2" data-title="2" onclick="update_option('room_size', '2')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <input type="radio" name="room_size" id="room_size_3" data-title="3" onclick="update_option('room_size', '3')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <input type="radio" name="room_size" id="room_size_4" data-title="4" onclick="update_option('room_size', '4')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <input type="radio" name="room_size" id="room_size_5" data-title="5" onclick="update_option('room_size', '5')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <input type="radio" name="room_size" id="room_size_6" data-title="6" onclick="update_option('room_size', '6')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                  </div>
+            </span>
+        </div>
+    </div>
+    <div class="flex items-center justify-between mb-2">
+        <div class="flex-1 min-w-0">
+            <h3 class="inline-flex text-md font-bold text-base-content truncate">
+                <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </svg>
+                Auto Play Timeout
+            </h3>
+            <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                <div class="flex items-center text-sm text-base-content">
+                    How long to wait before forcing a player to draw in game
+                </div>
+            </div>
+        </div>
+        <div class="flex mt-0 ml-4">
+            <span class="">
+                  <div class="inline-flex items-center btn-group">
+                      <input type="radio" name="play_timeout" id="play_timeout_inf" data-title="∞" onclick="update_option('play_timeout', '-1')" disabled="disabled" class="btn btn-sm text-xl btn-outline no-animation">
+                      <input type="radio" name="play_timeout" id="play_timeout_30" data-title="30s" onclick="update_option('play_timeout', '30')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <input type="radio" name="play_timeout" id="play_timeout_60" data-title="1m" onclick="update_option('play_timeout', '60')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                      <input type="radio" name="play_timeout" id="play_timeout_120" data-title="2m" onclick="update_option('play_timeout', '120')" disabled="disabled" class="btn btn-sm btn-outline no-animation">
+                  </div>
+            </span>
+        </div>
+    </div>
+    <div class="flex items-center justify-between mb-2">
+        <div class="flex-1 min-w-0">
+            <h3 class="inline-flex text-md font-bold text-base-content truncate">
+                <svg class="mr-1 mt-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />
+                </svg>
+                Remove Host from Games
+            </h3>
+            <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+                <div class="flex items-center text-sm text-base-content">
+                    Determines if the host will be included in games
+                </div>
+            </div>
+        </div>
+        <div class="flex mt-0 ml-4">
+            <span class="">
+                <input type="checkbox" id="include_host" onclick="update_option('include_host')" disabled="disabled" class="inline-flex items-center mt-2 toggle toggle-md toggle-accent">
+            </span>
+        </div>
+    </div>
+</div>

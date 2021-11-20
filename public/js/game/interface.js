@@ -131,7 +131,7 @@ function itr_update_hand(game_details) {
             if (game_details.turn_seat_pos === game_details.players[i].seat_pos && !is_turn && game_details.in_progress) {
                 toast_turn.fire({
                     icon: 'info',
-                    html: '<h1 class="text-lg font-bold pl-2 pr-1">Your turn</h1>'
+                    html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Your turn</h1>'
                 });
                 is_turn = true;
             } else if (game_details.turn_seat_pos !== game_details.players[i].seat_pos && game_details.in_progress) {

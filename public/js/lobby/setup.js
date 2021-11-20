@@ -72,26 +72,27 @@ function setup_user_prompt(lobby_details, err, nickname) {
     let auth_token = (new URLSearchParams(window.location.search)).get("auth_token");
     // Trigger Swal
     Swal.fire({
-        html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">Welcome to <a class=\"text-yellow-400\">EXPLODING</a> CHICKENS</h1>\n" +
-            "<h1 class=\"text-sm text-gray-700\">Lobby Code: " + lobby_details.slug + " | Created: " + moment(lobby_details.created).calendar() + "</a><br><br><a class=\"text-red-500\">" + err + "</a></h1>\n" +
+        html: "<h1 class=\"text-4xl text-base-content mt-3\" style=\"font-family: Bebas Neue\">Welcome to <a class=\"text-yellow-400\">EXPLODING</a> CHICKENS</h1>\n" +
+            "<h1 class=\"text-sm text-base-content\">Lobby Code: " + lobby_details.slug + " | Created: " + moment(lobby_details.created).calendar() + "</a><br><br><a class=\"text-red-500\">" + err + "</a></h1>\n" +
             "<div class=\"my-3 flex w-full max-w-sm mx-auto space-x-3 shadow-md\">\n" +
             "    <input\n" +
-            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-white text-gray-700 placeholder-gray-400 rounded-sm text-base border-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n" +
+            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-base-100 text-base-content placeholder-base-content rounded-sm text-base border-base-200 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n" +
             "        type=\"text\" id=\"nickname_swal\" maxlength=\"12\" value=\"" + nickname + "\" placeholder=\"What's your name?\">\n" +
             "</div>" +
             (auth_token === null ? ("<div class=\"my-3 flex w-full max-w-sm mx-auto space-x-3 shadow-md\">\n" +
             "    <input\n" +
-            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-white text-gray-700 placeholder-gray-400 rounded-sm text-base border-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n" +
+            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-base-100 text-base-content placeholder-base-content rounded-sm text-base border-base-200 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n" +
             "        type=\"text\" id=\"auth_token_swal\" maxlength=\"6\" placeholder=\"What's the password?\">\n" +
             "</div>") : "") +
             "<div class=\"flex flex-wrap justify-center items-center py-2\" id=\"avatar_options_swal\">\n" +
             "</div>\n",
         showCancelButton: true,
         confirmButtonColor: '#fbbf24',
-        cancelButtonColor: '#374151',
+        cancelButtonColor: '#3b82f6',
         cancelButtonText: 'Spectate',
         confirmButtonText: 'Join Lobby',
         allowOutsideClick: false,
+        background: "hsla(var(--b1) / var(--tw-bg-opacity))",
         didOpen: function() {
             user_prompt_open = true;
             setup_update_options();

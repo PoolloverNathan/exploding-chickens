@@ -78,6 +78,19 @@ fastify.register(require('point-of-view'), {
     engine: {
         handlebars: require('handlebars')
     },
+    options: {
+        partials: {
+            sbr_card_packs: '/templates/partials/sidebar/sbr_card_packs.hbs',
+            sbr_event_log: '/templates/partials/sidebar/sbr_event_log.hbs',
+            sbr_footer: '/templates/partials/sidebar/sbr_footer.hbs',
+            sbr_game_widgets: '/templates/partials/sidebar/sbr_game_widgets.hbs',
+            sbr_header: '/templates/partials/sidebar/sbr_header.hbs',
+            sbr_lobby_widgets: '/templates/partials/sidebar/sbr_lobby_widgets.hbs',
+            sbr_options: '/templates/partials/sidebar/sbr_options.hbs',
+            sbr_players: '/templates/partials/sidebar/sbr_players.hbs',
+            banner: '/templates/partials/banner.hbs'
+        }
+    }
 })
 fastify.register(require('fastify-static'), {
     root: path.join(__dirname, 'public'),

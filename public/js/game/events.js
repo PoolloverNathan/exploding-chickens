@@ -65,7 +65,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Host was updated</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Host was updated</h1>'
         });
     } else if (data.trigger === "kick-player") {
         sbr_update_lobby_widgets(data);
@@ -74,7 +74,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Player was kicked</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Player was kicked</h1>'
         });
     } else if (data.trigger === "player-offline") { // Existing player disconnected
         sbr_update_pstatus(data);
@@ -119,7 +119,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
         if (winner === false) {
             toast_alert.fire({
                 icon: 'info',
-                html: '<h1 class="text-lg font-bold pl-2 pr-1">Game has been reset</h1>'
+                html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been reset</h1>'
             });
         }
     } else if (data.trigger === "play-card") { // A card was played by a player
@@ -182,7 +182,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-error", function (data
     } else {
         toast_alert.fire({
             icon: 'error',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">' + data.msg + '</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">' + data.msg + '</h1>'
         });
     }
 });
@@ -224,7 +224,7 @@ socket.on("connect", function (data) {
     if (allow_connect_msg) {
         toast_alert.fire({
             icon: 'success',
-            html: '<h1 class="text-lg font-bold pl-2 pr-1">Connected</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Connected</h1>'
         });
     } else {
         allow_connect_msg = true;
@@ -240,7 +240,7 @@ socket.on("disconnect", function (data) {
     // Send alert
     toast_alert.fire({
         icon: 'error',
-        html: '<h1 class="text-lg font-bold pl-2 pr-1">Disconnected</h1>'
+        html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Disconnected</h1>'
     });
 });
 
