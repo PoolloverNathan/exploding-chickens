@@ -16,7 +16,7 @@ module.exports = mongoose.Schema({
     },
     game_assign: {
         type: mongoose.Schema.Types.ObjectId,
-        required: false
+        default: undefined
     },
     nickname: {
         type: String,

@@ -192,7 +192,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.greenBright(data.card_id)} Card action completed, no callbacks`));
         //                     // Update clients
         //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
+        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.player_id)).nickname, "");
         //                     fastify.io.to(socket.id).emit(data.slug + "-play-card", {
         //                         card: card_details,
         //                         game_details: await game_actions.get_game_export(data.slug, "play-card       ", data.player_id)
@@ -202,7 +202,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.greenBright(action_res.trigger)} Card action completed, seethefuture callback`));
         //                     // Update clients
         //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
+        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.player_id)).nickname, "");
         //                     await update_game_ui(data.slug, "", "play-card       ", socket.id, "seethefuture_callback");
         //                     // Trigger stf callback
         //                     fastify.io.to(socket.id).emit(data.slug + "-callback", {
@@ -233,7 +233,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} ${chalk.dim.greenBright(action_res.trigger)} Favor callback, notifying player of card taken`));
         //                     // Trigger favor_taken callback
         //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, data.target !== "" ? (await player_actions.get_player(game_details, data.target)).nickname : "");
+        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.player_id)).nickname, data.target !== "" ? (await player_actions.get_player_details(game_details, data.target)).nickname : "");
         //                     fastify.io.emit(data.slug + "-callback", {
         //                         trigger: "favor_taken",
         //                         payload: {
@@ -247,12 +247,12 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //                 } else if (action_res.trigger === "hotpotato") {
         //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Hot Potato callback`));
         //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
+        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.player_id)).nickname, "");
         //                     await update_game_ui(data.slug, "", "draw-card", socket.id, data.player_id);
         //                 } else if (action_res.trigger === "drawbottom") {
         //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.player_id)} Draw from the Bottom callback`));
         //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player(game_details, data.player_id)).nickname, "");
+        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.player_id)).nickname, "");
         //                     await update_game_ui(data.slug, "", "play-card", socket.id, "drawbottom");
         //                     fastify.io.to(socket.id).emit(data.slug + "-draw-card", action_res.data);
         //                 } else if (action_res.trigger === "error") {
@@ -305,7 +305,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         //                 // Draw card from draw deck and check if it is a chicken
         //                 let card_drawn = await game_actions.draw_card(game_details, req_data.player_id, "top");
         //                 if (card_drawn.action !== "chicken") await game_actions.advance_turn(game_details);
-        //                 await game_actions.log_event(game_details, action.trim(), card_drawn.action, card_drawn._id, (await player_actions.get_player(game_details, req_data.player_id)).nickname, "");
+        //                 await game_actions.log_event(game_details, action.trim(), card_drawn.action, card_drawn._id, (await player_actions.get_player_details(game_details, req_data.player_id)).nickname, "");
         //                 await update_game_ui(req_data.slug, "", action, socket_id, req_data.player_id);
         //                 fastify.io.to(socket_id).emit(req_data.slug + "-draw-card", card_drawn);
         //                 if (card_drawn.action === "chicken") await game_actions.explode_tick(game_details.slug, 15, req_data.player_id, card_drawn._id, "public/cards/base/chicken.png", socket_id, fastify, config_storage, stats_storage, bot);

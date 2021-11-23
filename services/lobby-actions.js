@@ -82,10 +82,10 @@ exports.partition_players = async function (lobby_details) {
     // Insert players into bucket
     let player_bucket = [];
     for (let i = 0; i < lobby_details.players.length; i++) {
-        // Make sure player isn't disabled and isn't included as host if param set
-        // TODO Don't include player in bucket if in an active game
+        // Make sure player isn't disabled, isn't included as host if param set, and not already in an active game
         if (!lobby_details.players[i].is_disabled &&
-            (lobby_details.players[i].is_host ? lobby_details.include_host : true)) {
+            (lobby_details.players[i].is_host ? lobby_details.include_host : true) &&
+            lobby_details.players[i].game_assign === undefined) {
             player_bucket.push(lobby_details.players[i]);
         }
     }
@@ -188,6 +188,7 @@ exports.reset_games = async function (lobby_details) {
         if (!lobby_details.games[i].is_completed) {
             // Reset game
             await game_actions.reset_game(lobby_details, i);
+            lobby_details.games[i].events = [];
         }
     }
     // Update lobby settings

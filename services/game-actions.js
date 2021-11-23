@@ -35,14 +35,27 @@ exports.create_game = async function (lobby_details) {
     return lobby_details.games.length - 1;
 }
 
-// Name : game_actions.get_game(lobby_details, game_slug)
+// Name : game_actions.get_game_details(lobby_details, game_id)
 // Desc : return the details for a target game
 // Author(s) : RAk3rman
-exports.get_game = async function (lobby_details, game_slug) {
+exports.get_game_details = async function (lobby_details, game_id) {
     // Find game and return details
     for (let i = 0; i < lobby_details.games.length; i++) {
-        if (lobby_details.games[i].slug === game_slug) {
+        if (lobby_details.games[i]._id.equals(game_id)) {
             return lobby_details.games[i];
+        }
+    }
+    return null;
+}
+
+// Name : game_actions.get_game_pos(lobby_details, game_id)
+// Desc : return the details for a target game
+// Author(s) : RAk3rman
+exports.get_game_pos = async function (lobby_details, game_id) {
+    // Find game and return details
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        if (lobby_details.games[i]._id.equals(game_id)) {
+            return i;
         }
     }
     return null;
@@ -90,49 +103,38 @@ exports.export_cards = async function (lobby_details, game_pos, pack_name) {
     }
 }
 
-// Name : game_actions.draw_card(game_details, player_id)
+// Name : game_actions.draw_card(lobby_details, game_pos, player_id)
 // Desc : draw a card from the draw deck and place at the end of a players hand
 // Author(s) : Vincent Do, RAk3rman
-exports.draw_card = async function (game_details, player_id, location) {
+exports.draw_card = async function (lobby_details, game_pos, player_id) {
     // Filter draw deck
-    let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
+    let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
     // Filter player hand
-    let player_hand = await card_actions.filter_cards(player_id, game_details.cards);
+    let player_hand = await card_actions.filter_cards(player_id, lobby_details.games[game_pos].cards);
     // Determine if top or bottom
-    let pos = draw_deck.length-1;
+    let pos = draw_deck.length - 1;
     if (location === "bottom") {
         pos = 0;
     }
     // Check if new card is a chicken
-    for (let i = 0; i <= game_details.players.length - 1; i++) {
-        if (game_details.players[i]._id === player_id) {
-            if (game_details.players[i].status === "exploding") {
+    for (let i = 0; i <= lobby_details.games[game_pos].players.length - 1; i++) {
+        if (lobby_details.games[game_pos].players[i]._id === player_id) {
+            if (lobby_details.games[game_pos].players[i].is_exploding) {
                 return { "action": "chicken" };
             } else if (draw_deck[pos].action === "chicken") {
-                game_details.players[i].status = "exploding";
+                //lobby_details.games[game_pos].players[i].is_exploding = true;
             }
             break;
         }
     }
     // Update card
-    for (let i = 0; i <= game_details.cards.length - 1; i++) {
-        if (game_details.cards[i]._id === draw_deck[pos]._id) {
-            game_details.cards[i].assignment = player_id;
-            game_details.cards[i].position = player_hand.length;
+    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+        if (lobby_details.games[game_pos].cards[i]._id === draw_deck[pos]._id) {
+            lobby_details.games[game_pos].cards[i].assign = player_id;
+            lobby_details.games[game_pos].cards[i].pos = player_hand.length;
             break;
         }
     }
-    // Create new promise to save game
-    return await new Promise((resolve, reject) => {
-        // Save updated game
-        game_details.save({}, function (err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(draw_deck[pos]);
-            }
-        });
-    });
 }
 
 // Name : game_actions.base_router(game_details, player_id, card_id, target, stats_storage, config_storage, bot, socket_id, fastify)
@@ -164,7 +166,7 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
             let favor_data = await card_actions.ask_favor(game_details, player_id, target, false, stats_storage);
             stats_storage.set('favors', stats_storage.get('favors') + 1);
             return {trigger: "favor_taken", data: {
-                target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player(game_details, target)).nickname : (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
+                target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
             }};
         } else {
             return v_favor;
@@ -180,7 +182,7 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
                 let favor_data = await card_actions.ask_favor(game_details, player_id, target, false, stats_storage);
                 stats_storage.set('favors', stats_storage.get('favors') + 1);
                 return {trigger: "favor_taken", data: {
-                    target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player(game_details, target)).nickname : (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
+                    target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
                 }};
             } else {
                 return v_favor;
@@ -225,7 +227,7 @@ exports.base_router = async function (game_details, player_id, card_id, target, 
             await game_actions.discard_card(game_details, card_id);
             stats_storage.set('favors', stats_storage.get('favors') + 1);
             return {trigger: "favor_taken", data: {
-                    target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player(game_details, target)).nickname : (await player_actions.get_player(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
+                    target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
                 }};
         } else {
             return v_favor;
@@ -363,7 +365,7 @@ exports.explode_tick = async function (slug, count, player_id, card_id, card_url
                 } else {
                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} ${chalk.dim.greenBright(card_id)} Hasta la vista baby, a player has exploded`));
                     await game_actions.advance_turn(game_details);
-                    await game_actions.log_event(game_details, "play-card", "chicken", card_id, (await player_actions.get_player(game_details, player_id)).nickname, "");
+                    await game_actions.log_event(game_details, "play-card", "chicken", card_id, (await player_actions.get_player_details(game_details, player_id)).nickname, "");
                     fastify.io.emit(slug + "-update", await game_actions.get_game_export(slug, "play-card", "explosion-callback"));
                 }
                 return;
@@ -427,7 +429,7 @@ exports.is_winner = async function (game_details, stats_storage, bot) {
             console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.greenBright('game-won        ')} Sent game summary message`));
         }
         // Log event
-        await game_actions.log_event(game_details, "game-won", "", "", (await player_actions.get_player(game_details, player_id)).nickname, "");
+        await game_actions.log_event(game_details, "game-won", "", "", (await player_actions.get_player_details(game_details, player_id)).nickname, "");
         // Reset game
         await game_actions.reset_game(game_details, "idle", "in_lobby");
         // Create new promise to save game
@@ -466,7 +468,6 @@ exports.reset_game = async function (lobby_details, game_pos) {
     lobby_details.games[game_pos].turn_dir = "forward";
     lobby_details.games[game_pos].turn_remain = 1;
     lobby_details.games[game_pos].created = Date.now();
-    lobby_details.games[game_pos].events = [];
 }
 
 // Name : game_actions.game_export(lobby_details, game_pos, source, req_player_id)
