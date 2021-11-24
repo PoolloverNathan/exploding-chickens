@@ -59,6 +59,19 @@ exports.get_player_pos = async function (lobby_details, player_id) {
     return null;
 }
 
+// Name : player_actions.get_turn_player_id(lobby_details, game_pos)
+// Desc : return the player_id of the player who is currently playing
+// Author(s) : RAk3rman
+exports.get_turn_player_id = async function (lobby_details, game_pos) {
+    // Find player and return details
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign) && lobby_details.games[game_pos].turn_seat_pos === lobby_details.players[i].seat_pos) {
+            return lobby_details.players[i]._id;
+        }
+    }
+    return null;
+}
+
 // Name : player_actions.update_sockets_open(lobby_details, player_id, method)
 // Desc : updates the connection for a target player
 // Author(s) : RAk3rman
@@ -162,8 +175,7 @@ exports.randomize_seats = async function (lobby_details, game_pos) {
 // Desc : determine next seat position
 // Author(s) : RAk3rman
 exports.next_seat = async function (lobby_details, game_pos) {
-    let found_seat = false;
-    let pos = lobby_details.games[game_pos].turns_seat_pos;
+    let pos = lobby_details.games[game_pos].turn_seat_pos;
     // Create array of players in game with only required player data
     let players = [];
     for (let i = 0; i < lobby_details.players.length; i++) {
@@ -175,14 +187,14 @@ exports.next_seat = async function (lobby_details, game_pos) {
         }
     }
     // Traverse until we find next open seat
-    while (!found_seat) {
+    while (true) {
         // Increment or decrement pos based on direction
-        if (lobby_details.games[game_pos].turn_direction === "forward") {
+        if (lobby_details.games[game_pos].turn_dir === "forward") {
             pos++
             if (pos > players.length - 1) {
                 pos = 0;
             }
-        } else if (lobby_details.games[game_pos].turn_direction === "backward") {
+        } else if (lobby_details.games[game_pos].turn_dir === "backward") {
             pos--;
             if (pos < 0) {
                 pos = players.length - 1;
@@ -192,7 +204,6 @@ exports.next_seat = async function (lobby_details, game_pos) {
         for (let i = 0; i < players.length; i++) {
             if (players[i].seat_pos === pos) {
                 if (!players[i].is_dead) {
-                    found_seat = true;
                     return pos;
                 } else {
                     break;

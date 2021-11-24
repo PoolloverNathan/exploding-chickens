@@ -20,11 +20,13 @@ const stats_storage = new dataStore({path: './config/stats.json'});
 // Services
 let setup = require('../config/setup.js');
 let lobby_actions = require('../services/lobby-actions.js');
+let card_actions = require('../services/card-actions.js');
 let game_actions = require('../services/game-actions.js');
 let player_actions = require('../services/player-actions.js');
 let rel_ids = require('../services/card-actions.js');
 let event_actions = require('../services/event-actions.js');
 const {uniqueNamesGenerator, adjectives, animals} = require("unique-names-generator");
+const {get_turn_player_id} = require("../services/player-actions");
 
 // Variables
 let lobby_id;
@@ -155,11 +157,10 @@ describe('Lobby deletion', function() {
 // Author(s) : RAk3rman
 describe('Simulation (final boss)', function() {
     // Create 50 lobbies
-    for (let i = 1; i < 49; i++) {
+    for (let i = 1; i < 50; i++) {
         simulate_lobby(i, i + 1, 3);
     }
-    simulate_lobby(49, 200, 3);
-    simulate_lobby(50, 500, 3);
+    simulate_lobby(50, 200, 3);
 });
 
 // Name : test.simulate_lobby
@@ -167,7 +168,7 @@ describe('Simulation (final boss)', function() {
 // Author(s) : RAk3rman
 function simulate_lobby(id, plyr_ctn, rounds) {
     describe('Lobby #' + id + ' (' + plyr_ctn + 'P)', function () {
-        this.timeout(plyr_ctn * 20); // Dynamically increase timeout for larger lobbies
+        this.timeout(plyr_ctn * 50); // Dynamically increase timeout for larger lobbies
         let lobby_details;
         describe('Setup lobby', function () {
             it('create lobby', async function() {
@@ -212,7 +213,9 @@ function simulate_lobby(id, plyr_ctn, rounds) {
                 it('start games', async function() {
                     await lobby_actions.start_games(lobby_details);
                 });
-                it('simulate games to completion');
+                it('simulate games to completion', async function() {
+                    await simulate_games(lobby_details);
+                });
                 it('audit integrity of games');
                 it('replay games using events');
                 it('reset games', async function() {
@@ -234,8 +237,20 @@ function simulate_lobby(id, plyr_ctn, rounds) {
 // Name : test.simulate_games
 // Desc : simulates all games in a lobby to completion
 // Author(s) : RAk3rman
-function simulate_games(lobby_details, game_pos) {
-
+async function simulate_games(lobby_details) {
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Loop forever until we get a winner, will timeout if a player never wins
+        while (!await game_actions.is_winner(lobby_details, i)) {
+            let player_id = await player_actions.get_turn_player_id(lobby_details, i);
+            let card_details = await game_actions.draw_card(lobby_details, i, player_id);
+            assert.exists(card_details, 'ensure drawn card exists');
+            if (card_details.action === 'chicken') {
+                await card_actions.kill_player(lobby_details, i, player_id);
+                await game_actions.advance_turn(lobby_details, i);
+            }
+        }
+        assert.isTrue(await game_actions.is_winner(lobby_details, i), 'ensure we have a winner');
+    }
 }
 
 // Name : test.audit_games
