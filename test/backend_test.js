@@ -5,7 +5,7 @@ Desc     : evaluation suite for testing game,
 Author(s): RAk3rman, SengdowJones, Vincent Do
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-//Packages
+// Packages
 let game = require('../models/game.js');
 let assert = require('chai').assert;
 let mongoose = require('mongoose');
@@ -17,14 +17,16 @@ const dataStore = require('data-store');
 const config_storage = new dataStore({path: '../config/config.json'});
 const stats_storage = new dataStore({path: './config/stats.json'});
 
-//Services
+// Services
 let setup = require('../config/setup.js');
-let card_actions = require('../services/card-actions.js');
-let game_actions = require('../services/game-actions.js');
-let player_actions = require('../services/player-actions.js');
+let lobby_actions = require('./lobby-actions.js');
+let game_actions = require('./game-actions.js');
+let player_actions = require('./player-actions.js');
+let rel_ids = require('./card-actions.js');
+let event_actions = require('./event-actions.js');
 
 // Variables
-let game_id;
+let lobby_id;
 
 // Name : test.before
 // Desc : get everything setup for test cases
@@ -41,30 +43,29 @@ before(done => {
         done();
     });
     mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
-    //mongoose.set('useFindAndModify', false);
 });
 
-// Name : test.game_creation
-// Desc : creates a test game and initializes to sample values
+// Name : test.lobby_setup
+// Desc : creates a test lobby and initializes to sample values
 // Author(s) : RAk3rman
-// describe('Game setup', function() {
-//     let game_details_create;
-//     describe('#game_actions.create_game()', function() {
-//         it('create new sample game', function(done) {
-//             game_actions.create_game().then(result => {
-//                 game_details_create = result;
-//                 game_id = result._id;
+// describe('Lobby setup', function() {
+//     let lobby_details;
+//     describe('#lobby_actions.create_lobby()', function() {
+//         it('create new sample lobby', function(done) {
+//             lobby_actions.create_lobby().then(result => {
+//                 lobby_details = result;
+//                 lobby_id = result._id;
 //                 done();
 //             })
 //         });
 //         it('slug exists', function() {
-//             assert(game_details_create.slug);
+//             assert(lobby_details.slug);
 //         });
 //         it('no players exist', function() {
-//             assert.equal(game_details_create.players.length, 0);
+//             assert.equal(lobby_details.players.length, 0);
 //         });
 //         it('no cards exist', function() {
-//             assert.equal(game_details_create.cards.length, 0);
+//             assert.equal(lobby_details.cards.length, 0);
 //         });
 //     });
 //     describe('#game_actions.game_details_slug(slug)', function() {
