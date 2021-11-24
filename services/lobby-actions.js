@@ -289,17 +289,17 @@ exports.delete_lobby = async function (_id) {
     }
 }
 
-// Name : lobby_actions.lobby_purge()
+// Name : lobby_actions.lobby_purge(suppress_debug)
 // Desc : deletes all lobbies that are older than the purge age
 // Author(s) : RAk3rman
-exports.lobby_purge = async function () {
+exports.lobby_purge = async function (suppress_debug) {
     // Filter which objects to purge
     try {
         let to_purge = await Lobby.find({ created: { $lte: moment().subtract(config_storage.get('purge_age_hrs'), "hours").toISOString() } });
         to_purge.forEach(ele => {
             // Delete lobby
             lobby_actions.delete_lobby(ele._id).then(() => {
-                console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted lobby created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));
+                if (!suppress_debug) console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted lobby created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));
             });
         });
     } catch (err) {

@@ -95,8 +95,7 @@ exports.export_cards = async function (lobby_details, game_pos, pack_name) {
             i--;
         }
     }
-    //
-    // Remove pack from array of packs (if it is there)
+    // Remove pack from array of packs
     let index = lobby_details.packs.indexOf(pack_name);
     if (index > -1) {
         lobby_details.packs.splice(index, 1);

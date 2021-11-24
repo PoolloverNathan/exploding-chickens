@@ -1,6 +1,6 @@
 # Exploding Chickens
 
-[![Build status](https://travis-ci.org/RAK3RMAN/exploding-chickens.svg?branch=main)](https://travis-ci.org/RAK3RMAN/exploding-chickens) ![Language](https://img.shields.io/badge/Language-Node.js-informational.svg?style=flat) ![License](https://img.shields.io/badge/License-MPL2.0-red.svg)
+[![Build status](https://travis-ci.com/RAK3RMAN/exploding-chickens.svg?branch=main)](https://travis-ci.com/RAK3RMAN/exploding-chickens) ![Language](https://img.shields.io/badge/Language-Node.js-informational.svg?style=flat) ![License](https://img.shields.io/badge/License-MPL2.0-red.svg)
 
 #### Play the game at [https://chickens.rakerman.com](https://chickens.rakerman.com)
 #### Give us anonymous feedback on [Typeform](https://7ojkgwi952s.typeform.com/to/qWPf6y4Z)

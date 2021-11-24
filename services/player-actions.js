@@ -97,11 +97,13 @@ exports.create_hand = async function (lobby_details, game_pos) {
         }
     }
     // Assign defuse card to player id in first position
+    let plyr_count = 0;
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
             let rand_defuse_pos = rand_bucket(defuse_bucket);
             lobby_details.games[game_pos].cards[rand_defuse_pos].assign = lobby_details.players[i]._id;
             lobby_details.games[game_pos].cards[rand_defuse_pos].pos = 0;
+            plyr_count++;
         }
     }
     // Add remaining defuse cards to card bucket
@@ -120,11 +122,16 @@ exports.create_hand = async function (lobby_details, game_pos) {
         }
     }
     // Assign exploding chickens to deck
-    for (let i = 0; i < lobby_details.players.length - 1; i++) {
+    let exp_assigned = 0;
+    for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
             // Randomly pick ec
             let rand_card_pos = rand_bucket(exploding_bucket);
             lobby_details.games[game_pos].cards[rand_card_pos].assign = "draw_deck";
+            // Increment amount of chickens assigned
+            exp_assigned++;
+            // Break if assignment is over one less than the number of players
+            if (exp_assigned >= plyr_count - 1) break;
         }
     }
     // Shuffle draw deck once we are done
