@@ -85,7 +85,7 @@ exports.partition_players = async function (lobby_details) {
         // Make sure player isn't disabled, isn't included as host if param set, and not already in an active game
         if (!lobby_details.players[i].is_disabled &&
             (lobby_details.players[i].is_host ? lobby_details.include_host : true) &&
-            lobby_details.players[i].game_assign === undefined) {
+            (lobby_details.in_progress ? lobby_details.players[i].game_assign === undefined : true)) {
             player_bucket.push(lobby_details.players[i]);
         }
     }
@@ -143,6 +143,7 @@ exports.partition_players = async function (lobby_details) {
                 // Found match, map assign and seat position
                 lobby_details.players[i].game_assign = game_candidates[j];
                 lobby_details.players[i].seat_pos = groups[j].indexOf(lobby_details.players[i]._id);
+                lobby_details.players[i].is_dead = false;
                 j = groups.length;
             }
         }

@@ -153,14 +153,14 @@ describe('Lobby deletion', function() {
 });
 
 // Name : test.simulation
-// Desc : simulates game play over 50 lobbies with a variable number of players over 3 rounds
+// Desc : simulates game play over 30 lobbies with a variable number of players over 3 rounds
 // Author(s) : RAk3rman
 describe('Simulation (final boss)', function() {
-    // Create 50 lobbies
-    for (let i = 1; i < 50; i++) {
+    // Create 29 lobbies
+    for (let i = 1; i < 30; i++) {
         simulate_lobby(i, i + 1, 3);
     }
-    simulate_lobby(50, 200, 3);
+    simulate_lobby(30, 200, 3);
 });
 
 // Name : test.simulate_lobby
@@ -239,7 +239,8 @@ function simulate_lobby(id, plyr_ctn, rounds) {
 // Author(s) : RAk3rman
 async function simulate_games(lobby_details) {
     for (let i = 0; i < lobby_details.games.length; i++) {
-        // Loop forever until we get a winner, will timeout if a player never wins
+        // Loop forever until we get a winner, will time out if a player never wins
+        let turn_ctn = 0;
         while (!await game_actions.is_winner(lobby_details, i)) {
             let player_id = await player_actions.get_turn_player_id(lobby_details, i);
             let card_details = await game_actions.draw_card(lobby_details, i, player_id);
@@ -248,7 +249,9 @@ async function simulate_games(lobby_details) {
                 await card_actions.kill_player(lobby_details, i, player_id);
                 await game_actions.advance_turn(lobby_details, i);
             }
+            turn_ctn++;
         }
+        assert.isAbove(turn_ctn, 2, 'ensure number of turns is greater than 2');
         assert.isTrue(await game_actions.is_winner(lobby_details, i), 'ensure we have a winner');
     }
 }
