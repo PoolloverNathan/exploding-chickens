@@ -38,28 +38,28 @@ exports.attack = async function (game_details) {
     });
 }
 
-// Name : card_actions.kill_player(game_details, player_id)
+// Name : card_actions.kill_player(game_details, plyr_id)
 // Desc : player exploded, removes player from game and frees cards
 // Author(s) : RAk3rman
-exports.kill_player = async function (lobby_details, game_pos, player_id) {
+exports.kill_player = async function (lobby_details, game_pos, plyr_id) {
     // Find player and update is_dead
-    lobby_details.players[await player_actions.get_player_pos(lobby_details, player_id)].is_dead = true;
+    lobby_details.players[await player_actions.get_player_pos(lobby_details, plyr_id)].is_dead = true;
     // Update all cards in player's hand to be "out of play"
     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
-        if (lobby_details.games[game_pos].cards[i].assign === player_id) {
+        if (lobby_details.games[game_pos].cards[i].assign === plyr_id) {
             lobby_details.games[game_pos].cards[i].assign = "out_of_play";
             lobby_details.games[game_pos].cards[i].placed_by_id = undefined;
         }
     }
 }
 
-// Name : card_actions.defuse(game_details, player_id, target, card_id)
+// Name : card_actions.defuse(game_details, plyr_id, target, card_id)
 // Desc : removes exploding chicken from hand and inserts randomly in deck
 // Author(s) : RAk3rman
-exports.defuse = async function (game_details, player_id, target, card_id) {
+exports.defuse = async function (game_details, plyr_id, target, card_id) {
     // Verify player is exploding
     for (let i = 0; i <= game_details.players.length - 1; i++) {
-        if (game_details.players[i]._id === player_id) {
+        if (game_details.players[i]._id === plyr_id) {
             if (game_details.players[i].status !== "exploding") {
                 return {trigger: "error", data: "You cannot play this card now"};
             }
@@ -82,17 +82,17 @@ exports.defuse = async function (game_details, player_id, target, card_id) {
     // Loop through each card to create array
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
         // Find chicken that is assigned to target player
-        if (game_details.cards[i].assignment === player_id && game_details.cards[i].action === "chicken") {
+        if (game_details.cards[i].assignment === plyr_id && game_details.cards[i].action === "chicken") {
             game_details.cards[i].assignment = "draw_deck";
             game_details.cards[i].position = ctn - target;
-            game_details.cards[i].placed_by_id = player_id;
+            game_details.cards[i].placed_by_id = plyr_id;
         } else if (game_details.cards[i].assignment === "draw_deck" && game_details.cards[i].position >= ctn - target) { // Increment the rest of the cards
             game_details.cards[i].position++;
         }
     }
     // Update player status
     for (let i = 0; i <= game_details.players.length - 1; i++) {
-        if (game_details.players[i]._id === player_id) {
+        if (game_details.players[i]._id === plyr_id) {
             game_details.players[i].status = "playing";
             i = game_details.players.length;
         }
@@ -111,12 +111,12 @@ exports.defuse = async function (game_details, player_id, target, card_id) {
     return true;
 }
 
-// Name : card_actions.verify_favor(game_details, player_id, target)
+// Name : card_actions.verify_favor(game_details, plyr_id, target)
 // Desc : verifies that the target player is able to give up a card
 // Author(s) : RAk3rman
-exports.verify_favor = async function (game_details, player_id, target) {
+exports.verify_favor = async function (game_details, plyr_id, target) {
     // Make sure the player isn't asking itself
-    if (player_id !== target) {
+    if (plyr_id !== target) {
         // See if one card is assigned to target player
         for (let i = 0; i <= game_details.cards.length - 1; i++) {
             if (game_details.cards[i].assignment === target) {
@@ -129,13 +129,13 @@ exports.verify_favor = async function (game_details, player_id, target) {
     }
 }
 
-// Name : card_actions.verify_double(game_details, card_details, player_id)
+// Name : card_actions.verify_double(game_details, card_details, plyr_id)
 // Desc : verifies that the current player has two of a kind, discards second card
 // Author(s) : RAk3rman
-exports.verify_double = async function (game_details, card_details, player_id, card_id) {
+exports.verify_double = async function (game_details, card_details, plyr_id, card_id) {
     // See if we have another card of the same action
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
-        if (game_details.cards[i].assignment === player_id && game_details.cards[i].action === card_details.action
+        if (game_details.cards[i].assignment === plyr_id && game_details.cards[i].action === card_details.action
         && game_details.cards[i]._id !== card_id) {
             return game_details.cards[i]._id;
         }
@@ -143,20 +143,20 @@ exports.verify_double = async function (game_details, card_details, player_id, c
     return false;
 }
 
-// Name : card_actions.ask_favor(game_details, player_id, target, used_gator, stats_storage)
+// Name : card_actions.ask_favor(game_details, plyr_id, target, used_gator, stats_storage)
 // Desc : takes a random card from target player's hand and places in current player's hand
 // Author(s) : RAk3rman
-exports.ask_favor = async function (game_details, player_id, target, used_gator, stats_storage) {
+exports.ask_favor = async function (game_details, plyr_id, target, used_gator, stats_storage) {
     // Get cards in target and current player's hand
     let target_hand = await card_actions.filter_cards(target, game_details.cards);
-    let current_hand = await card_actions.filter_cards(player_id, game_details.cards);
+    let current_hand = await card_actions.filter_cards(plyr_id, game_details.cards);
     // Check if target has favor gator
     for (let i = 0; i <= target_hand.length - 1; i++) {
         if (target_hand[i].action === "favorgator" && !used_gator) {
             await game_actions.discard_card(game_details, target_hand[i]._id);
-            await game_actions.log_event(game_details, "play-card", target_hand[i].action, target_hand[i]._id, (await player_actions.get_player_details(game_details, player_id)).nickname, (await player_actions.get_player_details(game_details, target)).nickname);
+            await game_actions.log_event(game_details, "play-card", target_hand[i].action, target_hand[i]._id, (await player_actions.get_player_details(game_details, plyr_id)).nickname, (await player_actions.get_player_details(game_details, target)).nickname);
             stats_storage.set('favor_gators', stats_storage.get('favor_gators') + 1);
-            return await card_actions.ask_favor(game_details, target, player_id, true);
+            return await card_actions.ask_favor(game_details, target, plyr_id, true);
         }
     }
     // Determine random card
@@ -164,7 +164,7 @@ exports.ask_favor = async function (game_details, player_id, target, used_gator,
     // Update card details
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
         if (game_details.cards[i]._id === target_hand[rand_pos]._id) {
-            game_details.cards[i].assignment = player_id;
+            game_details.cards[i].assignment = plyr_id;
             game_details.cards[i].position = current_hand.length;
             break;
         }
@@ -234,13 +234,13 @@ exports.reverse = async function (game_details) {
     });
 }
 
-// Name : card_actions.defuse(game_details, player_id)
+// Name : card_actions.defuse(game_details, plyr_id)
 // Desc : removes exploding chicken from hand and inserts into next players hand
 // Author(s) : RAk3rman
-exports.hot_potato = async function (game_details, player_id) {
+exports.hot_potato = async function (game_details, plyr_id) {
     // Verify player is exploding, update status
     for (let i = 0; i <= game_details.players.length - 1; i++) {
-        if (game_details.players[i]._id === player_id) {
+        if (game_details.players[i]._id === plyr_id) {
             if (game_details.players[i].status !== "exploding") {
                 return {trigger: "error", data: "You cannot play this card now"};
             } else {
@@ -254,19 +254,19 @@ exports.hot_potato = async function (game_details, player_id) {
     // Make sure the number of turns remaining is 1
     game_details.turns_remaining = 1;
     // Find next player and update status
-    let next_player_id = "";
+    let next_plyr_id = "";
     for (let i = 0; i <= game_details.players.length - 1; i++) {
         if (game_details.players[i].seat === game_details.seat_playing) {
             game_details.players[i].status = "exploding";
-            next_player_id = game_details.players[i]._id;
+            next_plyr_id = game_details.players[i]._id;
             break;
         }
     }
     // Assign chicken to next player
     let chicken_id = "";
     for (let i = 0; i <= game_details.cards.length - 1; i++) {
-        if (game_details.cards[i].assignment === player_id && game_details.cards[i].action === "chicken") {
-            game_details.cards[i].assignment = next_player_id;
+        if (game_details.cards[i].assignment === plyr_id && game_details.cards[i].action === "chicken") {
+            game_details.cards[i].assignment = next_plyr_id;
             chicken_id = game_details.cards[i]._id;
             break;
         }
@@ -285,7 +285,7 @@ exports.hot_potato = async function (game_details, player_id) {
     return {
         trigger: "success",
         data: {
-            next_player_id: next_player_id,
+            next_plyr_id: next_plyr_id,
             chicken_id: chicken_id
         }
     };
@@ -342,11 +342,11 @@ exports.scrambled_eggs = async function (game_details) {
 // Name : card_actions.safety_draw(game_details)
 // Desc : place the first card that is not an ec into a players hand, if all EC's, skip
 // Author(s) : RAk3rman
-exports.safety_draw = async function (game_details, player_id) {
+exports.safety_draw = async function (game_details, plyr_id) {
     // Filter draw deck
     let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
     // Filter player hand
-    let player_hand = await card_actions.filter_cards(player_id, game_details.cards);
+    let player_hand = await card_actions.filter_cards(plyr_id, game_details.cards);
     // Loop through draw_deck and find first non chicken
     let pos = draw_deck.length-1;
     for (let i = draw_deck.length-1; i >= 0; i--) {
@@ -355,7 +355,7 @@ exports.safety_draw = async function (game_details, player_id) {
             // Find card and update
             for (let j = 0; j <= game_details.cards.length - 1; j++) {
                 if (game_details.cards[j]._id === draw_deck[i]._id) {
-                    game_details.cards[j].assignment = player_id;
+                    game_details.cards[j].assignment = plyr_id;
                     game_details.cards[j].position = player_hand.length;
                     break;
                 }

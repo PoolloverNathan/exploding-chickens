@@ -20,7 +20,7 @@ function setup_session_check(lobby_details) {
         // Reset local storage and session player since game data doesn't exist
         lscache.set('ec_session_' + window.location.pathname.split('/')[2], JSON.stringify({
             lobby_slug: window.location.pathname.split('/')[2],
-            player_id: undefined
+            plyr_id: undefined
         }), 12);
         session_user = {
             _id: undefined,
@@ -30,7 +30,7 @@ function setup_session_check(lobby_details) {
         // Reset local storage and session player since slugs don't match
         lscache.set('ec_session_' + window.location.pathname.split('/')[2], JSON.stringify({
             lobby_slug: window.location.pathname.split('/')[2],
-            player_id: undefined
+            plyr_id: undefined
         }), 12);
         session_user = {
             _id: undefined,
@@ -40,12 +40,12 @@ function setup_session_check(lobby_details) {
         // Check to make sure that the player is valid
         for (let i = 0; i < lobby_details.players.length; i++) {
             // Check if individual player exists
-            if (lobby_details.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).player_id) {
+            if (lobby_details.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).plyr_id) {
                 if (session_user._id === undefined) {
                     // Tell server that a valid player connected
                     socket.emit('player-online', {
                         lobby_slug: window.location.pathname.split('/')[2],
-                        player_id: lobby_details.players[i]._id
+                        plyr_id: lobby_details.players[i]._id
                     })
                     // Replace url without auth_token
                     window.history.replaceState({}, document.title, "/lobby/" + window.location.pathname.split('/')[2]);
@@ -110,7 +110,7 @@ function setup_user_prompt(lobby_details, err, nickname) {
                     auth_token: auth_token === null ? document.getElementById("auth_token_swal").value : auth_token,
                     nickname: selected_nickname,
                     avatar: selected_avatar,
-                    player_id: "spectator"
+                    plyr_id: "spectator"
                 })
             }
         }

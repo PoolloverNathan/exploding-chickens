@@ -103,20 +103,21 @@ exports.export_cards = async function (lobby_details, game_pos, pack_name) {
     }
 }
 
-// Name : game_actions.draw_card(lobby_details, game_pos, player_id)
+// Name : game_actions.draw_card(lobby_details, game_pos, plyr_id)
 // Desc : draw a card from the draw deck and place at the end of a players hand
 // Author(s) : Vincent Do, RAk3rman
-exports.draw_card = async function (lobby_details, game_pos, player_id) {
+exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
     // Filter draw deck
     let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    if (draw_deck.length === 0) return undefined;
     // Filter player hand
-    let player_hand = await card_actions.filter_cards(player_id, lobby_details.games[game_pos].cards);
+    let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Determine position of drawn card
     let pos = draw_deck.length - 1;
     // Update card
     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === draw_deck[pos]._id) {
-            lobby_details.games[game_pos].cards[i].assign = player_id;
+            lobby_details.games[game_pos].cards[i].assign = plyr_id;
             lobby_details.games[game_pos].cards[i].pos = player_hand.length;
             break;
         }
@@ -126,13 +127,37 @@ exports.draw_card = async function (lobby_details, game_pos, player_id) {
     if (!halt_cards.includes(draw_deck[pos].action)) {
         await game_actions.advance_turn(lobby_details, game_pos);
     }
+    // Update event log and return card details
+    await event_actions.log_event(lobby_details.games[game_pos], "draw-card", plyr_id, undefined, draw_deck[pos], undefined);
     return draw_deck[pos];
 }
 
-// Name : game_actions.base_router(game_details, player_id, card_id, target, stats_storage, config_storage, bot, socket_id, fastify)
+// Name : game_actions.draw_card(lobby_details, game_pos, card_id, plyr_id)
+// Desc : calls the appropriate card function based on card action, returns structured callback to be sent to client
+// Author(s) : RAk3rman
+exports.play_card = async function (lobby_details, game_pos, card_id, plyr_id) {
+    // Find card details based on card_id
+    let card_details = await card_actions.find_card(card_id, lobby_details.games[game_pos].cards);
+    // Callback payload data structure
+    let payload = {
+        err:         undefined, // If an error is thrown, a string containing the error msg will be contained in this value
+        card_id:     undefined, // ID of the card being referenced
+        card_action: undefined, // Action of the card being referenced
+        incomplete:  false,     // Boolean if we received an incomplete request (still need favor target, waiting for defuse position)
+    };
+    // Loop through card actions and call corresponding function
+    if (card_details.action === "attack") { await card_actions.attack(); }
+    else if (card_details.action === "defuse") { await card_actions.defuse(); }
+    else { return }
+    // Reached end of successful card execution, update events and return payload
+    await event_actions.log_event(lobby_details.games[game_pos], "play-card", plyr_id, undefined, undefined, undefined);
+    return payload;
+}
+
+// Name : game_actions.base_router(game_details, plyr_id, card_id, target, stats_storage, config_storage, bot, socket_id, fastify)
 // Desc : base deck - calls the appropriate card function based on card action
 // Author(s) : RAk3rman
-// exports.base_router = async function (game_details, player_id, card_id, target, stats_storage, config_storage, bot, socket_id, fastify) {
+// exports.base_router = async function (game_details, plyr_id, card_id, target, stats_storage, config_storage, bot, socket_id, fastify) {
 //     // Find card details from id
 //     let card_details = await card_actions.find_card(card_id, game_details.cards);
 //     // Determine which function to run
@@ -142,7 +167,7 @@ exports.draw_card = async function (lobby_details, game_pos, player_id) {
 //         stats_storage.set('attacks', stats_storage.get('attacks') + 1);
 //         return {trigger: "attack", data: "true"};
 //     } else if (card_details.action === "defuse") {
-//         let defuse_stat = await card_actions.defuse(game_details, player_id, target, card_id);
+//         let defuse_stat = await card_actions.defuse(game_details, plyr_id, target, card_id);
 //         if (defuse_stat === true) {
 //             await game_actions.discard_card(game_details, card_id);
 //             await game_actions.advance_turn(game_details);
@@ -151,30 +176,30 @@ exports.draw_card = async function (lobby_details, game_pos, player_id) {
 //         } else {
 //             return defuse_stat;
 //         }
-//     } else if (card_details.action === "favor") { // Favor, expecting target player_id
-//         let v_favor = await card_actions.verify_favor(game_details, player_id, target);
+//     } else if (card_details.action === "favor") { // Favor, expecting target plyr_id
+//         let v_favor = await card_actions.verify_favor(game_details, plyr_id, target);
 //         if (v_favor === true) {
 //             await game_actions.discard_card(game_details, card_id);
-//             let favor_data = await card_actions.ask_favor(game_details, player_id, target, false, stats_storage);
+//             let favor_data = await card_actions.ask_favor(game_details, plyr_id, target, false, stats_storage);
 //             stats_storage.set('favors', stats_storage.get('favors') + 1);
 //             return {trigger: "favor_taken", data: {
-//                 target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
+//                 target_plyr_id: favor_data.used_gator ? plyr_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, plyr_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
 //             }};
 //         } else {
 //             return v_favor;
 //         }
 //     } else if (card_details.action === "randchick-1" || card_details.action === "randchick-2" ||
-//         card_details.action === "randchick-3" || card_details.action === "randchick-4") { // Favor, expecting target player_id
-//         let v_double = await card_actions.verify_double(game_details, card_details, player_id, card_id);
+//         card_details.action === "randchick-3" || card_details.action === "randchick-4") { // Favor, expecting target plyr_id
+//         let v_double = await card_actions.verify_double(game_details, card_details, plyr_id, card_id);
 //         if (v_double !== false) {
-//             let v_favor = await card_actions.verify_favor(game_details, player_id, target);
+//             let v_favor = await card_actions.verify_favor(game_details, plyr_id, target);
 //             if (v_favor === true) {
 //                 await game_actions.discard_card(game_details, v_double);
 //                 await game_actions.discard_card(game_details, card_id);
-//                 let favor_data = await card_actions.ask_favor(game_details, player_id, target, false, stats_storage);
+//                 let favor_data = await card_actions.ask_favor(game_details, plyr_id, target, false, stats_storage);
 //                 stats_storage.set('favors', stats_storage.get('favors') + 1);
 //                 return {trigger: "favor_taken", data: {
-//                     target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
+//                     target_plyr_id: favor_data.used_gator ? plyr_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, plyr_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
 //                 }};
 //             } else {
 //                 return v_favor;
@@ -203,23 +228,23 @@ exports.draw_card = async function (lobby_details, game_pos, player_id) {
 //         stats_storage.set('skips', stats_storage.get('skips') + 1);
 //         return {trigger: "skip", data: "true"};
 //     } else if (card_details.action === "hotpotato") {
-//         let hotpotato_stat = await card_actions.hot_potato(game_details, player_id);
+//         let hotpotato_stat = await card_actions.hot_potato(game_details, plyr_id);
 //         if (hotpotato_stat.trigger === "success") {
 //             await game_actions.discard_card(game_details, card_id);
 //             stats_storage.set('hot_potatoes', stats_storage.get('hot_potatoes') + 1);
-//             await game_actions.explode_tick(game_details.slug, 15, hotpotato_stat.data.next_player_id, hotpotato_stat.data.chicken_id, "public/cards/yolking_around/hotpotato-1.png", socket_id, fastify, config_storage, stats_storage, bot);
+//             await game_actions.explode_tick(game_details.slug, 15, hotpotato_stat.data.next_plyr_id, hotpotato_stat.data.chicken_id, "public/cards/yolking_around/hotpotato-1.png", socket_id, fastify, config_storage, stats_storage, bot);
 //             return {trigger: "hotpotato", data: {}};
 //         } else {
 //             return hotpotato_stat;
 //         }
 //     } else if (card_details.action === "favorgator") {
-//         let v_favor = await card_actions.verify_favor(game_details, player_id, target);
+//         let v_favor = await card_actions.verify_favor(game_details, plyr_id, target);
 //         if (v_favor === true) {
-//             let favor_data = await card_actions.ask_favor(game_details, player_id, target, false, stats_storage);
+//             let favor_data = await card_actions.ask_favor(game_details, plyr_id, target, false, stats_storage);
 //             await game_actions.discard_card(game_details, card_id);
 //             stats_storage.set('favors', stats_storage.get('favors') + 1);
 //             return {trigger: "favor_taken", data: {
-//                     target_player_id: favor_data.used_gator ? player_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, player_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
+//                     target_plyr_id: favor_data.used_gator ? plyr_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, plyr_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
 //                 }};
 //         } else {
 //             return v_favor;
@@ -238,7 +263,7 @@ exports.draw_card = async function (lobby_details, game_pos, player_id) {
 //         stats_storage.set('super_skips', stats_storage.get('super_skips') + 1);
 //         return {trigger: "superskip", data: "true"};
 //     } else if (card_details.action === "safetydraw") {
-//         await card_actions.safety_draw(game_details, player_id);
+//         await card_actions.safety_draw(game_details, plyr_id);
 //         await game_actions.discard_card(game_details, card_id);
 //         await game_actions.advance_turn(game_details);
 //         stats_storage.set('safety_draws', stats_storage.get('safety_draws') + 1);
@@ -246,10 +271,10 @@ exports.draw_card = async function (lobby_details, game_pos, player_id) {
 //     } else if (card_details.action === "drawbottom") {
 //         // Discard and draw card from draw deck and place in hand
 //         await game_actions.discard_card(game_details, card_id);
-//         let card_drawn = await game_actions.draw_card(game_details, player_id, "bottom");
+//         let card_drawn = await game_actions.draw_card(game_details, plyr_id, "bottom");
 //         // Check if card drawn in an ec
 //         if (card_drawn.action !== "chicken") await game_actions.advance_turn(game_details);
-//         if (card_drawn.action === "chicken") await game_actions.explode_tick(game_details.slug, 15, player_id, card_drawn._id, "public/cards/base/chicken.png", socket_id, fastify, config_storage, stats_storage, bot);
+//         if (card_drawn.action === "chicken") await game_actions.explode_tick(game_details.slug, 15, plyr_id, card_drawn._id, "public/cards/base/chicken.png", socket_id, fastify, config_storage, stats_storage, bot);
 //         stats_storage.set('draw_bottoms', stats_storage.get('draw_bottoms') + 1);
 //         return {trigger: "drawbottom", data: card_drawn};
 //     } else {
@@ -265,16 +290,16 @@ exports.draw_card = async function (lobby_details, game_pos, player_id) {
 //     // Find greatest position in discard deck
 //     let discard_deck = await card_actions.filter_cards("discard_deck", game_details.cards);
 //     // Update card details
-//     let player_id;
+//     let plyr_id;
 //     for (let i = 0; i <= game_details.cards.length - 1; i++) {
 //         if (game_details.cards[i]._id === card_id) {
-//             player_id = game_details.cards[i].assignment;
+//             plyr_id = game_details.cards[i].assignment;
 //             game_details.cards[i].assignment = "discard_deck";
 //             game_details.cards[i].position = discard_deck.length;
 //             break;
 //         }
 //     }
-//     await player_actions.sort_hand(game_details, player_id);
+//     await player_actions.sort_hand(game_details, plyr_id);
 //     // Create new promise for game save
 //     await new Promise((resolve, reject) => {
 //         //Save updated game
@@ -303,10 +328,10 @@ exports.advance_turn = async function (lobby_details, game_pos) {
     }
 }
 
-// Name : game_actions.explode_tick(slug, count, player_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot)
+// Name : game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot)
 // Desc : recursively count down when a player has an EC in their hand
 // Author(s) : RAk3rman
-exports.explode_tick = async function (slug, count, player_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) {
+exports.explode_tick = async function (slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) {
     // Get game details
     let game_details = await game_actions.game_details_slug(slug);
     // Check if placed_by is active
@@ -325,7 +350,7 @@ exports.explode_tick = async function (slug, count, player_id, card_id, card_url
     }
     // Make sure at least one player is exploding
     for (let i = 0; i < game_details.players.length; i++) {
-        if (game_details.players[i]._id === player_id && game_details.players[i].status === "exploding") {
+        if (game_details.players[i]._id === plyr_id && game_details.players[i].status === "exploding") {
             // Found player and is still exploding
             fastify.io.emit(slug + "-explode-tick", {
                 count: count,
@@ -336,23 +361,23 @@ exports.explode_tick = async function (slug, count, player_id, card_id, card_url
             if (count > -1) {
                 count--;
             } else {
-                await card_actions.kill_player(game_details, player_id);
+                await card_actions.kill_player(game_details, plyr_id);
                 await game_actions.discard_card(game_details, card_id);
                 game_details.turns_remaining = 0;
                 stats_storage.set('explosions', stats_storage.get('explosions') + 1);
                 if (await game_actions.is_winner(game_details, stats_storage, bot) === true) {
-                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} Game has ended, a player has won`));
+                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} Game has ended, a player has won`));
                     fastify.io.emit(slug + "-update", await game_actions.get_game_export(slug, "reset-game", "winner_callback"));
                 } else {
-                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(player_id)} ${chalk.dim.greenBright(card_id)} Hasta la vista baby, a player has exploded`));
+                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} ${chalk.dim.greenBright(card_id)} Hasta la vista baby, a player has exploded`));
                     await game_actions.advance_turn(game_details);
-                    await game_actions.log_event(game_details, "play-card", "chicken", card_id, (await player_actions.get_player_details(game_details, player_id)).nickname, "");
+                    await game_actions.log_event(game_details, "play-card", "chicken", card_id, (await player_actions.get_player_details(game_details, plyr_id)).nickname, "");
                     fastify.io.emit(slug + "-update", await game_actions.get_game_export(slug, "play-card", "explosion-callback"));
                 }
                 return;
             }
             // Call function again
-            setTimeout(function(){ game_actions.explode_tick(slug, count, player_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) }, 1000);
+            setTimeout(function(){ game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) }, 1000);
             return;
         }
     }
@@ -410,13 +435,13 @@ exports.is_winner = async function (lobby_details, game_pos) {
     //         console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.greenBright('game-won        ')} Sent game summary message`));
     //     }
     //     // Log event
-    //     await game_actions.log_event(game_details, "game-won", "", "", (await player_actions.get_player_details(game_details, player_id)).nickname, "");
+    //     await game_actions.log_event(game_details, "game-won", "", "", (await player_actions.get_player_details(game_details, plyr_id)).nickname, "");
     //     // Reset game
     //     await game_actions.reset_game(game_details, "idle", "in_lobby");
     //     // Create new promise to save game
     //     await new Promise((resolve, reject) => {
     //         game.findOneAndUpdate(
-    //             { slug: game_details.slug, "players._id": player_id },
+    //             { slug: game_details.slug, "players._id": plyr_id },
     //             {"$set": { "players.$.status": "winner" }, "$inc": { "players.$.wins": 1 }},
     //             function (err) {
     //                 if (err) {
@@ -451,10 +476,10 @@ exports.reset_game = async function (lobby_details, game_pos) {
     lobby_details.games[game_pos].created = Date.now();
 }
 
-// Name : game_actions.game_export(lobby_details, game_pos, source, req_player_id)
+// Name : game_actions.game_export(lobby_details, game_pos, source, req_plyr_id)
 // Desc : prepares game data for export to client
 // Author(s) : RAk3rman
-exports.game_export = async function (lobby_details, game_pos, source, req_player_id) {
+exports.game_export = async function (lobby_details, game_pos, source, req_plyr_id) {
     if (!lobby_details) return;
     // Reference to game details
     let game_details = lobby_details.games[game_pos];
@@ -501,11 +526,11 @@ exports.game_export = async function (lobby_details, game_pos, source, req_playe
         players: players_payload,
         events: events_payload,
         events_length: game_details.events.length,
-        auth_token: req_player_id !== "spectator" ? lobby_details.auth_token : "undefined",
+        auth_token: req_plyr_id !== "spectator" ? lobby_details.auth_token : "undefined",
         discard_deck: discard_deck,
         packs: lobby_details.packs,
         play_timeout: lobby_details.play_timeout,
-        req_player_id: req_player_id,
+        req_plyr_id: req_plyr_id,
         trigger: source.trim()
     }
 }

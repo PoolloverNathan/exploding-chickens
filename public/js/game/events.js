@@ -49,7 +49,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         // Update host designation in session_user
         for (let i = 0; i < data.players.length; i++) {
             // Check if individual player exists
-            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).player_id) {
+            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).plyr_id) {
                 // Update session_user _id and is_host
                 session_user = {
                     _id: data.players[i]._id,
@@ -123,7 +123,7 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
             });
         }
     } else if (data.trigger === "play-card") { // A card was played by a player
-        if (data.req_player_id !== session_user._id) {
+        if (data.req_plyr_id !== session_user._id) {
             itr_update_discard(data);
             itr_update_hand(data);
         }
@@ -163,7 +163,7 @@ socket.on(window.location.pathname.split('/')[4] + "-callback", function (data) 
         events_data = data.payload.game_details.events;
         events_length = data.payload.game_details.events_length;
         sbr_update_log();
-        if (session_user._id === data.payload.target_player_id) {
+        if (session_user._id === data.payload.target_plyr_id) {
             itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc, data.payload.used_gator);
         }
     }
@@ -215,7 +215,7 @@ socket.on("connect", function (data) {
     socket.emit('retrieve-game', {
         lobby_slug: window.location.pathname.split('/')[2],
         game_slug: window.location.pathname.split('/')[4],
-        player_id: "spectator"
+        plyr_id: "spectator"
     })
     // Update status dot
     document.getElementById("status_ping").innerHTML = "<span class=\"animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75\"></span>\n" +
@@ -254,7 +254,7 @@ function reset_game() {
     socket.emit('reset-game', {
         lobby_slug: window.location.pathname.split('/')[2],
         game_slug: window.location.pathname.split('/')[4],
-        player_id: session_user._id
+        plyr_id: session_user._id
     })
 }
 
@@ -264,7 +264,7 @@ function play_card(card_id, target) {
     socket.emit('play-card', {
         lobby_slug: window.location.pathname.split('/')[2],
         game_slug: window.location.pathname.split('/')[4],
-        player_id: session_user._id,
+        plyr_id: session_user._id,
         card_id: card_id,
         target: target
     })
@@ -276,7 +276,7 @@ function draw_card() {
     socket.emit('draw-card', {
         lobby_slug: window.location.pathname.split('/')[2],
         game_slug: window.location.pathname.split('/')[4],
-        player_id: session_user._id
+        plyr_id: session_user._id
     })
 }
 

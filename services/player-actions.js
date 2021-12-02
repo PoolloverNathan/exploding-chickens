@@ -23,46 +23,46 @@ const moment = require("moment");
 // Author(s) : RAk3rman
 exports.create_player = async function (lobby_details, nickname, avatar) {
     // Push new player into existing lobby, await game assignment
-    let player_id = nanoid(10);
+    let plyr_id = nanoid(10);
     lobby_details.players.push({
-        _id: player_id,
+        _id: plyr_id,
         nickname: nickname,
         avatar: avatar,
         is_host: lobby_details.players.length === 0
     });
-    return player_id;
+    return plyr_id;
 };
 
-// Name : player_actions.get_player_details(lobby_details, player_id)
+// Name : player_actions.get_player_details(lobby_details, plyr_id)
 // Desc : return the details for a target player
 // Author(s) : RAk3rman
-exports.get_player_details = async function (lobby_details, player_id) {
+exports.get_player_details = async function (lobby_details, plyr_id) {
     // Find player and return details
     for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.players[i]._id === player_id) {
+        if (lobby_details.players[i]._id === plyr_id) {
             return lobby_details.players[i];
         }
     }
     return null;
 }
 
-// Name : player_actions.get_player_pos(lobby_details, player_id)
+// Name : player_actions.get_player_pos(lobby_details, plyr_id)
 // Desc : return the details for a target player
 // Author(s) : RAk3rman
-exports.get_player_pos = async function (lobby_details, player_id) {
+exports.get_player_pos = async function (lobby_details, plyr_id) {
     // Find player and return details
     for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.players[i]._id === player_id) {
+        if (lobby_details.players[i]._id === plyr_id) {
             return i;
         }
     }
     return null;
 }
 
-// Name : player_actions.get_turn_player_id(lobby_details, game_pos)
-// Desc : return the player_id of the player who is currently playing
+// Name : player_actions.get_turn_plyr_id(lobby_details, game_pos)
+// Desc : return the plyr_id of the player who is currently playing
 // Author(s) : RAk3rman
-exports.get_turn_player_id = async function (lobby_details, game_pos) {
+exports.get_turn_plyr_id = async function (lobby_details, game_pos) {
     // Find player and return details
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign) && lobby_details.games[game_pos].turn_seat_pos === lobby_details.players[i].seat_pos) {
@@ -72,13 +72,13 @@ exports.get_turn_player_id = async function (lobby_details, game_pos) {
     return null;
 }
 
-// Name : player_actions.update_sockets_open(lobby_details, player_id, method)
+// Name : player_actions.update_sockets_open(lobby_details, plyr_id, method)
 // Desc : updates the connection for a target player
 // Author(s) : RAk3rman
-exports.update_sockets_open = async function (lobby_details, player_id, method) {
+exports.update_sockets_open = async function (lobby_details, plyr_id, method) {
     // Find player and return new socket total
     for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.players[i]._id === player_id) {
+        if (lobby_details.players[i]._id === plyr_id) {
             // Inc or dec
             if (method === "inc" && lobby_details.players[i].sockets_open >= 0) {
                 lobby_details.players[i].sockets_open += 1;
@@ -224,16 +224,16 @@ exports.disable_player = async function (lobby_details, player_pos) {
     lobby_details.players[player_pos].is_disabled = true;
 }
 
-// Name : player_actions.kick_player(lobby_details, host_player_id, kick_player_id)
+// Name : player_actions.kick_player(lobby_details, host_plyr_id, kick_plyr_id)
 // Desc : remove a player from the game
 // Author(s) : RAk3rman
-exports.kick_player = async function (lobby_details, host_player_id, kick_player_id) {
+exports.kick_player = async function (lobby_details, host_plyr_id, kick_plyr_id) {
     // Make sure they aren't kicking themselves
-    if (host_player_id === kick_player_id) {
+    if (host_plyr_id === kick_plyr_id) {
         return;
     }
     // Get kick position
-    let kick_player_pos = await player_actions.get_player_pos(lobby_details, kick_player_id);
+    let kick_player_pos = await player_actions.get_player_pos(lobby_details, kick_plyr_id);
     // Check if lobby is in progress (we can do this the easy way or the hard way)
     if (!lobby_details.in_progress) {
         // Disable and partition players
@@ -248,7 +248,7 @@ exports.kick_player = async function (lobby_details, host_player_id, kick_player
         // Check the status of the game they are in
         if (!lobby_details.games[game_pos].is_completed) {
             // Kill player and release cards
-            await card_actions.kill_player(lobby_details, game_pos, kick_player_id);
+            await card_actions.kill_player(lobby_details, game_pos, kick_plyr_id);
             // Advance turn if it was their turn
             if (lobby_details.players[kick_player_pos].seat_pos === lobby_details.games[game_pos].turn_seat_pos) {
                 await game_actions.advance_turn(lobby_details, game_pos);
@@ -282,34 +282,34 @@ exports.kick_player = async function (lobby_details, host_player_id, kick_player
     }
 }
 
-// Name : player_actions.make_host(lobby_details, curr_player_id, suc_player_id)
+// Name : player_actions.make_host(lobby_details, curr_plyr_id, suc_plyr_id)
 // Desc : make a new player the host
 // Author(s) : RAk3rman
-exports.make_host = async function (lobby_details, curr_player_id, suc_player_id) {
+exports.make_host = async function (lobby_details, curr_plyr_id, suc_plyr_id) {
     // Make sure they aren't making themselves a host
-    if (curr_player_id === suc_player_id) {
+    if (curr_plyr_id === suc_plyr_id) {
         return;
     }
     // Find both players and modify type
     for (let i = 0; i < lobby_details.players.length; i++) {
         // Check if the player id's match, update changes
-        if (lobby_details.players[i]._id === curr_player_id) {
+        if (lobby_details.players[i]._id === curr_plyr_id) {
             lobby_details.players[i].is_host = false;
-        } else if (lobby_details.players[i]._id === suc_player_id) {
+        } else if (lobby_details.players[i]._id === suc_plyr_id) {
             lobby_details.players[i].is_host = true;
         }
     }
 }
 
-// Name : player_actions.sort_hand(lobby_details, game_pos, player_id)
+// Name : player_actions.sort_hand(lobby_details, game_pos, plyr_id)
 // Desc : sort players hand, typically after a card is removed
 // Author(s) : RAk3rman
-exports.sort_hand = async function (lobby_details, game_pos, player_id) {
+exports.sort_hand = async function (lobby_details, game_pos, plyr_id) {
     // Get cards in player's hand
     let player_hand = [];
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         // If the card is assigned to this player, add to hand
-        if (lobby_details.games[game_pos].cards[i].assign === player_id) {
+        if (lobby_details.games[game_pos].cards[i].assign === plyr_id) {
             player_hand.push({
                 loc_pos: lobby_details.games[game_pos].cards[i].pos,
                 gbl_pos: i

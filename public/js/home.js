@@ -27,7 +27,7 @@ function check_lobby_slug() {
         if (passed_slug !== "" && /^[a-z-]+$/.test(passed_slug)) {
             socket.emit('check-lobby-slug', {
                 slug: passed_slug,
-                player_id: "spectator"
+                plyr_id: "spectator"
             });
         } else {
             document.getElementById("slug_input").className = "sm:h-14 h-12 w-80 pl-9 pr-8 rounded-xl text-lg z-0 bg-transparent text-gray-400 border-2 border-red-600 focus:outline-none";

@@ -230,10 +230,10 @@ exports.update_option = async function (lobby_details, option, value) {
     return false;
 }
 
-// Name : game_actions.lobby_export(lobby_details, source, req_player_id)
+// Name : game_actions.lobby_export(lobby_details, source, req_plyr_id)
 // Desc : prepares lobby data for export to client
 // Author(s) : RAk3rman
-exports.lobby_export = async function (lobby_details, source, req_player_id) {
+exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
     if (!lobby_details) return;
     // Prepare events payload
     let events_payload = [];
@@ -245,7 +245,7 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
     let games_completed = 0;
     for (let i = 0; i < lobby_details.games.length; i++) {
         if (!lobby_details.games[i].is_completed) {
-            games_payload.push(await game_actions.game_export(lobby_details, i, source, req_player_id));
+            games_payload.push(await game_actions.game_export(lobby_details, i, source, req_plyr_id));
         }
         if (lobby_details.games[i].is_completed) games_completed++;
     }
@@ -272,8 +272,8 @@ exports.lobby_export = async function (lobby_details, source, req_player_id) {
         packs: lobby_details.packs,
         events: events_payload,
         events_length: lobby_details.events.length,
-        auth_token: req_player_id !== "spectator" ? lobby_details.auth_token : "undefined",
-        req_player_id: req_player_id,
+        auth_token: req_plyr_id !== "spectator" ? lobby_details.auth_token : "undefined",
+        req_plyr_id: req_plyr_id,
         trigger: source.trim()
     }
 }

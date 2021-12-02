@@ -26,7 +26,7 @@ let player_actions = require('../services/player-actions.js');
 let rel_ids = require('../services/card-actions.js');
 let event_actions = require('../services/event-actions.js');
 const {uniqueNamesGenerator, adjectives, animals} = require("unique-names-generator");
-const {get_turn_player_id} = require("../services/player-actions");
+const {get_turn_plyr_id} = require("../services/player-actions");
 
 // Variables
 let lobby_id;
@@ -156,11 +156,11 @@ describe('Lobby deletion', function() {
 // Desc : simulates game play over 30 lobbies with a variable number of players over 3 rounds
 // Author(s) : RAk3rman
 describe('Simulation (final boss)', function() {
-    // Create 29 lobbies
-    for (let i = 1; i < 30; i++) {
+    // Create 25 lobbies
+    for (let i = 1; i < 25; i++) {
         simulate_lobby(i, i + 1, 3);
     }
-    simulate_lobby(30, 200, 3);
+    simulate_lobby(25, 100, 3);
 });
 
 // Name : test.simulate_lobby
@@ -184,7 +184,7 @@ function simulate_lobby(id, plyr_ctn, rounds) {
             it('choose room_size (' + room_size_choice + ')', async function() {
                 await lobby_actions.update_option(lobby_details, 'room_size', room_size_choice);
             });
-            let include_host_choice = Math.random() < 0.5;
+            let include_host_choice = (Math.random() < 0.5) && plyr_ctn > 2;
             it('choose include_host (' + !include_host_choice + ')', async function() {
                 if (include_host_choice) await lobby_actions.update_option(lobby_details, 'include_host', '');
             });
@@ -242,16 +242,16 @@ async function simulate_games(lobby_details) {
         // Loop forever until we get a winner, will time out if a player never wins
         let turn_ctn = 0;
         while (!await game_actions.is_winner(lobby_details, i)) {
-            let player_id = await player_actions.get_turn_player_id(lobby_details, i);
-            let card_details = await game_actions.draw_card(lobby_details, i, player_id);
+            let plyr_id = await player_actions.get_turn_plyr_id(lobby_details, i);
+            let card_details = await game_actions.draw_card(lobby_details, i, plyr_id);
             assert.exists(card_details, 'ensure drawn card exists');
             if (card_details.action === 'chicken') {
-                await card_actions.kill_player(lobby_details, i, player_id);
+                await card_actions.kill_player(lobby_details, i, plyr_id);
                 await game_actions.advance_turn(lobby_details, i);
             }
             turn_ctn++;
         }
-        assert.isAbove(turn_ctn, 2, 'ensure number of turns is greater than 2');
+        assert.isAbove(turn_ctn, 1, 'ensure number of turns is greater than 1');
         assert.isTrue(await game_actions.is_winner(lobby_details, i), 'ensure we have a winner');
     }
 }

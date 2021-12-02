@@ -14,7 +14,7 @@ function setup_session_check(game_details) {
         // Reset local storage and session player since game data doesn't exist
         lscache.set('ec_session_' + window.location.pathname.split('/')[2], JSON.stringify({
             lobby_slug: window.location.pathname.split('/')[2],
-            player_id: undefined
+            plyr_id: undefined
         }), 12);
         session_user = {
             _id: undefined,
@@ -24,7 +24,7 @@ function setup_session_check(game_details) {
         // Reset local storage and session player since slugs don't match
         lscache.set('ec_session_' + window.location.pathname.split('/')[2], JSON.stringify({
             lobby_slug: window.location.pathname.split('/')[2],
-            player_id: undefined
+            plyr_id: undefined
         }), 12);
         session_user = {
             _id: undefined,
@@ -34,12 +34,12 @@ function setup_session_check(game_details) {
         // Check to make sure that the player is valid
         for (let i = 0; i < game_details.players.length; i++) {
             // Check if individual player exists
-            if (game_details.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).player_id) {
+            if (game_details.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).plyr_id) {
                 if (session_user._id === undefined) {
                     // Tell server that a valid player connected
                     socket.emit('player-online', {
                         lobby_slug: window.location.pathname.split('/')[2],
-                        player_id: game_details.players[i]._id
+                        plyr_id: game_details.players[i]._id
                     })
                 }
                 // Update session_user _id and is_host
