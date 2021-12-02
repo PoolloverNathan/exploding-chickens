@@ -326,7 +326,23 @@ exports.sort_hand = async function (lobby_details, game_pos, plyr_id) {
     }
 }
 
-// Name : game_actions.player_export(lobby_details, player_pos)
+// Name : player_actions.is_exploding(plyr_card_array)
+// Desc : returns if a player is exploding
+// Author(s) : RAk3rman
+exports.is_exploding = async function (plyr_card_array) {
+    let is_exploding = false;
+    // Check if the player is exploding
+    plyr_card_array.every(card => {
+        if (card.action === "chicken") {
+            is_exploding = true;
+            return false;
+        }
+        return true;
+    });
+    return is_exploding;
+}
+
+// Name : player_actions.player_export(lobby_details, player_pos)
 // Desc : prepares player data for export to client
 // Author(s) : RAk3rman
 exports.player_export = async function (lobby_details, player_pos) {
@@ -350,13 +366,7 @@ exports.player_export = async function (lobby_details, player_pos) {
             return b.pos - a.pos;
         });
         // Check if the player is exploding
-        card_array.every(card => {
-            if (card.action === "chicken") {
-                is_exploding = true;
-                return false;
-            }
-            return true;
-        });
+        is_exploding = await player_actions.is_exploding(card_array);
     }
     // Return pretty player details
     return {

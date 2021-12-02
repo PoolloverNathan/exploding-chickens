@@ -132,26 +132,42 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
     return draw_deck[pos];
 }
 
-// Name : game_actions.draw_card(lobby_details, game_pos, card_id, plyr_id)
+// Name : game_actions.draw_card(lobby_details, game_pos, card_id, req_plyr_id, target_player_id)
 // Desc : calls the appropriate card function based on card action, returns structured callback to be sent to client
 // Author(s) : RAk3rman
-exports.play_card = async function (lobby_details, game_pos, card_id, plyr_id) {
+exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_id, target) {
     // Find card details based on card_id
     let card_details = await card_actions.find_card(card_id, lobby_details.games[game_pos].cards);
     // Callback payload data structure
-    let payload = {
-        err:         undefined, // If an error is thrown, a string containing the error msg will be contained in this value
-        card_id:     undefined, // ID of the card being referenced
-        card_action: undefined, // Action of the card being referenced
-        incomplete:  false,     // Boolean if we received an incomplete request (still need favor target, waiting for defuse position)
+    let callback = {
+        err:         undefined,           // If an error is thrown, a string containing the error msg will be contained in this value
+        card_id:     card_details._id,    // ID of the card being referenced
+        card_action: card_details.action, // Action of the card being referenced
+        data:        undefined,           // Optional data sent after a card action is complete (see the future cards, defuse positions, etc...)
+        incomplete:  false                // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
     };
-    // Loop through card actions and call corresponding function
-    if (card_details.action === "attack") { await card_actions.attack(); }
-    else if (card_details.action === "defuse") { await card_actions.defuse(); }
-    else { return }
-    // Reached end of successful card execution, update events and return payload
-    await event_actions.log_event(lobby_details.games[game_pos], "play-card", plyr_id, undefined, undefined, undefined);
-    return payload;
+    // Loop through card actions and call corresponding function, callback modified within card_actions by reference
+    if (card_details.action.includes("attack"))             { await card_actions.attack(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action.includes("defuse"))        { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
+    // else if (card_details.action.includes("favor"))         {  }
+    // else if (card_details.action.includes("randchick"))     {  }
+    // else if (card_details.action.includes("reverse"))       {  }
+    // else if (card_details.action.includes("seethefuture"))  {  }
+    // else if (card_details.action.includes("shuffle"))       {  }
+    // else if (card_details.action.includes("skip"))          {  }
+    // else if (card_details.action.includes("hotpotato"))     {  }
+    // else if (card_details.action.includes("favorgator"))    {  }
+    // else if (card_details.action.includes("scrambledeggs")) {  }
+    // else if (card_details.action.includes("superskip"))     {  }
+    // else if (card_details.action.includes("safetydraw"))    {  }
+    // else if (card_details.action.includes("drawbottom"))    {  }
+    else { callback.err = "Invalid card action"; }
+    // Check if callback was successful (complete request and no errors)
+    if (!callback.incomplete && !callback.err) {
+        // Reached end of successful card execution, update events
+        await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target, card_details._id, undefined);
+    }
+    return callback;
 }
 
 // Name : game_actions.base_router(game_details, plyr_id, card_id, target, stats_storage, config_storage, bot, socket_id, fastify)
@@ -282,36 +298,26 @@ exports.play_card = async function (lobby_details, game_pos, card_id, plyr_id) {
 //         return {trigger: "error", data: "Invalid card"};
 //     }
 // }
-//
-// // Name : game_actions.discard_card(game_details, card_id)
-// // Desc : put a card in discard deck
-// // Author(s) : RAk3rman
-// exports.discard_card = async function (game_details, card_id) {
-//     // Find greatest position in discard deck
-//     let discard_deck = await card_actions.filter_cards("discard_deck", game_details.cards);
-//     // Update card details
-//     let plyr_id;
-//     for (let i = 0; i <= game_details.cards.length - 1; i++) {
-//         if (game_details.cards[i]._id === card_id) {
-//             plyr_id = game_details.cards[i].assignment;
-//             game_details.cards[i].assignment = "discard_deck";
-//             game_details.cards[i].position = discard_deck.length;
-//             break;
-//         }
-//     }
-//     await player_actions.sort_hand(game_details, plyr_id);
-//     // Create new promise for game save
-//     await new Promise((resolve, reject) => {
-//         //Save updated game
-//         game_details.save({}, function (err) {
-//             if (err) {
-//                 reject(err);
-//             } else {
-//                 resolve();
-//             }
-//         });
-//     });
-// }
+
+// Name : game_actions.discard_card(lobby_details, game_pos, card_id)
+// Desc : put a card in discard deck
+// Author(s) : RAk3rman
+exports.discard_card = async function (lobby_details, game_pos, card_id) {
+    // Find the greatest position in discard deck
+    let discard_deck = await card_actions.filter_cards("discard_deck", lobby_details.games[game_pos].cards);
+    // Update card details
+    let plyr_id;
+    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+        if (lobby_details.games[game_pos].cards[i]._id === card_id) {
+            plyr_id = lobby_details.games[game_pos].cards[i].assign;
+            lobby_details.games[game_pos].cards[i].assign = "discard_deck";
+            lobby_details.games[game_pos].cards[i].pos = discard_deck.length;
+            break;
+        }
+    }
+    // Resort player hand
+    await player_actions.sort_hand(lobby_details, game_pos, plyr_id);
+}
 
 // Name : game_actions.advance_turn(lobby_details, game_pos)
 // Desc : advance to the next turn
