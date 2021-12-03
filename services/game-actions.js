@@ -22,8 +22,7 @@ let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
-const {nanoid} = require("nanoid");
-const {advance_turn} = require("./game-actions");
+const { nanoid } = require("nanoid");
 
 // Name : game_actions.create_game(lobby_details)
 // Desc : creates a new game
@@ -88,7 +87,7 @@ exports.import_cards = async function (lobby_details, game_pos, pack_name) {
 // Desc : bulk export cards
 // Author(s) : RAk3rman
 exports.export_cards = async function (lobby_details, game_pos, pack_name) {
-    // Loop through all cards and remove if apart of pack
+    // Loop through all cards and remove if a part of pack
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i].pack === pack_name) {
             // Remove card
@@ -109,7 +108,6 @@ exports.export_cards = async function (lobby_details, game_pos, pack_name) {
 exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
     // Filter draw deck
     let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
-    if (draw_deck.length === 0) return undefined;
     // Filter player hand
     let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Determine position of drawn card
@@ -147,6 +145,7 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
         incomplete:  false                // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
     };
     // Loop through card actions and call corresponding function, callback modified within card_actions by reference
+    // BASE DECK
     if (card_details.action.includes("attack"))             { await card_actions.attack(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("defuse"))        { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
     // else if (card_details.action.includes("favor"))         {  }
@@ -155,12 +154,13 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     // else if (card_details.action.includes("seethefuture"))  {  }
     // else if (card_details.action.includes("shuffle"))       {  }
     // else if (card_details.action.includes("skip"))          {  }
+    // YOLKING AROUND EXPANSION PACK
     // else if (card_details.action.includes("hotpotato"))     {  }
     // else if (card_details.action.includes("favorgator"))    {  }
-    // else if (card_details.action.includes("scrambledeggs")) {  }
-    // else if (card_details.action.includes("superskip"))     {  }
-    // else if (card_details.action.includes("safetydraw"))    {  }
-    // else if (card_details.action.includes("drawbottom"))    {  }
+    // else if (card_details.action.includes("scrambledeggs")) { await card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action.includes("superskip"))     { await card_actions.super_skip(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action.includes("safetydraw"))    { await card_actions.safety_draw(lobby_details, game_pos, card_id, req_plyr_id, callback) }
+    else if (card_details.action.includes("drawbottom"))    { await card_actions.draw_bottom(lobby_details, game_pos, card_id, req_plyr_id, callback) }
     else { callback.err = "Invalid card action"; }
     // Check if callback was successful (complete request and no errors)
     if (!callback.incomplete && !callback.err) {
@@ -334,60 +334,60 @@ exports.advance_turn = async function (lobby_details, game_pos) {
     }
 }
 
-// Name : game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot)
-// Desc : recursively count down when a player has an EC in their hand
-// Author(s) : RAk3rman
-exports.explode_tick = async function (slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) {
-    // Get game details
-    let game_details = await game_actions.game_details_slug(slug);
-    // Check if placed_by is active
-    let placed_by_name = "";
-    for (let i = 0; i < game_details.cards.length; i++) {
-        if (game_details.cards[i].placed_by_id !== "" && game_details.cards[i].assignment !== "out_of_play") {
-            // Go through players and find nickname
-            for (let j = 0; j < game_details.players.length; j++) {
-                if (game_details.cards[i].placed_by_id === game_details.players[j]._id) {
-                    placed_by_name = game_details.players[j].nickname;
-                    break;
-                }
-            }
-            break;
-        }
-    }
-    // Make sure at least one player is exploding
-    for (let i = 0; i < game_details.players.length; i++) {
-        if (game_details.players[i]._id === plyr_id && game_details.players[i].status === "exploding") {
-            // Found player and is still exploding
-            fastify.io.emit(slug + "-explode-tick", {
-                count: count,
-                placed_by_name: placed_by_name,
-                card_url: card_url
-            });
-            // Decrement count or force chicken to play
-            if (count > -1) {
-                count--;
-            } else {
-                await card_actions.kill_player(game_details, plyr_id);
-                await game_actions.discard_card(game_details, card_id);
-                game_details.turns_remaining = 0;
-                stats_storage.set('explosions', stats_storage.get('explosions') + 1);
-                if (await game_actions.is_winner(game_details, stats_storage, bot) === true) {
-                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} Game has ended, a player has won`));
-                    fastify.io.emit(slug + "-update", await game_actions.get_game_export(slug, "reset-game", "winner_callback"));
-                } else {
-                    console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} ${chalk.dim.greenBright(card_id)} Hasta la vista baby, a player has exploded`));
-                    await game_actions.advance_turn(game_details);
-                    await game_actions.log_event(game_details, "play-card", "chicken", card_id, (await player_actions.get_player_details(game_details, plyr_id)).nickname, "");
-                    fastify.io.emit(slug + "-update", await game_actions.get_game_export(slug, "play-card", "explosion-callback"));
-                }
-                return;
-            }
-            // Call function again
-            setTimeout(function(){ game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) }, 1000);
-            return;
-        }
-    }
-}
+// // Name : game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot)
+// // Desc : recursively count down when a player has an EC in their hand
+// // Author(s) : RAk3rman
+// exports.explode_tick = async function (slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) {
+//     // Get game details
+//     let game_details = await game_actions.game_details_slug(slug);
+//     // Check if placed_by is active
+//     let placed_by_name = "";
+//     for (let i = 0; i < game_details.cards.length; i++) {
+//         if (game_details.cards[i].placed_by_id !== "" && game_details.cards[i].assignment !== "out_of_play") {
+//             // Go through players and find nickname
+//             for (let j = 0; j < game_details.players.length; j++) {
+//                 if (game_details.cards[i].placed_by_id === game_details.players[j]._id) {
+//                     placed_by_name = game_details.players[j].nickname;
+//                     break;
+//                 }
+//             }
+//             break;
+//         }
+//     }
+//     // Make sure at least one player is exploding
+//     for (let i = 0; i < game_details.players.length; i++) {
+//         if (game_details.players[i]._id === plyr_id && game_details.players[i].status === "exploding") {
+//             // Found player and is still exploding
+//             fastify.io.emit(slug + "-explode-tick", {
+//                 count: count,
+//                 placed_by_name: placed_by_name,
+//                 card_url: card_url
+//             });
+//             // Decrement count or force chicken to play
+//             if (count > -1) {
+//                 count--;
+//             } else {
+//                 await card_actions.kill_player(game_details, plyr_id);
+//                 await game_actions.discard_card(game_details, card_id);
+//                 game_details.turns_remaining = 0;
+//                 stats_storage.set('explosions', stats_storage.get('explosions') + 1);
+//                 if (await game_actions.is_winner(game_details, stats_storage, bot) === true) {
+//                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} Game has ended, a player has won`));
+//                     fastify.io.emit(slug + "-update", await game_actions.get_game_export(slug, "reset-game", "winner_callback"));
+//                 } else {
+//                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} ${chalk.dim.greenBright(card_id)} Hasta la vista baby, a player has exploded`));
+//                     await game_actions.advance_turn(game_details);
+//                     await game_actions.log_event(game_details, "play-card", "chicken", card_id, (await player_actions.get_player_details(game_details, plyr_id)).nickname, "");
+//                     fastify.io.emit(slug + "-update", await game_actions.get_game_export(slug, "play-card", "explosion-callback"));
+//                 }
+//                 return;
+//             }
+//             // Call function again
+//             setTimeout(function(){ game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) }, 1000);
+//             return;
+//         }
+//     }
+// }
 
 // Name : game_actions.is_winner(game_details, stats_storage, bot)
 // Desc : check to see if there is a winner
@@ -465,7 +465,7 @@ exports.is_winner = async function (lobby_details, game_pos) {
 
 // Name : game_actions.reset_game(lobby_details, game_pos)
 // Desc : resets the game to default
-// Author(s) : Vincent Do, RAk3rman
+// Author(s) : RAk3rman
 exports.reset_game = async function (lobby_details, game_pos) {
     // Reset cards
     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
@@ -542,7 +542,7 @@ exports.game_export = async function (lobby_details, game_pos, source, req_plyr_
 }
 
 // Name : game_actions.delete_game(game_id)
-// Desc : deletes a existing game in mongodb, returns game_id
+// Desc : deletes an existing game in mongodb, returns game_id
 // Author(s) : RAk3rman
 exports.delete_game = async function (lobby_details, game_id) {
     for (let i = 0; i < lobby_details.games.length; i++) {

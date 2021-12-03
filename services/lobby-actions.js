@@ -279,7 +279,7 @@ exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
 }
 
 // Name : game_actions.delete_lobby(_id)
-// Desc : deletes a existing lobby in mongodb
+// Desc : deletes an existing lobby in mongodb
 // Author(s) : RAk3rman
 exports.delete_lobby = async function (_id) {
     // Delete lobby and return
