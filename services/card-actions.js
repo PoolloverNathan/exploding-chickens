@@ -137,6 +137,41 @@ exports.defuse = async function (lobby_details, game_pos, card_id, plyr_id, targ
 //     };
 // }
 
+// Name : card_actions.reverse(lobby_details, game_pos, card_id, callback)
+// Desc : reverse the current player order
+// Author(s) : RAk3rman
+exports.reverse = async function (lobby_details, game_pos, card_id, callback) {
+    // Switch to forwards or backwards
+    if (lobby_details.games[game_pos].turn_dir === "forward") {
+        lobby_details.games[game_pos].turn_dir = "backward";
+    } else if (lobby_details.games[game_pos].turn_dir === "backward") {
+        lobby_details.games[game_pos].turn_dir = "forward";
+    }
+    // Discard card
+    await game_actions.discard_card(lobby_details, game_pos, card_id);
+}
+
+// Name : card_actions.seethefuture(lobby_details, game_pos, card_id, callback)
+// Desc : return the next 3 cards in the draw deck through the callback
+// Author(s) : RAk3rman
+exports.seethefuture = async function (lobby_details, game_pos, card_id, callback) {
+    // Get the top three cards and add to callback.data
+    let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    callback.data = draw_deck.slice(Math.max(draw_deck.length - 3, 0));
+    // Discard card
+    await game_actions.discard_card(lobby_details, game_pos, card_id);
+}
+
+// Name : card_actions.shuffle(lobby_details, game_pos, card_id, callback)
+// Desc : call shuffle function and discard card
+// Author(s) : RAk3rman
+exports.shuffle = async function (lobby_details, game_pos, card_id, callback) {
+    // Call helper function
+    await shuffle_draw_deck(lobby_details, game_pos);
+    // Discard card
+    await game_actions.discard_card(lobby_details, game_pos, card_id);
+}
+
 // Name : card_actions.shuffle_draw_deck(lobby_details, game_pos)
 // Desc : shuffles the positions of all cards in the draw deck
 // Author(s) : RAk3rman
@@ -161,29 +196,15 @@ exports.shuffle_draw_deck = async function (lobby_details, game_pos) {
     }
 }
 
-// // Name : card_actions.reverse(lobby_details.games[game_pos])
-// // Desc : reverse the current player order
-// // Author(s) : RAk3rman
-// exports.reverse = async function (lobby_details.games[game_pos]) {
-//     // Switch to forwards or backwards
-//     if (lobby_details.games[game_pos].turn_direction === "forward") {
-//         lobby_details.games[game_pos].turn_direction = "backward";
-//     } else if (lobby_details.games[game_pos].turn_direction === "backward") {
-//         lobby_details.games[game_pos].turn_direction = "forward";
-//     }
-//     // Create new promise for game save
-//     await new Promise((resolve, reject) => {
-//         //Save updated game
-//         lobby_details.games[game_pos].save({}, function (err) {
-//             if (err) {
-//                 reject(err);
-//             } else {
-//                 resolve();
-//             }
-//         });
-//     });
-// }
-//
+// Name : card_actions.skip(lobby_details, game_pos, card_id, callback)
+// Desc : advance turn by one and discard card
+// Author(s) : RAk3rman
+exports.skip = async function (lobby_details, game_pos, card_id, callback) {
+    // Discard card and advance turn
+    await game_actions.discard_card(lobby_details, game_pos, card_id);
+    await game_actions.advance_turn(lobby_details, game_pos);
+}
+
 // // Name : card_actions.defuse(lobby_details.games[game_pos], plyr_id)
 // // Desc : removes exploding chicken from hand and inserts into next players hand
 // // Author(s) : RAk3rman
@@ -240,47 +261,47 @@ exports.shuffle_draw_deck = async function (lobby_details, game_pos) {
 //         }
 //     };
 // }
-//
-// // Name : card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback)
-// // Desc : put everyone's cards into a pool and re-deal deck
-// // Author(s) : RAk3rman
-// exports.scrambled_eggs = async function (lobby_details, game_pos, card_id, callback) {
-//     // Loop through each card to create array
-//     let bucket = [];
-//     let cards_in_deck = 0;
-//     let possible_assign = ["draw_deck", "out_of_play", "discard_deck"];
-//     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
-//         // Get all cards assigned to players
-//         if (!possible_assign.includes(lobby_details.games[game_pos].cards[i].assign)) {
-//             bucket.push(lobby_details.games[game_pos].cards[i]._id);
-//             cards_in_deck++;
-//         }
-//     }
-//     // Loop though each player and get # of cards
-//     let player_card_ctn = [];
-//     for (let i = 0; i < lobby_details.players.length; i++) {
-//         if (lobby_details.players[i].game_assign?.equals(lobby_details.games[game_pos]._id)) {
-//             let cards = await card_actions.filter_cards(lobby_details.games[game_pos].players[i]._id, lobby_details.games[game_pos].cards);
-//             player_card_ctn[i] = cards.length;
-//         }
-//     }
-//     // Loop though each player again and re-assign cards
-//     for (let i = 0; i < lobby_details.players.length; i++) {
-//         for (let j = 0; j < player_card_ctn[i]; j++) {
-//             let selected_card_id = rand_bucket(bucket);
-//             // Find card and update assignment
-//             for (let k = 0; k < lobby_details.games[game_pos].cards.length; k++) {
-//                 if (lobby_details.games[game_pos].cards[k]._id === selected_card_id) {
-//                     lobby_details.games[game_pos].cards[k].assign = lobby_details.games[game_pos].players[i]._id;
-//                     lobby_details.games[game_pos].cards[k].pos = j;
-//                     break;
-//                 }
-//             }
-//         }
-//     }
-//     // Discard card
-//     await game_actions.discard_card(lobby_details, game_pos, card_id);
-// }
+
+// Name : card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback)
+// Desc : put everyone's cards into a pool and re-deal deck
+// Author(s) : RAk3rman
+exports.scrambled_eggs = async function (lobby_details, game_pos, card_id, callback) {
+    // Loop through each card to create array
+    let bucket = [];
+    let cards_in_deck = 0;
+    let possible_assign = ["draw_deck", "out_of_play", "discard_deck"];
+    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+        // Get all cards assigned to players
+        if (!possible_assign.includes(lobby_details.games[game_pos].cards[i].assign)) {
+            bucket.push(lobby_details.games[game_pos].cards[i]._id);
+            cards_in_deck++;
+        }
+    }
+    // Loop though each player and get # of cards
+    let player_card_ctn = [];
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.players[i].game_assign?.equals(lobby_details.games[game_pos]._id)) {
+            let cards = await card_actions.filter_cards(lobby_details.games[game_pos].players[i]._id, lobby_details.games[game_pos].cards);
+            player_card_ctn[i] = cards.length;
+        }
+    }
+    // Loop though each player again and re-assign cards
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        for (let j = 0; j < player_card_ctn[i]; j++) {
+            let selected_card_id = rand_bucket(bucket);
+            // Find card and update assignment
+            for (let k = 0; k < lobby_details.games[game_pos].cards.length; k++) {
+                if (lobby_details.games[game_pos].cards[k]._id === selected_card_id) {
+                    lobby_details.games[game_pos].cards[k].assign = lobby_details.games[game_pos].players[i]._id;
+                    lobby_details.games[game_pos].cards[k].pos = j;
+                    break;
+                }
+            }
+        }
+    }
+    // Discard card
+    await game_actions.discard_card(lobby_details, game_pos, card_id);
+}
 
 // Name : card_actions.super_skip(lobby_details, game_pos, card_id, callback)
 // Desc : offload number of turns onto next player in turn order

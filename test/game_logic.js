@@ -239,8 +239,8 @@ function simulate_lobby(id, plyr_ctn, rounds) {
 // Author(s) : RAk3rman
 async function simulate_games(lobby_details) {
     for (let i = 0; i < lobby_details.games.length; i++) {
-        // Loop forever until we get a winner, will time out if a player never wins
         let turn_ctn = 0;
+        // Loop forever until we get a winner, will time out if a player never wins
         while (!await game_actions.is_winner(lobby_details, i)) {
             let plyr_id = await player_actions.get_turn_plyr_id(lobby_details, i);
             let card_details = await game_actions.draw_card(lobby_details, i, plyr_id);

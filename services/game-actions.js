@@ -138,10 +138,10 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     let card_details = await card_actions.find_card(card_id, lobby_details.games[game_pos].cards);
     // Callback payload data structure
     let callback = {
-        err:         undefined,           // If an error is thrown, a string containing the error msg will be contained in this value
+        err:         undefined,            // If an error is thrown, a string containing the error msg will be contained in this value
         card_id:     card_details._id,    // ID of the card being referenced
         card_action: card_details.action, // Action of the card being referenced
-        data:        undefined,           // Optional data sent after a card action is complete (see the future cards, defuse positions, etc...)
+        data:        undefined,            // Optional data sent after a card action is complete (see the future cards, defuse positions, etc...)
         incomplete:  false                // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
     };
     // Loop through card actions and call corresponding function, callback modified within card_actions by reference
@@ -150,10 +150,10 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     else if (card_details.action.includes("defuse"))        { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
     // else if (card_details.action.includes("favor"))         {  }
     // else if (card_details.action.includes("randchick"))     {  }
-    // else if (card_details.action.includes("reverse"))       {  }
-    // else if (card_details.action.includes("seethefuture"))  {  }
-    // else if (card_details.action.includes("shuffle"))       {  }
-    // else if (card_details.action.includes("skip"))          {  }
+    else if (card_details.action.includes("reverse"))       { await card_actions.reverse(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action.includes("seethefuture"))  { await card_actions.seethefuture(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action.includes("shuffle"))        { await card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action.includes("skip"))          { await card_actions.skip(lobby_details, game_pos, card_id, callback); }
     // YOLKING AROUND EXPANSION PACK
     // else if (card_details.action.includes("hotpotato"))     {  }
     // else if (card_details.action.includes("favorgator"))    {  }
