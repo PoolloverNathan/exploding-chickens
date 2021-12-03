@@ -59,6 +59,8 @@ exports.defuse = async function (lobby_details, game_pos, card_id, plyr_id, targ
     // Discard card and advance turn
     await game_actions.discard_card(lobby_details, game_pos, card_id);
     await game_actions.advance_turn(lobby_details, game_pos);
+    // Update target by ref for event logging in play_card
+    target = undefined;
 }
 
 // // Name : card_actions.verify_favor(lobby_details.games[game_pos], plyr_id, target)
@@ -205,62 +207,25 @@ exports.skip = async function (lobby_details, game_pos, card_id, callback) {
     await game_actions.advance_turn(lobby_details, game_pos);
 }
 
-// // Name : card_actions.defuse(lobby_details.games[game_pos], plyr_id)
-// // Desc : removes exploding chicken from hand and inserts into next players hand
-// // Author(s) : RAk3rman
-// exports.hot_potato = async function (lobby_details.games[game_pos], plyr_id) {
-//     // Verify player is exploding, update status
-//     for (let i = 0; i <= lobby_details.games[game_pos].players.length - 1; i++) {
-//         if (lobby_details.games[game_pos].players[i]._id === plyr_id) {
-//             if (lobby_details.games[game_pos].players[i].status !== "exploding") {
-//                 return {trigger: "error", data: "You cannot play this card now"};
-//             } else {
-//                 lobby_details.games[game_pos].players[i].status = "playing";
-//             }
-//             break;
-//         }
-//     }
-//     // Advance to the next seat
-//     lobby_details.games[game_pos].seat_playing = await player_actions.next_seat(lobby_details.games[game_pos]);
-//     // Make sure the number of turns remaining is 1
-//     lobby_details.games[game_pos].turns_remaining = 1;
-//     // Find next player and update status
-//     let next_plyr_id = "";
-//     for (let i = 0; i <= lobby_details.games[game_pos].players.length - 1; i++) {
-//         if (lobby_details.games[game_pos].players[i].seat === lobby_details.games[game_pos].seat_playing) {
-//             lobby_details.games[game_pos].players[i].status = "exploding";
-//             next_plyr_id = lobby_details.games[game_pos].players[i]._id;
-//             break;
-//         }
-//     }
-//     // Assign chicken to next player
-//     let chicken_id = "";
-//     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
-//         if (lobby_details.games[game_pos].cards[i].assignment === plyr_id && lobby_details.games[game_pos].cards[i].action === "chicken") {
-//             lobby_details.games[game_pos].cards[i].assignment = next_plyr_id;
-//             chicken_id = lobby_details.games[game_pos].cards[i]._id;
-//             break;
-//         }
-//     }
-//     // Create new promise for game save
-//     await new Promise((resolve, reject) => {
-//         // Save updated game
-//         lobby_details.games[game_pos].save({}, function (err) {
-//             if (err) {
-//                 reject(err);
-//             } else {
-//                 resolve();
-//             }
-//         });
-//     });
-//     return {
-//         trigger: "success",
-//         data: {
-//             next_plyr_id: next_plyr_id,
-//             chicken_id: chicken_id
-//         }
-//     };
-// }
+// Name : card_actions.defuse(lobby_details, game_pos, card_id, plyr_id, callback)
+// Desc : removes exploding chicken from hand and inserts into next players hand
+// Author(s) : RAk3rman
+exports.hot_potato = async function (lobby_details, game_pos, card_id, plyr_id, callback) {
+    // Verify player is currently exploding
+    if (!await player_actions.is_exploding(await card_actions.filter_cards(await player_actions.get_player_details(lobby_details, plyr_id)._id, lobby_details.games[game_pos].cards))) {
+        callback.err = "Can only be used when exploding";
+        return;
+    }
+    // Complete super skip action (put curr number of turns on next player and discard card)
+    await card_actions.super_skip(lobby_details, game_pos, card_id, callback);
+    // Assign chicken to next player
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        if (lobby_details.games[game_pos].cards[i].assign === plyr_id && lobby_details.games[game_pos].cards[i].action === "chicken") {
+            lobby_details.games[game_pos].cards[i].assign = await player_actions.get_turn_plyr_id(lobby_details, game_pos);
+            break;
+        }
+    }
+}
 
 // Name : card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback)
 // Desc : put everyone's cards into a pool and re-deal deck
@@ -277,22 +242,21 @@ exports.scrambled_eggs = async function (lobby_details, game_pos, card_id, callb
             cards_in_deck++;
         }
     }
+    // Get array of players
+    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
     // Loop though each player and get # of cards
     let player_card_ctn = [];
-    for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.players[i].game_assign?.equals(lobby_details.games[game_pos]._id)) {
-            let cards = await card_actions.filter_cards(lobby_details.games[game_pos].players[i]._id, lobby_details.games[game_pos].cards);
-            player_card_ctn[i] = cards.length;
-        }
+    for (let i = 0; i < plyr_array.length; i++) {
+        player_card_ctn[i] = (await card_actions.filter_cards(plyr_array[i]._id, lobby_details.games[game_pos].cards)).length;
     }
     // Loop though each player again and re-assign cards
-    for (let i = 0; i < lobby_details.players.length; i++) {
+    for (let i = 0; i < plyr_array.length; i++) {
         for (let j = 0; j < player_card_ctn[i]; j++) {
             let selected_card_id = rand_bucket(bucket);
             // Find card and update assignment
             for (let k = 0; k < lobby_details.games[game_pos].cards.length; k++) {
                 if (lobby_details.games[game_pos].cards[k]._id === selected_card_id) {
-                    lobby_details.games[game_pos].cards[k].assign = lobby_details.games[game_pos].players[i]._id;
+                    lobby_details.games[game_pos].cards[k].assign = plyr_array[i]._id;
                     lobby_details.games[game_pos].cards[k].pos = j;
                     break;
                 }

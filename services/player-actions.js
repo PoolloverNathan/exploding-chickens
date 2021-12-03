@@ -109,43 +109,30 @@ exports.create_hand = async function (lobby_details, game_pos) {
             card_bucket.push(i);
         }
     }
-    // Assign defuse card to player id in first position
-    let plyr_count = 0;
-    for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
-            let rand_defuse_pos = rand_bucket(defuse_bucket);
-            lobby_details.games[game_pos].cards[rand_defuse_pos].assign = lobby_details.players[i]._id;
-            lobby_details.games[game_pos].cards[rand_defuse_pos].pos = 0;
-            plyr_count++;
-        }
-    }
-    // Add remaining defuse cards to card bucket
-    for (let i = 0; i <= defuse_bucket.length - 1; i++) {
+    // Get array of players
+    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
+    // Add extra defuse cards to card bucket
+    for (let i = 0; i < defuse_bucket.length - plyr_array.length; i++) {
         card_bucket.push(defuse_bucket[i]);
     }
-    // Assign remaining 4 cards to each player
-    for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
-            // Over 4 cards on the same player
-            for (let j = 1; j <= 4; j++) {
-                let rand_card_pos = rand_bucket(card_bucket);
-                lobby_details.games[game_pos].cards[rand_card_pos].assign = lobby_details.players[i]._id;
-                lobby_details.games[game_pos].cards[rand_card_pos].pos = j;
-            }
+    // Assign 5 cards to each player
+    for (let i = 0; i < plyr_array.length; i++) {
+        // Give 1 defuse card to each player
+        let rand_defuse_pos = rand_bucket(defuse_bucket);
+        lobby_details.games[game_pos].cards[rand_defuse_pos].assign = plyr_array[i]._id;
+        lobby_details.games[game_pos].cards[rand_defuse_pos].pos = 0;
+        // Choose remaining 4 cards at random
+        for (let j = 1; j <= 4; j++) {
+            let rand_card_pos = rand_bucket(card_bucket);
+            lobby_details.games[game_pos].cards[rand_card_pos].assign = plyr_array[i]._id;
+            lobby_details.games[game_pos].cards[rand_card_pos].pos = j;
         }
     }
-    // Assign exploding chickens to deck
-    let exp_assigned = 0;
-    for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
-            // Randomly pick ec
-            let rand_card_pos = rand_bucket(exploding_bucket);
-            lobby_details.games[game_pos].cards[rand_card_pos].assign = "draw_deck";
-            // Increment amount of chickens assigned
-            exp_assigned++;
-            // Break if assignment is over one less than the number of players
-            if (exp_assigned >= plyr_count - 1) break;
-        }
+    // Assign exploding chickens to draw deck
+    for (let i = 0; i < plyr_array.length - 1; i++) {
+        // Randomly pick ec
+        let rand_card_pos = rand_bucket(exploding_bucket);
+        lobby_details.games[game_pos].cards[rand_card_pos].assign = "draw_deck";
     }
     // Shuffle draw deck once we are done
     await card_actions.shuffle_draw_deck(lobby_details, game_pos);
@@ -156,18 +143,16 @@ exports.create_hand = async function (lobby_details, game_pos) {
 // Desc : given a game_slug, gives each player a random seat position (without replacement)
 // Author(s) : SengdowJones, RAk3rman
 exports.randomize_seats = async function (lobby_details, game_pos) {
+    // Get array of players
+    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
     // Create array containing each available seat
     let bucket = [];
-    for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
-            bucket.push(i);
-        }
+    for (let i = 0; i < plyr_array.length; i++) {
+        bucket.push(i);
     }
     // Update seat number for each player
-    for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
-            lobby_details.players[i].seat = rand_bucket(bucket);
-        }
+    for (let i = 0; i < plyr_array.length; i++) {
+        plyr_array.seat_pos = rand_bucket(bucket);
     }
 }
 
@@ -176,34 +161,26 @@ exports.randomize_seats = async function (lobby_details, game_pos) {
 // Author(s) : RAk3rman
 exports.next_seat = async function (lobby_details, game_pos) {
     let pos = lobby_details.games[game_pos].turn_seat_pos;
-    // Create array of players in game with only required player data
-    let players = [];
-    for (let i = 0; i < lobby_details.players.length; i++) {
-        if (lobby_details.players[i].game_assign?.equals(lobby_details.games[game_pos]._id)) {
-            players.push({
-                seat_pos: lobby_details.players[i].seat_pos,
-                is_dead: lobby_details.players[i].is_dead
-            });
-        }
-    }
+    // Get array of players
+    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
     // Traverse until we find next open seat
     while (true) {
         // Increment or decrement pos based on direction
         if (lobby_details.games[game_pos].turn_dir === "forward") {
             pos++
-            if (pos > players.length - 1) {
+            if (pos > plyr_array.length - 1) {
                 pos = 0;
             }
         } else if (lobby_details.games[game_pos].turn_dir === "backward") {
             pos--;
             if (pos < 0) {
-                pos = players.length - 1;
+                pos = plyr_array.length - 1;
             }
         }
         // Find current seat and check to see if current seat is playing
-        for (let i = 0; i < players.length; i++) {
-            if (players[i].seat_pos === pos) {
-                if (!players[i].is_dead) {
+        for (let i = 0; i < plyr_array.length; i++) {
+            if (plyr_array[i].seat_pos === pos) {
+                if (!plyr_array[i].is_dead) {
                     return pos;
                 } else {
                     break;

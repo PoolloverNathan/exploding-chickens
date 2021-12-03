@@ -147,7 +147,7 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     // Loop through card actions and call corresponding function, callback modified within card_actions by reference
     // BASE DECK
     if (card_details.action.includes("attack"))             { await card_actions.attack(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action.includes("defuse"))        { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
+    else if (card_details.action.includes("defuse"))        { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
     // else if (card_details.action.includes("favor"))         {  }
     // else if (card_details.action.includes("randchick"))     {  }
     else if (card_details.action.includes("reverse"))       { await card_actions.reverse(lobby_details, game_pos, card_id, callback); }
@@ -155,9 +155,9 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     else if (card_details.action.includes("shuffle"))        { await card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("skip"))          { await card_actions.skip(lobby_details, game_pos, card_id, callback); }
     // YOLKING AROUND EXPANSION PACK
-    // else if (card_details.action.includes("hotpotato"))     {  }
+    else if (card_details.action.includes("hotpotato"))     { await card_actions.hot_potato(lobby_details, game_pos, card_id, req_plyr_id, callback); }
     // else if (card_details.action.includes("favorgator"))    {  }
-    // else if (card_details.action.includes("scrambledeggs")) { await card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action.includes("scrambledeggs")) { await card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("superskip"))     { await card_actions.super_skip(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("safetydraw"))    { await card_actions.safety_draw(lobby_details, game_pos, card_id, req_plyr_id, callback) }
     else if (card_details.action.includes("drawbottom"))    { await card_actions.draw_bottom(lobby_details, game_pos, card_id, req_plyr_id, callback) }
@@ -480,6 +480,20 @@ exports.reset_game = async function (lobby_details, game_pos) {
     lobby_details.games[game_pos].turn_dir = "forward";
     lobby_details.games[game_pos].turn_remain = 1;
     lobby_details.games[game_pos].created = Date.now();
+}
+
+// Name : player_actions.get_players(lobby_details, game_pos)
+// Desc : returns an array of players within the specified game
+// Author(s) : RAk3rman
+exports.get_players = async function (lobby_details, game_pos) {
+    let players = [];
+    // Loop through each player and see if it matches game assignment
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign)) {
+            players.push(lobby_details.players[i]);
+        }
+    }
+    return players;
 }
 
 // Name : game_actions.game_export(lobby_details, game_pos, source, req_plyr_id)
