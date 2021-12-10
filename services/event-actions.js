@@ -13,14 +13,14 @@ let rel_ids = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
 const moment = require("moment");
 
-// Name : lobby_actions.log_event(details, tag, req_plyr_id, target, rel_id, rel_val)
+// Name : lobby_actions.log_event(details, tag, req_plyr_id, target_plyr_id, rel_id, rel_val)
 // Desc : creates a new event
 // Author(s) : RAk3rman
-exports.log_event = async function (details, tag, req_plyr_id, target, rel_id, rel_val) {
+exports.log_event = async function (details, tag, req_plyr_id, target_plyr_id, rel_id, rel_val) {
     details.events.push({
         tag: tag,
         req_plyr_id: req_plyr_id,
-        target_plyr_id: target.plyr_id,
+        target_plyr_id: target_plyr_id,
         rel_id: rel_id,
         rel_val: rel_val
     });

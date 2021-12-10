@@ -167,7 +167,7 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     // Check if callback was successful (complete request and no errors)
     if (!callback.incomplete && !callback.err) {
         // Reached end of successful card execution, update events
-        await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target, callback.card_id, undefined);
+        await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target.plyr_id, callback.card_id, undefined);
     }
     return callback;
 }
