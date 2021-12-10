@@ -40,7 +40,7 @@ exports.defuse = async function (lobby_details, game_pos, card_id, plyr_id, targ
     }
     // Verify target is valid
     let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
-    if (target < 0 || draw_deck.length < target || target === "") {
+    if (target.deck_pos < 0 || draw_deck.length < target.deck_pos || target.deck_pos === "") {
         callback.incomplete = true;
         callback.data = { max_pos: draw_deck.length };
         return;
@@ -50,94 +50,154 @@ exports.defuse = async function (lobby_details, game_pos, card_id, plyr_id, targ
         // Find chicken that is assigned to req player
         if (lobby_details.games[game_pos].cards[i].assign === plyr_id && lobby_details.games[game_pos].cards[i].action === "chicken") {
             lobby_details.games[game_pos].cards[i].assign = "draw_deck";
-            lobby_details.games[game_pos].cards[i].pos = draw_deck.length - target;
+            lobby_details.games[game_pos].cards[i].pos = draw_deck.length - target.deck_pos;
             lobby_details.games[game_pos].cards[i].placed_by_plyr_id = plyr_id;
-        } else if (lobby_details.games[game_pos].cards[i].assign === "draw_deck" && lobby_details.games[game_pos].cards[i].pos >= draw_deck.length - target) { // Increment the rest of the cards
+        } else if (lobby_details.games[game_pos].cards[i].assign === "draw_deck" && lobby_details.games[game_pos].cards[i].pos >= draw_deck.length - target.deck_pos) { // Increment the rest of the cards
             lobby_details.games[game_pos].cards[i].pos++;
         }
     }
     // Discard card and advance turn
     await game_actions.discard_card(lobby_details, game_pos, card_id);
     await game_actions.advance_turn(lobby_details, game_pos);
-    // Update target by ref for event logging in play_card
-    target = undefined;
 }
 
-// // Name : card_actions.verify_favor(lobby_details.games[game_pos], plyr_id, target)
-// // Desc : verifies that the target player is able to give up a card
-// // Author(s) : RAk3rman
-// exports.verify_favor = async function (lobby_details.games[game_pos], plyr_id, target) {
-//     // Make sure the player isn't asking itself
-//     if (plyr_id !== target) {
-//         // See if one card is assigned to target player
-//         for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
-//             if (lobby_details.games[game_pos].cards[i].assignment === target) {
-//                 return true;
-//             }
-//         }
-//         return {trigger: "favor_target", data: ""}; // Request for valid target from client
-//     } else {
-//         return {trigger: "error", data: "You cannot ask yourself"};
-//     }
-// }
-//
-// // Name : card_actions.verify_double(lobby_details.games[game_pos], card_details, plyr_id)
-// // Desc : verifies that the current player has two of a kind, discards second card
-// // Author(s) : RAk3rman
-// exports.verify_double = async function (lobby_details.games[game_pos], card_details, plyr_id, card_id) {
-//     // See if we have another card of the same action
-//     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
-//         if (lobby_details.games[game_pos].cards[i].assignment === plyr_id && lobby_details.games[game_pos].cards[i].action === card_details.action
-//         && lobby_details.games[game_pos].cards[i]._id !== card_id) {
-//             return lobby_details.games[game_pos].cards[i]._id;
-//         }
-//     }
-//     return false;
-// }
-//
-// // Name : card_actions.ask_favor(lobby_details.games[game_pos], plyr_id, target, used_gator, stats_storage)
-// // Desc : takes a random card from target player's hand and places in current player's hand
-// // Author(s) : RAk3rman
-// exports.ask_favor = async function (lobby_details.games[game_pos], plyr_id, target, used_gator, stats_storage) {
-//     // Get cards in target and current player's hand
-//     let target_hand = await card_actions.filter_cards(target, lobby_details.games[game_pos].cards);
-//     let current_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
-//     // Check if target has favor gator
-//     for (let i = 0; i <= target_hand.length - 1; i++) {
-//         if (target_hand[i].action === "favorgator" && !used_gator) {
-//             await game_actions.discard_card(lobby_details.games[game_pos], target_hand[i]._id);
-//             await game_actions.log_event(lobby_details.games[game_pos], "play-card", target_hand[i].action, target_hand[i]._id, (await player_actions.get_player_details(lobby_details.games[game_pos], plyr_id)).nickname, (await player_actions.get_player_details(lobby_details.games[game_pos], target)).nickname);
-//             stats_storage.set('favor_gators', stats_storage.get('favor_gators') + 1);
-//             return await card_actions.ask_favor(lobby_details.games[game_pos], target, plyr_id, true);
-//         }
-//     }
-//     // Determine random card
-//     let rand_pos = Math.floor(Math.random() * (target_hand.length - 1));
-//     // Update card details
-//     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
-//         if (lobby_details.games[game_pos].cards[i]._id === target_hand[rand_pos]._id) {
-//             lobby_details.games[game_pos].cards[i].assignment = plyr_id;
-//             lobby_details.games[game_pos].cards[i].position = current_hand.length;
-//             break;
-//         }
-//     }
-//     await player_actions.sort_hand(lobby_details.games[game_pos], target);
-//     // Create new promise for game save
-//     await new Promise((resolve, reject) => {
-//         //Save updated game
-//         lobby_details.games[game_pos].save({}, function (err) {
-//             if (err) {
-//                 reject(err);
-//             } else {
-//                 resolve();
-//             }
-//         });
-//     });
-//     return {
-//         card: target_hand[rand_pos],
-//         used_gator: used_gator
-//     };
-// }
+// Name : card_actions.favor_targeted(lobby_details, game_pos, card_id, plyr_id, target, callback)
+// Desc : allows a player to choose which card to give up after being targeted
+// Author(s) : RAk3rman
+exports.favor_targeted = async function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
+    // First verify that the favor target is valid
+    if (await card_actions.verify_favor_target_plyr(lobby_details, game_pos, plyr_id, target.plyr_id)) {
+        callback.incomplete = true;
+        return;
+    }
+    // Then verify that the target player has selected a card to give up
+    if (!await card_actions.verify_favor_target_card(lobby_details, game_pos, plyr_id, target.plyr_id, target.card_id)) {
+        callback.incomplete = true;
+        return;
+    }
+    // Get cards in current players hand
+    let current_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    // Update card details
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        if (lobby_details.games[game_pos].cards[i]._id === target.card_id) {
+            lobby_details.games[game_pos].cards[i].assign = plyr_id;
+            lobby_details.games[game_pos].cards[i].pos = current_hand.length;
+            break;
+        }
+    }
+    // Resort target players hand
+    await player_actions.sort_hand(lobby_details, game_pos, target.plyr_id);
+    // Discard card
+    await game_actions.discard_card(lobby_details, game_pos, card_id);
+}
+
+// Name : card_actions.favor_random(lobby_details, game_pos, card_id, plyr_id, target, callback)
+// Desc : asks a favor from a player randomly, takes random card from target hand and places in requesting player
+// Author(s) : RAk3rman
+exports.favor_random = async function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
+    // If the player is playing a randchick, make sure they have two
+    let double_result = await card_actions.verify_double(lobby_details, game_pos, plyr_id, card_id, callback.card_action);
+    if (!double_result && callback.card_action.includes("randchick")) {
+        callback.err = "You must have 2 identical cards";
+        return;
+    }
+    // Then verify that the favor target is valid
+    if (!await card_actions.verify_favor_target_plyr(lobby_details, game_pos, plyr_id, target.plyr_id)) {
+        callback.incomplete = true;
+        return;
+    }
+    // Get cards in current players hand
+    let current_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
+    // Determine random card
+    let rand_pos = Math.floor(Math.random() * (target_hand.length - 1));
+    // Update card details
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        if (lobby_details.games[game_pos].cards[i]._id === target_hand[rand_pos]._id) {
+            lobby_details.games[game_pos].cards[i].assign = plyr_id;
+            lobby_details.games[game_pos].cards[i].pos = current_hand.length;
+            break;
+        }
+    }
+    // Resort target players hand
+    await player_actions.sort_hand(lobby_details, game_pos, target.plyr_id);
+    // Discard card
+    await game_actions.discard_card(lobby_details, game_pos, card_id);
+    if (double_result) await game_actions.discard_card(lobby_details, game_pos, double_result);
+}
+
+// Name : card_actions.favor_gator(lobby_details, game_pos, card_id, plyr_id, target, callback)
+// Desc : removes all favor/randchick cards from a players hand
+// Author(s) : RAk3rman
+exports.favor_gator = async function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
+    // First verify that the favor target is valid
+    if (await card_actions.verify_favor_target_plyr(lobby_details, game_pos, plyr_id, target.plyr_id)) {
+        callback.incomplete = true;
+        return;
+    }
+    // Get cards in current players hand
+    let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
+    // Update card details
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        if ((lobby_details.games[game_pos].cards[i].action.includes("favor") || lobby_details.games[game_pos].cards[i].action.includes("randchick"))
+            && lobby_details.games[game_pos].cards[i].assign === target.plyr_id) {
+            lobby_details.games[game_pos].cards[i].assign = "out_of_play";
+            lobby_details.games[game_pos].cards[i].placed_by_id = undefined;
+        }
+    }
+    // Discard card
+    await game_actions.discard_card(lobby_details, game_pos, card_id);
+}
+
+// Name : card_actions.verify_favor_target_plyr(lobby_details, game_pos, plyr_id, target_plyr_id)
+// Desc : verifies that the target player is able to give up a card
+// Author(s) : RAk3rman
+exports.verify_favor_target_plyr = async function (lobby_details, game_pos, plyr_id, target_plyr_id) {
+    // Base case
+    if (target_plyr_id === undefined) return false;
+    // Make sure the player isn't asking itself
+    if (plyr_id !== target_plyr_id) {
+        // See if one card is assigned to target player
+        for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+            if (lobby_details.games[game_pos].cards[i].assign === target_plyr_id) {
+                return true;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Name : card_actions.verify_favor_target_card(lobby_details, game_pos, plyr_id, target_plyr_id, target_card_id)
+// Desc : verifies that the target player is able to give up a card
+// Author(s) : RAk3rman
+exports.verify_favor_target_card = async function (lobby_details, game_pos, plyr_id, target_plyr_id, target_card_id) {
+    // Base case
+    if (target_card_id === undefined) return false;
+    // Make sure the card is in the target players hand
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        if (lobby_details.games[game_pos].cards[i]._id === target_card_id) {
+            return lobby_details.games[game_pos].cards[i].assign === target_plyr_id;
+        }
+    }
+    return false;
+}
+
+// Name : card_actions.verify_double(lobby_details, game_pos, plyr_id, card_id, card_action)
+// Desc : verifies that the current player has two of a kind, discards second card
+// Author(s) : RAk3rman
+exports.verify_double = async function (lobby_details, game_pos, plyr_id, card_id, card_action) {
+    // See if we have another card of the same action
+    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+        if (lobby_details.games[game_pos].cards[i].assign === plyr_id
+            && lobby_details.games[game_pos].cards[i].action === card_action
+            && lobby_details.games[game_pos].cards[i]._id !== card_id) {
+            return lobby_details.games[game_pos].cards[i]._id;
+        }
+    }
+    return false;
+}
 
 // Name : card_actions.reverse(lobby_details, game_pos, card_id, callback)
 // Desc : reverse the current player order

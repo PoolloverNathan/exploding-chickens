@@ -130,8 +130,9 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
     return draw_deck[pos];
 }
 
-// Name : game_actions.draw_card(lobby_details, game_pos, card_id, req_plyr_id, target_player_id)
+// Name : game_actions.draw_card(lobby_details, game_pos, card_id, req_plyr_id, target)
 // Desc : calls the appropriate card function based on card action, returns structured callback to be sent to client
+// Target data structure : { plyr_id, card_id, deck_pos }
 // Author(s) : RAk3rman
 exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_id, target) {
     // Find card details based on card_id
@@ -142,21 +143,22 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
         card_id:     card_details._id,    // ID of the card being referenced
         card_action: card_details.action, // Action of the card being referenced
         data:        undefined,            // Optional data sent after a card action is complete (see the future cards, defuse positions, etc...)
+        target:      target,              // Array that describes the possible targets of this card = { plyr_id, card_id, deck_pos }
         incomplete:  false                // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
     };
     // Loop through card actions and call corresponding function, callback modified within card_actions by reference
     // BASE DECK
     if (card_details.action.includes("attack"))             { await card_actions.attack(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("defuse"))        { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
-    // else if (card_details.action.includes("favor"))         {  }
-    // else if (card_details.action.includes("randchick"))     {  }
+    else if (card_details.action.includes("favor"))         { await card_actions.favor_targeted(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
+    else if (card_details.action.includes("randchick"))     { await card_actions.favor_random(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
     else if (card_details.action.includes("reverse"))       { await card_actions.reverse(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("seethefuture"))  { await card_actions.seethefuture(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("shuffle"))        { await card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("skip"))          { await card_actions.skip(lobby_details, game_pos, card_id, callback); }
     // YOLKING AROUND EXPANSION PACK
     else if (card_details.action.includes("hotpotato"))     { await card_actions.hot_potato(lobby_details, game_pos, card_id, req_plyr_id, callback); }
-    // else if (card_details.action.includes("favorgator"))    {  }
+    else if (card_details.action.includes("favorgator"))    { await card_actions.favor_gator(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
     else if (card_details.action.includes("scrambledeggs")) { await card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("superskip"))     { await card_actions.super_skip(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action.includes("safetydraw"))    { await card_actions.safety_draw(lobby_details, game_pos, card_id, req_plyr_id, callback) }
@@ -165,7 +167,7 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     // Check if callback was successful (complete request and no errors)
     if (!callback.incomplete && !callback.err) {
         // Reached end of successful card execution, update events
-        await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target, card_details._id, undefined);
+        await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target, callback.card_id, undefined);
     }
     return callback;
 }
