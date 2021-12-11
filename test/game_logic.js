@@ -156,19 +156,19 @@ describe('Lobby deletion', function() {
 // Desc : simulates game play over 30 lobbies with a variable number of players over 3 rounds
 // Author(s) : RAk3rman
 describe('Simulation (final boss)', function() {
-    // Create 25 lobbies
-    for (let i = 1; i < 25; i++) {
+    // Create 20 lobbies
+    for (let i = 1; i < 20; i++) {
+        // simulate_lobby(i, 6, 3);
         simulate_lobby(i, i + 1, 3);
     }
-    simulate_lobby(25, 100, 3);
 });
 
 // Name : test.simulate_lobby
-// Desc : simulates game play in a single lobby with x number of rounds
+// Desc : simulates game play in a single lobby with n number of rounds
 // Author(s) : RAk3rman
 function simulate_lobby(id, plyr_ctn, rounds) {
     describe('Lobby #' + id + ' (' + plyr_ctn + 'P)', function () {
-        this.timeout(plyr_ctn * 50); // Dynamically increase timeout for larger lobbies
+        this.timeout(plyr_ctn * 150); // Dynamically increase timeout for larger lobbies
         let lobby_details;
         describe('Setup lobby', function () {
             it('create lobby', async function() {
@@ -242,17 +242,90 @@ async function simulate_games(lobby_details) {
         let turn_ctn = 0;
         // Loop forever until we get a winner, will time out if a player never wins
         while (!await game_actions.is_winner(lobby_details, i)) {
+            // Check which player is playing
             let plyr_id = await player_actions.get_turn_plyr_id(lobby_details, i);
-            let card_details = await game_actions.draw_card(lobby_details, i, plyr_id);
-            assert.exists(card_details, 'ensure drawn card exists');
-            if (card_details.action === 'chicken') {
-                await card_actions.kill_player(lobby_details, i, plyr_id);
-                await game_actions.advance_turn(lobby_details, i);
+            // Simulate turn
+            await simulate_turn(lobby_details, i, plyr_id, false, false);
+            // If the turn is still on the current player, draw card
+            if (await player_actions.get_turn_plyr_id(lobby_details, i) === plyr_id) {
+                // Make sure we aren't exploding before drawing a card
+                if (!await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                    // Draw card to end turn
+                    let card_details = await game_actions.draw_card(lobby_details, i, plyr_id);
+                    assert.exists(card_details, 'ensure drawn card exists');
+                }
+                // Check if the player is exploding (drew an EC somehow)
+                if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                    // Force play through all cards to see if player has a defuse
+                    await simulate_turn(lobby_details, i, plyr_id, true, false);
+                    // If we are still exploding, kill player
+                    if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                        await simulate_turn(lobby_details, i, plyr_id, true, true);
+                    }
+                }
             }
             turn_ctn++;
         }
         assert.isAbove(turn_ctn, 1, 'ensure number of turns is greater than 1');
         assert.isTrue(await game_actions.is_winner(lobby_details, i), 'ensure we have a winner');
+    }
+}
+
+// Name : test.simulate_turn
+// Desc : randomly plays cards as if a user were playing
+// Author(s) : RAk3rman
+async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_chicken) {
+    // Get player's hand
+    let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    // Loop over each card in the players hand
+    // Break out of loop if we use a card that advances the turn order
+    for (let i = 0; i < player_hand.length && ((await player_actions.get_turn_plyr_id(lobby_details, game_pos)) === plyr_id); i++) {
+        // For this card, give the user a 30% chance of playing it
+        // If play_all is true, try to play every card in the hand except chickens
+        // Then, make sure the card we are about to play is not a chicken unless play_chicken is true
+        if ((Math.random() < 0.3 || play_all) && (player_hand[i].action !== "chicken" || play_chicken)) {
+            // Make blind attempt to play card
+            let target = { plyr_id: undefined, card_id: undefined, deck_pos: undefined }
+            let callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
+            // Ensure err wasn't thrown, if so, do nothing and try to play another card
+            // Errors are sent to the client in the callback and appear in a popup when they attempt to play the card
+            if (!callback.err) {
+                // Check if callback was complete or incomplete
+                // We shouldn't expect any errors with these group of cards
+                if (callback.incomplete) {
+                    // Make sure we are in card group that should require a callback
+                    // These cards require special action and cannot be played blindly
+                    let incomplete_group = ['defuse', 'favor', 'favorgator', 'randchick-1', 'randchick-2', 'randchick-3', 'randchick-4'];
+                    assert.isTrue(incomplete_group.includes(callback.card_action), 'callback on ' + callback.card_id + ' should be in complete group');
+                    // Return complete callback
+                    if (callback.card_action === 'defuse') {
+                        // Update target with needed parameters and play card
+                        target.deck_pos = callback.data.max_pos;
+                        callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
+                        assert.isFalse(callback.incomplete, 'callback on ' + callback.card_id + ' should be complete');
+                    } else if (callback.card_action === 'favor') {
+                        // Update target with needed parameters and play card
+                        target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
+                        let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
+                        target.card_id = target_hand.length !== 0 ? target_hand[Math.floor(Math.random() * (target_hand.length - 1))]._id : undefined;
+                        callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
+                    } else if (callback.card_action.includes('randchick') || callback.card_action === 'favorgator') {
+                        // Update target with needed parameters and play card
+                        target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
+                        callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
+                    } else {
+                        assert.fail('callback on ' + callback.card_id + ' should be complete');
+                    }
+                    // Make sure we exited cleanly after making callback complete
+                    assert.isUndefined(callback.err, 'callback on ' + callback.card_id + ' should not throw errors (' + callback.err + ')');
+                } else {
+                    // Make sure we are in card group that should not require a callback
+                    // These cards can be played without any user interaction, no callbacks needed
+                    let complete_group = ['attack', 'chicken', 'reverse', 'seethefuture', 'shuffle', 'skip', 'hotpotato', 'scrambledeggs', 'superskip', 'safetydraw', 'drawbottom'];
+                    assert.isTrue(complete_group.includes(callback.card_action), 'callback on ' + callback.card_id + ' should be in incomplete group');
+                }
+            }
+        }
     }
 }
 

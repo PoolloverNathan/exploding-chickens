@@ -156,10 +156,10 @@ exports.randomize_seats = async function (lobby_details, game_pos) {
     }
 }
 
-// Name : player_actions.next_seat(lobby_details, game_pos)
+// Name : player_actions.next_seat(lobby_details, game_pos, return_type)
 // Desc : determine next seat position
 // Author(s) : RAk3rman
-exports.next_seat = async function (lobby_details, game_pos) {
+exports.next_seat = async function (lobby_details, game_pos, return_type) {
     let pos = lobby_details.games[game_pos].turn_seat_pos;
     // Get array of players
     let plyr_array = await game_actions.get_players(lobby_details, game_pos);
@@ -181,7 +181,11 @@ exports.next_seat = async function (lobby_details, game_pos) {
         for (let i = 0; i < plyr_array.length; i++) {
             if (plyr_array[i].seat_pos === pos) {
                 if (!plyr_array[i].is_dead) {
-                    return pos;
+                    if (return_type === "seat_pos") {
+                        return plyr_array[i].seat_pos
+                    } else {
+                        return plyr_array[i]._id
+                    }
                 } else {
                     break;
                 }

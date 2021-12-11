@@ -17,7 +17,7 @@ let event_actions = require('./event-actions.js');
 // Author(s) : RAk3rman
 exports.attack = async function (lobby_details, game_pos, card_id, callback) {
     // Advance to the next seat
-    lobby_details.games[game_pos].turn_seat_pos = await player_actions.next_seat(lobby_details, game_pos);
+    lobby_details.games[game_pos].turn_seat_pos = await player_actions.next_seat(lobby_details, game_pos, "seat_pos");
     // Check how many turns we have left
     if (lobby_details.games[game_pos].turns_remain <= 1) { // Only one turn left, equal to two turns
         // Make sure the number of turns remaining is not 0
@@ -33,14 +33,9 @@ exports.attack = async function (lobby_details, game_pos, card_id, callback) {
 // Desc : removes exploding chicken from hand and inserts randomly in deck
 // Author(s) : RAk3rman
 exports.defuse = async function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
-    // Verify player is currently exploding
-    if (!await player_actions.is_exploding(await card_actions.filter_cards(await player_actions.get_player_details(lobby_details, plyr_id)._id, lobby_details.games[game_pos].cards))) {
-        callback.err = "Can only be used when exploding";
-        return;
-    }
     // Verify target is valid
     let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
-    if (target.deck_pos < 0 || draw_deck.length < target.deck_pos || target.deck_pos === "") {
+    if (target.deck_pos < 0 || draw_deck.length < target.deck_pos || target.deck_pos === undefined) {
         callback.incomplete = true;
         callback.data = { max_pos: draw_deck.length };
         return;
@@ -61,12 +56,21 @@ exports.defuse = async function (lobby_details, game_pos, card_id, plyr_id, targ
     await game_actions.advance_turn(lobby_details, game_pos);
 }
 
+// Name : card_actions.chicken(lobby_details, game_pos, plyr_id, callback)
+// Desc : since chicken was played, player is killed and turn advances
+// Author(s) : RAk3rman
+exports.chicken = async function (lobby_details, game_pos, plyr_id, callback) {
+    // Kill player and advance turn
+    await card_actions.kill_player(lobby_details, game_pos, plyr_id);
+    await game_actions.advance_turn(lobby_details, game_pos);
+}
+
 // Name : card_actions.favor_targeted(lobby_details, game_pos, card_id, plyr_id, target, callback)
 // Desc : allows a player to choose which card to give up after being targeted
 // Author(s) : RAk3rman
 exports.favor_targeted = async function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
     // First verify that the favor target is valid
-    if (await card_actions.verify_favor_target_plyr(lobby_details, game_pos, plyr_id, target.plyr_id)) {
+    if (!await card_actions.verify_favor_target_plyr(lobby_details, game_pos, plyr_id, target.plyr_id)) {
         callback.incomplete = true;
         return;
     }
@@ -131,12 +135,10 @@ exports.favor_random = async function (lobby_details, game_pos, card_id, plyr_id
 // Author(s) : RAk3rman
 exports.favor_gator = async function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
     // First verify that the favor target is valid
-    if (await card_actions.verify_favor_target_plyr(lobby_details, game_pos, plyr_id, target.plyr_id)) {
+    if (!await card_actions.verify_favor_target_plyr(lobby_details, game_pos, plyr_id, target.plyr_id)) {
         callback.incomplete = true;
         return;
     }
-    // Get cards in current players hand
-    let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
     // Update card details
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if ((lobby_details.games[game_pos].cards[i].action.includes("favor") || lobby_details.games[game_pos].cards[i].action.includes("randchick"))
@@ -163,14 +165,12 @@ exports.verify_favor_target_plyr = async function (lobby_details, game_pos, plyr
                 return true;
             }
         }
-        return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 // Name : card_actions.verify_favor_target_card(lobby_details, game_pos, plyr_id, target_plyr_id, target_card_id)
-// Desc : verifies that the target player is able to give up a card
+// Desc : verifies that the target player has a specified card
 // Author(s) : RAk3rman
 exports.verify_favor_target_card = async function (lobby_details, game_pos, plyr_id, target_plyr_id, target_card_id) {
     // Base case
@@ -229,7 +229,7 @@ exports.seethefuture = async function (lobby_details, game_pos, card_id, callbac
 // Author(s) : RAk3rman
 exports.shuffle = async function (lobby_details, game_pos, card_id, callback) {
     // Call helper function
-    await shuffle_draw_deck(lobby_details, game_pos);
+    await card_actions.shuffle_draw_deck(lobby_details, game_pos);
     // Discard card
     await game_actions.discard_card(lobby_details, game_pos, card_id);
 }
@@ -271,11 +271,6 @@ exports.skip = async function (lobby_details, game_pos, card_id, callback) {
 // Desc : removes exploding chicken from hand and inserts into next players hand
 // Author(s) : RAk3rman
 exports.hot_potato = async function (lobby_details, game_pos, card_id, plyr_id, callback) {
-    // Verify player is currently exploding
-    if (!await player_actions.is_exploding(await card_actions.filter_cards(await player_actions.get_player_details(lobby_details, plyr_id)._id, lobby_details.games[game_pos].cards))) {
-        callback.err = "Can only be used when exploding";
-        return;
-    }
     // Complete super skip action (put curr number of turns on next player and discard card)
     await card_actions.super_skip(lobby_details, game_pos, card_id, callback);
     // Assign chicken to next player
@@ -379,7 +374,7 @@ exports.draw_bottom = async function (lobby_details, game_pos, card_id, plyr_id,
     // Determine position of drawn card
     let pos = 0;
     // Update card
-    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === draw_deck[pos]._id) {
             lobby_details.games[game_pos].cards[i].assign = plyr_id;
             lobby_details.games[game_pos].cards[i].pos = player_hand.length;
@@ -404,7 +399,7 @@ exports.kill_player = async function (lobby_details, game_pos, plyr_id) {
     // Find player and update is_dead
     lobby_details.players[await player_actions.get_player_pos(lobby_details, plyr_id)].is_dead = true;
     // Update all cards in player's hand to be "out of play"
-    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i].assign === plyr_id) {
             lobby_details.games[game_pos].cards[i].assign = "out_of_play";
             lobby_details.games[game_pos].cards[i].placed_by_id = undefined;

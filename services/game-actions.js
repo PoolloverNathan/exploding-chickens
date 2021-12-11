@@ -113,7 +113,7 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
     // Determine position of drawn card
     let pos = draw_deck.length - 1;
     // Update card
-    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === draw_deck[pos]._id) {
             lobby_details.games[game_pos].cards[i].assign = plyr_id;
             lobby_details.games[game_pos].cards[i].pos = player_hand.length;
@@ -146,23 +146,30 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
         target:      target,              // Array that describes the possible targets of this card = { plyr_id, card_id, deck_pos }
         incomplete:  false                // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
     };
-    // Loop through card actions and call corresponding function, callback modified within card_actions by reference
+    // Ensure that the card is allowed to be played now
+    let exp_only = ['defuse', 'hotpotato', 'chicken'];
+    if (await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && !exp_only.includes(callback.card_action)) {
+        callback.err = "Cannot be used while exploding"; return callback; // Player is exploding and player attempted to use a card that cannot stop a chicken
+    } else if (!await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && exp_only.includes(callback.card_action)) {
+        callback.err = "Can only be used when exploding"; return callback; // Player is not exploding but player tried to use a card that can stop a chicken
+    }
     // BASE DECK
-    if (card_details.action.includes("attack"))             { await card_actions.attack(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action.includes("defuse"))        { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
-    else if (card_details.action.includes("favor"))         { await card_actions.favor_targeted(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
-    else if (card_details.action.includes("randchick"))     { await card_actions.favor_random(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
-    else if (card_details.action.includes("reverse"))       { await card_actions.reverse(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action.includes("seethefuture"))  { await card_actions.seethefuture(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action.includes("shuffle"))        { await card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action.includes("skip"))          { await card_actions.skip(lobby_details, game_pos, card_id, callback); }
+    if (card_details.action === "attack")               { await card_actions.attack(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "defuse")          { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
+    else if (card_details.action === "chicken")         { await card_actions.chicken(lobby_details, game_pos, req_plyr_id, callback); }
+    else if (card_details.action === "favor")           { await card_actions.favor_targeted(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
+    else if (card_details.action.includes("randchick")) { await card_actions.favor_random(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
+    else if (card_details.action === "reverse")         { await card_actions.reverse(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "seethefuture")    { await card_actions.seethefuture(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "shuffle")          { await card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "skip")            { await card_actions.skip(lobby_details, game_pos, card_id, callback); }
     // YOLKING AROUND EXPANSION PACK
-    else if (card_details.action.includes("hotpotato"))     { await card_actions.hot_potato(lobby_details, game_pos, card_id, req_plyr_id, callback); }
-    else if (card_details.action.includes("favorgator"))    { await card_actions.favor_gator(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
-    else if (card_details.action.includes("scrambledeggs")) { await card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action.includes("superskip"))     { await card_actions.super_skip(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action.includes("safetydraw"))    { await card_actions.safety_draw(lobby_details, game_pos, card_id, req_plyr_id, callback) }
-    else if (card_details.action.includes("drawbottom"))    { await card_actions.draw_bottom(lobby_details, game_pos, card_id, req_plyr_id, callback) }
+    else if (card_details.action === "hotpotato")       { await card_actions.hot_potato(lobby_details, game_pos, card_id, req_plyr_id, callback); }
+    else if (card_details.action === "favorgator")      { await card_actions.favor_gator(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
+    else if (card_details.action === "scrambledeggs")   { await card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "superskip")       { await card_actions.super_skip(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "safetydraw")      { await card_actions.safety_draw(lobby_details, game_pos, card_id, req_plyr_id, callback) }
+    else if (card_details.action === "drawbottom")      { await card_actions.draw_bottom(lobby_details, game_pos, card_id, req_plyr_id, callback) }
     else { callback.err = "Invalid card action"; }
     // Check if callback was successful (complete request and no errors)
     if (!callback.incomplete && !callback.err) {
@@ -171,135 +178,6 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     }
     return callback;
 }
-
-// Name : game_actions.base_router(game_details, plyr_id, card_id, target, stats_storage, config_storage, bot, socket_id, fastify)
-// Desc : base deck - calls the appropriate card function based on card action
-// Author(s) : RAk3rman
-// exports.base_router = async function (game_details, plyr_id, card_id, target, stats_storage, config_storage, bot, socket_id, fastify) {
-//     // Find card details from id
-//     let card_details = await card_actions.find_card(card_id, game_details.cards);
-//     // Determine which function to run
-//     if (card_details.action === "attack") {
-//         await card_actions.attack(game_details);
-//         await game_actions.discard_card(game_details, card_id);
-//         stats_storage.set('attacks', stats_storage.get('attacks') + 1);
-//         return {trigger: "attack", data: "true"};
-//     } else if (card_details.action === "defuse") {
-//         let defuse_stat = await card_actions.defuse(game_details, plyr_id, target, card_id);
-//         if (defuse_stat === true) {
-//             await game_actions.discard_card(game_details, card_id);
-//             await game_actions.advance_turn(game_details);
-//             stats_storage.set('defuses', stats_storage.get('defuses') + 1);
-//             return {trigger: "defuse", data: "true"};
-//         } else {
-//             return defuse_stat;
-//         }
-//     } else if (card_details.action === "favor") { // Favor, expecting target plyr_id
-//         let v_favor = await card_actions.verify_favor(game_details, plyr_id, target);
-//         if (v_favor === true) {
-//             await game_actions.discard_card(game_details, card_id);
-//             let favor_data = await card_actions.ask_favor(game_details, plyr_id, target, false, stats_storage);
-//             stats_storage.set('favors', stats_storage.get('favors') + 1);
-//             return {trigger: "favor_taken", data: {
-//                 target_plyr_id: favor_data.used_gator ? plyr_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, plyr_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
-//             }};
-//         } else {
-//             return v_favor;
-//         }
-//     } else if (card_details.action === "randchick-1" || card_details.action === "randchick-2" ||
-//         card_details.action === "randchick-3" || card_details.action === "randchick-4") { // Favor, expecting target plyr_id
-//         let v_double = await card_actions.verify_double(game_details, card_details, plyr_id, card_id);
-//         if (v_double !== false) {
-//             let v_favor = await card_actions.verify_favor(game_details, plyr_id, target);
-//             if (v_favor === true) {
-//                 await game_actions.discard_card(game_details, v_double);
-//                 await game_actions.discard_card(game_details, card_id);
-//                 let favor_data = await card_actions.ask_favor(game_details, plyr_id, target, false, stats_storage);
-//                 stats_storage.set('favors', stats_storage.get('favors') + 1);
-//                 return {trigger: "favor_taken", data: {
-//                     target_plyr_id: favor_data.used_gator ? plyr_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, plyr_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
-//                 }};
-//             } else {
-//                 return v_favor;
-//             }
-//         } else {
-//             return {trigger: "error", data: "You must have a card of the same type"};
-//         }
-//     } else if (card_details.action === "reverse") {
-//         await card_actions.reverse(game_details);
-//         await game_actions.discard_card(game_details, card_id);
-//         await game_actions.advance_turn(game_details);
-//         stats_storage.set('reverses', stats_storage.get('reverses') + 1);
-//         return {trigger: "reverse", data: "true"};
-//     } else if (card_details.action === "seethefuture") {
-//         await game_actions.discard_card(game_details, card_id);
-//         stats_storage.set('see_the_futures', stats_storage.get('see_the_futures') + 1);
-//         return {trigger: "seethefuture", data: {}};
-//     } else if (card_details.action === "shuffle") {
-//         await card_actions.shuffle_draw_deck(game_details);
-//         await game_actions.discard_card(game_details, card_id);
-//         stats_storage.set('shuffles', stats_storage.get('shuffles') + 1);
-//         return {trigger: "shuffle", data: "true"};
-//     } else if (card_details.action === "skip") {
-//         await game_actions.discard_card(game_details, card_id);
-//         await game_actions.advance_turn(game_details);
-//         stats_storage.set('skips', stats_storage.get('skips') + 1);
-//         return {trigger: "skip", data: "true"};
-//     } else if (card_details.action === "hotpotato") {
-//         let hotpotato_stat = await card_actions.hot_potato(game_details, plyr_id);
-//         if (hotpotato_stat.trigger === "success") {
-//             await game_actions.discard_card(game_details, card_id);
-//             stats_storage.set('hot_potatoes', stats_storage.get('hot_potatoes') + 1);
-//             await game_actions.explode_tick(game_details.slug, 15, hotpotato_stat.data.next_plyr_id, hotpotato_stat.data.chicken_id, "public/cards/yolking_around/hotpotato-1.png", socket_id, fastify, config_storage, stats_storage, bot);
-//             return {trigger: "hotpotato", data: {}};
-//         } else {
-//             return hotpotato_stat;
-//         }
-//     } else if (card_details.action === "favorgator") {
-//         let v_favor = await card_actions.verify_favor(game_details, plyr_id, target);
-//         if (v_favor === true) {
-//             let favor_data = await card_actions.ask_favor(game_details, plyr_id, target, false, stats_storage);
-//             await game_actions.discard_card(game_details, card_id);
-//             stats_storage.set('favors', stats_storage.get('favors') + 1);
-//             return {trigger: "favor_taken", data: {
-//                     target_plyr_id: favor_data.used_gator ? plyr_id : target, favor_player_name: favor_data.used_gator ? (await player_actions.get_player_details(game_details, target)).nickname : (await player_actions.get_player_details(game_details, plyr_id)).nickname, card_image_loc: favor_data.card.image_loc, used_gator: favor_data.used_gator
-//                 }};
-//         } else {
-//             return v_favor;
-//         }
-//     } else if (card_details.action === "scrambledeggs") {
-//         await card_actions.scrambled_eggs(game_details);
-//         await game_actions.discard_card(game_details, card_id);
-//         stats_storage.set('scrambled_eggs', stats_storage.get('scrambled_eggs') + 1);
-//         return {trigger: "scrambledeggs", data: "true"};
-//     } else if (card_details.action === "superskip") {
-//         let temp_remain = game_details.turns_remaining;
-//         game_details.turns_remaining = 1;
-//         await game_actions.advance_turn(game_details);
-//         game_details.turns_remaining = temp_remain;
-//         await game_actions.discard_card(game_details, card_id);
-//         stats_storage.set('super_skips', stats_storage.get('super_skips') + 1);
-//         return {trigger: "superskip", data: "true"};
-//     } else if (card_details.action === "safetydraw") {
-//         await card_actions.safety_draw(game_details, plyr_id);
-//         await game_actions.discard_card(game_details, card_id);
-//         await game_actions.advance_turn(game_details);
-//         stats_storage.set('safety_draws', stats_storage.get('safety_draws') + 1);
-//         return {trigger: "superskip", data: "true"};
-//     } else if (card_details.action === "drawbottom") {
-//         // Discard and draw card from draw deck and place in hand
-//         await game_actions.discard_card(game_details, card_id);
-//         let card_drawn = await game_actions.draw_card(game_details, plyr_id, "bottom");
-//         // Check if card drawn in an ec
-//         if (card_drawn.action !== "chicken") await game_actions.advance_turn(game_details);
-//         if (card_drawn.action === "chicken") await game_actions.explode_tick(game_details.slug, 15, plyr_id, card_drawn._id, "public/cards/base/chicken.png", socket_id, fastify, config_storage, stats_storage, bot);
-//         stats_storage.set('draw_bottoms', stats_storage.get('draw_bottoms') + 1);
-//         return {trigger: "drawbottom", data: card_drawn};
-//     } else {
-//         // Houston, we have a problem
-//         return {trigger: "error", data: "Invalid card"};
-//     }
-// }
 
 // Name : game_actions.discard_card(lobby_details, game_pos, card_id)
 // Desc : put a card in discard deck
@@ -328,7 +206,7 @@ exports.advance_turn = async function (lobby_details, game_pos) {
     // Check how many turns we have left
     if (lobby_details.games[game_pos].turns_remain <= 1) { // Only one turn left, player seat advances
         // Advance to the next seat
-        lobby_details.games[game_pos].turn_seat_pos = await player_actions.next_seat(lobby_details, game_pos);
+        lobby_details.games[game_pos].turn_seat_pos = await player_actions.next_seat(lobby_details, game_pos, "seat_pos");
         // Make sure the number of turns remaining is not 0
         lobby_details.games[game_pos].turns_remain = 1;
     } else { // Multiple turns left, player seat remains the same and turns_remaining decreases by one
@@ -402,6 +280,7 @@ exports.is_winner = async function (lobby_details, game_pos) {
             ctn++;
         }
     }
+    // console.log("is_winner: Active players: " + ctn);
     // Evaluate if we have a winner
     return ctn < 2;
     // // Determine if there is a winner, end game if so
