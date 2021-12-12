@@ -233,8 +233,9 @@ function simulate_lobby(id, plyr_ctn, rounds, stats) {
                 it('simulate games to completion', async function() {
                     await simulate_games(lobby_details, stats);
                 });
-                it('audit integrity of games');
-                it('replay games using events');
+                it('audit integrity of games', async function() {
+                    await audit_games(lobby_details);
+                });
                 it('reset games', async function() {
                     await lobby_actions.reset_games(lobby_details);
                 });
@@ -279,11 +280,10 @@ async function simulate_games(lobby_details, stats) {
                 // Check if the player is exploding (drew an EC somehow)
                 if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                     logger.info('Player is exploding, attempt to defuse', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
-                    // Force play through all cards to see if player has a defuse
+                    // Force through all cards to see if player has a defuse
                     await simulate_turn(lobby_details, i, plyr_id, true, false, stats);
                     // If we are still exploding, kill player
                     if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
-                        // Log that card was drawn
                         logger.info('Player still exploding, force play chicken', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                         await simulate_turn(lobby_details, i, plyr_id, true, true, stats);
                     }
@@ -326,24 +326,19 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
                     let incomplete_group = ['defuse', 'favor', 'favorgator', 'randchick-1', 'randchick-2', 'randchick-3', 'randchick-4'];
                     assert.isTrue(incomplete_group.includes(callback.card_action), 'callback on ' + callback.card_id + ' should be in complete group');
                     // Return complete callback
-                    if (callback.card_action === 'defuse') {
-                        // Update target with needed parameters and play card
-                        target.deck_pos = callback.data.max_pos;
-                        callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
-                        assert.isFalse(callback.incomplete, 'callback on ' + callback.card_id + ' should be complete');
-                    } else if (callback.card_action === 'favor') {
-                        // Update target with needed parameters and play card
+                    if (callback.card_action === 'defuse') { // Provide deck pos target
+                        target.deck_pos = Math.floor(Math.random() * callback.data.max_pos);
+                    } else if (callback.card_action === 'favor') { // Provide plyr_id and card_id target
                         target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
                         let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
                         target.card_id = target_hand.length !== 0 ? target_hand[Math.floor(Math.random() * (target_hand.length - 1))]._id : undefined;
-                        callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
-                    } else if (callback.card_action.includes('randchick') || callback.card_action === 'favorgator') {
-                        // Update target with needed parameters and play card
+                    } else if (callback.card_action.includes('randchick') || callback.card_action === 'favorgator') { // Provide plyr_id target
                         target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
-                        callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
                     } else {
                         assert.fail('callback on ' + callback.card_id + ' should be complete');
                     }
+                    // Play card with new target parameters
+                    callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
                     // Make sure we exited cleanly after making callback complete
                     assert.isUndefined(callback.err, 'callback on ' + callback.card_id + ' should not throw errors (' + callback.err + ')');
                 } else {
@@ -374,15 +369,15 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
 // Name : test.audit_games
 // Desc : audits all games in lobby, ensuring game outcome was possible
 // Author(s) : RAk3rman
-function audit_games(lobby_details, game_pos) {
-
-}
-
-// Name : test.replay_games
-// Desc : reconstructs all games in a lobby into new, single use lobbies and attempts to replay game
-// Author(s) : RAk3rman
-function replay_games(lobby_details, game_pos) {
-
+function audit_games(lobby_details) {
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Make sure card assignments match
+        let assigns = new Set(['draw_deck', 'discard_deck', 'out_of_play']);
+        for (let j = 0; j < lobby_details.games[i].cards.length; j++) {
+            assigns.add(lobby_details.games[i].cards[j].assign);
+        }
+        assert.isBelow(assigns.size, 5, 'ensure card assignments match')
+    }
 }
 
 // Name : test.after
