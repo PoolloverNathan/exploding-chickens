@@ -166,20 +166,26 @@ describe('Lobby deletion', function() {
 // Desc : simulates game play over 30 lobbies with a variable number of players over 3 rounds
 // Author(s) : RAk3rman
 describe('Simulation (final boss)', function() {
-    // Create 20 lobbies
-    for (let i = 1; i < 20; i++) {
-        let plyr_ctn = i + 1;
+    let stats = { lobbies: 0, games: 0, cards: 0 }
+    // Create 10 lobbies
+    for (let i = 0; i < 10; i++) {
+        let plyr_ctn = 2 + 3 * i;
         let rounds = 3;
-        simulate_lobby(i, plyr_ctn, rounds);
+        simulate_lobby(i + 1, plyr_ctn, rounds, stats);
     }
+    // Print stats after we are done with this test
+    after(function() {
+        console.log(wipe(`\n${chalk.bold.red('Mocha')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Simulation stats: ` + stats.lobbies + ` lobbies, ` + stats.games + ` games, with ` + stats.cards + ` card interactions`));
+    });
 });
 
 // Name : test.simulate_lobby
 // Desc : simulates game play in a single lobby with n number of rounds
 // Author(s) : RAk3rman
-function simulate_lobby(id, plyr_ctn, rounds) {
+function simulate_lobby(id, plyr_ctn, rounds, stats) {
     describe('Lobby #' + id + ' (' + plyr_ctn + 'P)', function () {
         this.timeout(plyr_ctn * 200 + 3000); // Dynamically increase timeout for larger lobbies
+        stats.lobbies++;
         let lobby_details;
         describe('Setup lobby', function () {
             it('create lobby', async function() {
@@ -225,7 +231,7 @@ function simulate_lobby(id, plyr_ctn, rounds) {
                     await lobby_actions.start_games(lobby_details);
                 });
                 it('simulate games to completion', async function() {
-                    await simulate_games(lobby_details);
+                    await simulate_games(lobby_details, stats);
                 });
                 it('audit integrity of games');
                 it('replay games using events');
@@ -248,16 +254,17 @@ function simulate_lobby(id, plyr_ctn, rounds) {
 // Name : test.simulate_games
 // Desc : simulates all games in a lobby to completion
 // Author(s) : RAk3rman
-async function simulate_games(lobby_details) {
+async function simulate_games(lobby_details, stats) {
     for (let i = 0; i < lobby_details.games.length; i++) {
         logger.info('Game simulation starting', { 'in': 'simulate_game', 'l_slug': lobby_details.slug, 'g_slug': lobby_details.games[i].slug, 'plyr_ctn': (await game_actions.get_players(lobby_details, i)).length });
+        stats.games++;
         let turn_ctn = 0;
         // Loop forever until we get a winner, will time out if a player never wins
         while (!await game_actions.is_winner(lobby_details, i)) {
             // Check which player is playing
             let plyr_id = await player_actions.get_turn_plyr_id(lobby_details, i);
             // Simulate turn
-            await simulate_turn(lobby_details, i, plyr_id, false, false);
+            await simulate_turn(lobby_details, i, plyr_id, false, false, stats);
             // If the turn is still on the current player, draw card
             if (await player_actions.get_turn_plyr_id(lobby_details, i) === plyr_id) {
                 // Make sure we aren't exploding before drawing a card
@@ -267,17 +274,18 @@ async function simulate_games(lobby_details) {
                     assert.exists(card_details, 'ensure drawn card exists');
                     // Log that card was drawn
                     logger.info('Card drawn (' + card_details._id + ')', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
+                    stats.cards++;
                 }
                 // Check if the player is exploding (drew an EC somehow)
                 if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                     logger.info('Player is exploding, attempt to defuse', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                     // Force play through all cards to see if player has a defuse
-                    await simulate_turn(lobby_details, i, plyr_id, true, false);
+                    await simulate_turn(lobby_details, i, plyr_id, true, false, stats);
                     // If we are still exploding, kill player
                     if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                         // Log that card was drawn
                         logger.info('Player still exploding, force play chicken', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
-                        await simulate_turn(lobby_details, i, plyr_id, true, true);
+                        await simulate_turn(lobby_details, i, plyr_id, true, true, stats);
                     }
                 }
             }
@@ -291,7 +299,7 @@ async function simulate_games(lobby_details) {
 // Name : test.simulate_turn
 // Desc : randomly plays cards as if a user were playing
 // Author(s) : RAk3rman
-async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_chicken) {
+async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_chicken, stats) {
     logger.info('Turn simulation starting', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
     // Get player's hand
     let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
@@ -346,6 +354,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
                 }
                 // Log that card was played
                 logger.info('Card played (' + callback.card_id + ')', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
+                stats.cards++;
             }
         }
     }
