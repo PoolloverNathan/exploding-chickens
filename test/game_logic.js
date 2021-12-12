@@ -179,7 +179,7 @@ describe('Simulation (final boss)', function() {
 // Author(s) : RAk3rman
 function simulate_lobby(id, plyr_ctn, rounds) {
     describe('Lobby #' + id + ' (' + plyr_ctn + 'P)', function () {
-        this.timeout(plyr_ctn * 150); // Dynamically increase timeout for larger lobbies
+        this.timeout(plyr_ctn * 200 + 3000); // Dynamically increase timeout for larger lobbies
         let lobby_details;
         describe('Setup lobby', function () {
             it('create lobby', async function() {
