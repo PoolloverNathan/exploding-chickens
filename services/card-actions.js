@@ -62,6 +62,7 @@ exports.defuse = async function (lobby_details, game_pos, card_id, plyr_id, targ
 exports.chicken = async function (lobby_details, game_pos, plyr_id, callback) {
     // Kill player and advance turn
     await card_actions.kill_player(lobby_details, game_pos, plyr_id);
+    lobby_details.games[game_pos].turns_remain = 1;
     await game_actions.advance_turn(lobby_details, game_pos);
 }
 
@@ -396,15 +397,15 @@ exports.draw_bottom = async function (lobby_details, game_pos, card_id, plyr_id,
 // Desc : player exploded, removes player from game and frees cards
 // Author(s) : RAk3rman
 exports.kill_player = async function (lobby_details, game_pos, plyr_id) {
-    // Find player and update is_dead
-    lobby_details.players[await player_actions.get_player_pos(lobby_details, plyr_id)].is_dead = true;
     // Update all cards in player's hand to be "out of play"
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i].assign === plyr_id) {
             lobby_details.games[game_pos].cards[i].assign = "out_of_play";
-            lobby_details.games[game_pos].cards[i].placed_by_id = undefined;
+            lobby_details.games[game_pos].cards[i].placed_by_id = "";
         }
     }
+    // Find player and update is_dead
+    lobby_details.players[await player_actions.get_player_pos(lobby_details, plyr_id)].is_dead = true;
 }
 
 // Name : card_actions.filter_cards(assign, card_array)

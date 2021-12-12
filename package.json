@@ -52,7 +52,8 @@
     "point-of-view": "^4.7.0",
     "sweetalert2": "^10.16.2",
     "unique-names-generator": "^4.3.1",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "autoprefixer": "^10.3.4",

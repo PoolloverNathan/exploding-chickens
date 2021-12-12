@@ -8,3 +8,5 @@ node_modules/
 config/config\.json
 
 config/stats\.json
+
+test/logs/

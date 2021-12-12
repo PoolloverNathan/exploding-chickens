@@ -16,6 +16,7 @@ const wipe = chalk.white;
 const dataStore = require('data-store');
 const config_storage = new dataStore({path: '../config/config.json'});
 const stats_storage = new dataStore({path: './config/stats.json'});
+const winston = require('winston');
 
 // Services
 let setup = require('../config/setup.js');
@@ -30,6 +31,15 @@ const {get_turn_plyr_id} = require("../services/player-actions");
 
 // Variables
 let lobby_id;
+
+// Setup event logger
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    transports: [
+        new winston.transports.File({ filename: './test/logs/events.log', options: { flags: 'w' } }),
+    ],
+});
 
 // Name : test.before
 // Desc : get everything setup for test cases
@@ -158,8 +168,9 @@ describe('Lobby deletion', function() {
 describe('Simulation (final boss)', function() {
     // Create 20 lobbies
     for (let i = 1; i < 20; i++) {
-        // simulate_lobby(i, 6, 3);
-        simulate_lobby(i, i + 1, 3);
+        let plyr_ctn = i + 1;
+        let rounds = 3;
+        simulate_lobby(i, plyr_ctn, rounds);
     }
 });
 
@@ -239,6 +250,7 @@ function simulate_lobby(id, plyr_ctn, rounds) {
 // Author(s) : RAk3rman
 async function simulate_games(lobby_details) {
     for (let i = 0; i < lobby_details.games.length; i++) {
+        logger.info('Game simulation starting', { 'in': 'simulate_game', 'l_slug': lobby_details.slug, 'g_slug': lobby_details.games[i].slug, 'plyr_ctn': (await game_actions.get_players(lobby_details, i)).length });
         let turn_ctn = 0;
         // Loop forever until we get a winner, will time out if a player never wins
         while (!await game_actions.is_winner(lobby_details, i)) {
@@ -253,13 +265,18 @@ async function simulate_games(lobby_details) {
                     // Draw card to end turn
                     let card_details = await game_actions.draw_card(lobby_details, i, plyr_id);
                     assert.exists(card_details, 'ensure drawn card exists');
+                    // Log that card was drawn
+                    logger.info('Card drawn (' + card_details._id + ')', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                 }
                 // Check if the player is exploding (drew an EC somehow)
                 if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                    logger.info('Player is exploding, attempt to defuse', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                     // Force play through all cards to see if player has a defuse
                     await simulate_turn(lobby_details, i, plyr_id, true, false);
                     // If we are still exploding, kill player
                     if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                        // Log that card was drawn
+                        logger.info('Player still exploding, force play chicken', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                         await simulate_turn(lobby_details, i, plyr_id, true, true);
                     }
                 }
@@ -275,6 +292,7 @@ async function simulate_games(lobby_details) {
 // Desc : randomly plays cards as if a user were playing
 // Author(s) : RAk3rman
 async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_chicken) {
+    logger.info('Turn simulation starting', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
     // Get player's hand
     let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Loop over each card in the players hand
@@ -290,6 +308,8 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
             // Ensure err wasn't thrown, if so, do nothing and try to play another card
             // Errors are sent to the client in the callback and appear in a popup when they attempt to play the card
             if (!callback.err) {
+                // Log that card was played
+                logger.info('Attempting to play (' + callback.card_id + ')', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
                 // Check if callback was complete or incomplete
                 // We shouldn't expect any errors with these group of cards
                 if (callback.incomplete) {
@@ -324,9 +344,22 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
                     let complete_group = ['attack', 'chicken', 'reverse', 'seethefuture', 'shuffle', 'skip', 'hotpotato', 'scrambledeggs', 'superskip', 'safetydraw', 'drawbottom'];
                     assert.isTrue(complete_group.includes(callback.card_action), 'callback on ' + callback.card_id + ' should be in incomplete group');
                 }
+                // Log that card was played
+                logger.info('Card played (' + callback.card_id + ')', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
             }
         }
     }
+    // Verify number of active chickens and active players match
+    let active_chickens = 1;
+    let active_players = 0;
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        if (lobby_details.games[game_pos].cards[i].action === 'chicken' && lobby_details.games[game_pos].cards[i].assign !== 'out_of_play') active_chickens++;
+    }
+    let players = await game_actions.get_players(lobby_details, game_pos);
+    for (let i = 0; i < players.length; i++) {
+        if (!players[i].is_dead) active_players++;
+    }
+    assert.equal(active_chickens, active_players, 'active players (exp) should equal active chickens (act) plus 1');
 }
 
 // Name : test.audit_games

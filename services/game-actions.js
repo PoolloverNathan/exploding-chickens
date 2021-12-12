@@ -108,6 +108,8 @@ exports.export_cards = async function (lobby_details, game_pos, pack_name) {
 exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
     // Filter draw deck
     let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    // If there are no cards in draw deck, return undefined
+    if (draw_deck.length < 1) return undefined;
     // Filter player hand
     let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Determine position of drawn card
@@ -130,7 +132,7 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
     return draw_deck[pos];
 }
 
-// Name : game_actions.draw_card(lobby_details, game_pos, card_id, req_plyr_id, target)
+// Name : game_actions.play_card(lobby_details, game_pos, card_id, req_plyr_id, target)
 // Desc : calls the appropriate card function based on card action, returns structured callback to be sent to client
 // Target data structure : { plyr_id, card_id, deck_pos }
 // Author(s) : RAk3rman
