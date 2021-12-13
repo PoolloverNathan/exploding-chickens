@@ -8,11 +8,10 @@ Author(s): RAk3rman
 
 // Declare packages
 let Lobby = require('./models/lobby.js');
-let Game = require('./models/game.js');
 const path = require('path');
 let mongoose = require('mongoose');
 const dataStore = require('data-store');
-const config_storage = new dataStore({path: './config/config.json'});
+const config_store = new dataStore({path: './config/config.json'});
 const stats_store = new dataStore({path: './config/stats.json'});
 const moment = require('moment');
 const chalk = require('chalk');
@@ -37,16 +36,15 @@ console.log(chalk.white('--> Description: ' + pkg.description));
 console.log(chalk.white('--> Github: ' + pkg.homepage + '\n'));
 
 // Check configuration values
-setup.check_values(config_storage, stats_store);
+setup.check_values(config_store, stats_store);
 
 // Discord bot setup
 let bot;
 let send_startup_msg = true;
-if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
-    config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
-    // Declare variable
-    bot = new eris.Client(config_storage.get('discord_bot_token'));
-
+if (config_store.has('discord_bot_token') && config_store.get('discord_bot_token') !== '' &&
+    config_store.has('discord_bot_channel') && config_store.get('discord_bot_channel') !== '') {
+    // Declare bot instance
+    bot = new eris.Client(config_store.get('discord_bot_token'));
     // When the bot is connected and ready, update console
     bot.on('ready', () => {
         // Set bot status
@@ -54,11 +52,10 @@ if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_t
         // Send update to console
         console.log(wipe(`${chalk.bold.blueBright('Discord')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.blueBright('bot-connect     ')} Bot is now connected to Discord API`));
         if (send_startup_msg) {
-            bot.createMessage(config_storage.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens v" + pkg.version + ": Service Online**");
+            bot.createMessage(config_store.get('discord_bot_channel'), ":white_check_mark: **Exploding Chickens v" + pkg.version + ": Service Online**");
             send_startup_msg = false;
         }
     });
-
     // Handle any errors that the bot encounters
     bot.on('error', err => {
         console.warn(err);
@@ -103,6 +100,7 @@ fastify.register(require('fastify-rate-limit'), {
     max: 250,
     timeWindow: '1 minute'
 })
+
 // Routers
 let lobby_api = require('./routes/lobby-api.js');
 let error_api = require('./routes/error-api.js');
@@ -117,7 +115,7 @@ fastify.get('/', (req, reply) => {
         title: "Exploding Chickens",
         version: pkg.version,
         stat_games_played: stats_store.get('games_played').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
-        stat_explosions: stats_store.get('explosions').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
+        stat_explosions: stats_store.get('chicken').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
         stats_avg_play_time: Math.round(stats_store.get('mins_played') / stats_store.get('games_played')) || 0,
         bnr_short_desc: bnr_config.short_desc,
         bnr_long_desc: bnr_config.long_desc,
@@ -175,35 +173,35 @@ mongoose.connection.on('timeout', function () {console.log(wipe(`${chalk.bold.ye
 mongoose.connection.on('disconnected', function () {console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connection was interrupted`));mongoose_disconnected()});
 
 // Connect to mongodb using mongoose
-console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_storage.get('mongodb_url') + `"`));
-mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
+console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_store.get('mongodb_url') + `"`));
+mongoose.connect(config_store.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
 //mongoose.set('useFindAndModify', false);
 
 // When mongoose establishes a connection with mongodb
 function mongoose_connected() {
-    console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at "` + config_storage.get('mongodb_url') + `"`));
+    console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at "` + config_store.get('mongodb_url') + `"`));
     // Start purge game cycle
-    if (config_storage.get('purge_age_hrs') !== -1) {
-        console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies older than ` + config_storage.get('purge_age_hrs') + ` hours`));
+    if (config_store.get('purge_age_hrs') !== -1) {
+        console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies older than ` + config_store.get('purge_age_hrs') + ` hours`));
         lobby_actions.lobby_purge().then(function () {});
         setInterval(e => {
-            console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies older than ` + config_storage.get('purge_age_hrs') + ` hours`));
+            console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies older than ` + config_store.get('purge_age_hrs') + ` hours`));
             lobby_actions.lobby_purge().then(function () {});
         }, 3600000*2);
     }
     // Start webserver using config values
-    console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to start http webserver on port ` + config_storage.get('webserver_port')));
-    fastify.listen(config_storage.get('webserver_port'), function (err) {
+    console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to start http webserver on port ` + config_store.get('webserver_port')));
+    fastify.listen(config_store.get('webserver_port'), function (err) {
         if (err) {
             fastify.log.error(err)
             process.exit(1)
         }
-        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Started http webserver on port ` + config_storage.get('webserver_port')));
+        console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Started http webserver on port ` + config_store.get('webserver_port')));
         // Open socket.io connection
-        socket_handler(fastify, stats_store, config_storage, bot);
+        socket_handler(fastify, stats_store, config_store, bot);
         // Connect discord bot
-        if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
-            config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
+        if (config_store.has('discord_bot_token') && config_store.get('discord_bot_token') !== '' &&
+            config_store.has('discord_bot_channel') && config_store.get('discord_bot_channel') !== '') {
             bot.connect();
         }
     })
@@ -211,7 +209,7 @@ function mongoose_connected() {
 
 // When mongoose losses a connection with mongodb
 function mongoose_disconnected() {
-    console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Stopping http webserver on port ` + config_storage.get('webserver_port')));
+    console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Stopping http webserver on port ` + config_store.get('webserver_port')));
     //server.close();
 }
 

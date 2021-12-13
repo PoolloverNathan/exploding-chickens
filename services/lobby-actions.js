@@ -7,14 +7,12 @@ Author(s): RAk3rman
 
 // Packages
 let Lobby = require('../models/lobby.js');
-const chalk = require('chalk');
 const moment = require('moment');
-let momentDurationFormatSetup = require("moment-duration-format");
+const chalk = require('chalk');
 const wipe = chalk.white;
-const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
+const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator');
 const dataStore = require('data-store');
-const config_storage = new dataStore({path: './config/config.json'});
-const pkg = require('../package.json');
+const config_store = new dataStore({path: './config/config.json'});
 
 // Services
 let lobby_actions = require('./lobby-actions.js');
@@ -296,7 +294,7 @@ exports.delete_lobby = async function (_id) {
 exports.lobby_purge = async function (suppress_debug) {
     // Filter which objects to purge
     try {
-        let to_purge = await Lobby.find({ created: { $lte: moment().subtract(config_storage.get('purge_age_hrs'), "hours").toISOString() } });
+        let to_purge = await Lobby.find({ created: { $lte: moment().subtract(config_store.get('purge_age_hrs'), "hours").toISOString() } });
         to_purge.forEach(ele => {
             // Delete lobby
             lobby_actions.delete_lobby(ele._id).then(() => {

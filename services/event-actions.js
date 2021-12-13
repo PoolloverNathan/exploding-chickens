@@ -5,13 +5,15 @@ Desc     : handles all event actions
 Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
+// Packages
+const moment = require("moment");
+
 // Services
 let lobby_actions = require('./lobby-actions.js');
 let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
-let rel_ids = require('./card-actions.js');
+let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
-const moment = require("moment");
 
 // Name : lobby_actions.log_event(details, tag, req_plyr_id, target_plyr_id, rel_id, rel_val)
 // Desc : creates a new event

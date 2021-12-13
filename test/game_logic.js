@@ -14,7 +14,7 @@ const chalk = require('chalk');
 const pkg = require('../package.json');
 const wipe = chalk.white;
 const dataStore = require('data-store');
-const config_storage = new dataStore({path: '../config/config.json'});
+const config_store = new dataStore({path: '../config/config.json'});
 const stats_store = new dataStore({path: './test/logs/stats.json'});
 const winston = require('winston');
 
@@ -47,16 +47,16 @@ const logger = winston.createLogger({
 before(done => {
     console.log(chalk.blue.bold('\nExploding Chickens v' + pkg.version + ' | Game Logic Test Cases'));
     // Check configuration values
-    setup.check_values(config_storage, stats_store);
+    setup.check_values(config_store, stats_store);
     // Connect to mongodb using mongoose
-    console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_storage.get('mongodb_url') + `"`));
-    mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
+    console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_store.get('mongodb_url') + `"`));
+    mongoose.connect(config_store.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
     mongoose.connection.on('connected', function () {
-        console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at "` + config_storage.get('mongodb_url') + `"`));
+        console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Connected successfully at "` + config_store.get('mongodb_url') + `"`));
         console.log(wipe(`${chalk.bold.red('Mocha')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Starting test cases, hopefully something doesn't break`));
         done();
     });
-    mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
+    mongoose.connect(config_store.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
 });
 
 // Name : test.lobby_setup
@@ -138,7 +138,7 @@ describe('Lobby deletion', function() {
         it('create purgeable lobby', async function () {
             lobby_details = await Lobby.create({
                 slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2}),
-                created: moment().subtract(config_storage.get('purge_age_hrs'), "hours")
+                created: moment().subtract(config_store.get('purge_age_hrs'), "hours")
             });
         });
         it('purging lobby', function(done) {
@@ -258,6 +258,7 @@ function simulate_lobby(id, plyr_ctn, rounds, stats) {
 async function simulate_games(lobby_details, stats) {
     for (let i = 0; i < lobby_details.games.length; i++) {
         logger.info('Game simulation starting', { 'in': 'simulate_game', 'l_slug': lobby_details.slug, 'g_slug': lobby_details.games[i].slug, 'plyr_ctn': (await game_actions.get_players(lobby_details, i)).length });
+        stats_store.set('games_played', stats_store.get('games_played') + 1);
         stats.games++;
         let turn_ctn = 0;
         // Loop forever until we get a winner, will time out if a player never wins
@@ -280,7 +281,7 @@ async function simulate_games(lobby_details, stats) {
                 // Check if the player is exploding (drew an EC somehow)
                 if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                     logger.info('Player is exploding, attempt to defuse', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
-                    // Force through all cards to see if player has a defuse
+                    // Force through all cards to see if player has a defuse card
                     await simulate_turn(lobby_details, i, plyr_id, true, false, stats);
                     // If we are still exploding, kill player
                     if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
@@ -307,7 +308,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
     // Break out of loop if we use a card that advances the turn order
     for (let i = 0; i < player_hand.length && ((await player_actions.get_turn_plyr_id(lobby_details, game_pos)) === plyr_id); i++) {
         // For this card, give the user a 30% chance of playing it
-        // If play_all is true, try to play every card in the hand except chickens
+        // If play_all is true, try to play every card in the hand
         // Then, make sure the card we are about to play is not a chicken unless play_chicken is true
         if ((Math.random() < 0.3 || play_all) && (player_hand[i].action !== "chicken" || play_chicken)) {
             // Make blind attempt to play card
@@ -316,7 +317,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
             // Ensure err wasn't thrown, if so, do nothing and try to play another card
             // Errors are sent to the client in the callback and appear in a popup when they attempt to play the card
             if (!callback.err) {
-                // Log that card was played
+                // Log that a card was played
                 logger.info('Attempting to play (' + callback.card_id + ')', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
                 // Check if callback was complete or incomplete
                 // We shouldn't expect any errors with these group of cards

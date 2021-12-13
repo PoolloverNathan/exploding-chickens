@@ -7,8 +7,8 @@ Author(s): RAk3rman, SengdowJones
 
 // Packages
 let Lobby = require('../models/lobby.js');
-let game = require('../models/game.js');
 const { nanoid } = require('nanoid');
+const moment = require("moment");
 
 // Services
 let lobby_actions = require('./lobby-actions.js');
@@ -16,7 +16,6 @@ let game_actions = require('./game-actions.js');
 let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
-const moment = require("moment");
 
 // Name : player_actions.create_player(lobby_details, nickname, avatar)
 // Desc : creates a new player
