@@ -13,7 +13,7 @@ const moment = require('moment');
 // Name : setup.check_values()
 // Desc : checks all env.json values and configures each value if invalid
 // Author(s) : RAk3rman
-exports.check_values = function (config_storage, stats_storage) {
+exports.check_values = function (config_storage, stats_store) {
     console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Checking system setup values`));
     let invalid_config = false;
     // Config value: webserver_port | the port where the webserver will listen for requests
@@ -54,10 +54,10 @@ exports.check_values = function (config_storage, stats_storage) {
         console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Configuration values have been propagated`));
     }
     // Check default stats values
-    let stats_array = ['games_played', 'mins_played', 'explosions', 'attacks', 'defuses', 'favors', 'reverses', 'see_the_futures', 'shuffles', 'skips', 'hot_potatoes', 'favor_gators', 'scrambled_eggs', 'super_skips', 'safety_draws', 'draw_bottoms', 'sockets_active'];
+    let stats_array = ['games_played', 'mins_played', 'attack', 'defuse', 'chicken', 'favor', 'randchick', 'reverse', 'seethefuture', 'shuffle', 'skip', 'hotpotato', 'favorgator', 'scrambledeggs', 'superskip', 'safetydraw', 'drawbottom', 'sockets_active'];
     stats_array.forEach(element => {
-        if (!stats_storage.has(element)) {
-            stats_storage.set(element, 0);
+        if (!stats_store.has(element)) {
+            stats_store.set(element, 0);
             console.log(wipe(`${chalk.bold.cyan('Setup')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] "` + element + `" value in stats.json set to default: "0"`));
         }
     })

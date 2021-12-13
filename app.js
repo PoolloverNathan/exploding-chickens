@@ -13,7 +13,7 @@ const path = require('path');
 let mongoose = require('mongoose');
 const dataStore = require('data-store');
 const config_storage = new dataStore({path: './config/config.json'});
-const stats_storage = new dataStore({path: './config/stats.json'});
+const stats_store = new dataStore({path: './config/stats.json'});
 const moment = require('moment');
 const chalk = require('chalk');
 const pkg = require('./package.json');
@@ -37,7 +37,7 @@ console.log(chalk.white('--> Description: ' + pkg.description));
 console.log(chalk.white('--> Github: ' + pkg.homepage + '\n'));
 
 // Check configuration values
-setup.check_values(config_storage, stats_storage);
+setup.check_values(config_storage, stats_store);
 
 // Discord bot setup
 let bot;
@@ -116,9 +116,9 @@ fastify.get('/', (req, reply) => {
     reply.view('/templates/home.hbs', {
         title: "Exploding Chickens",
         version: pkg.version,
-        stat_games_played: stats_storage.get('games_played').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
-        stat_explosions: stats_storage.get('explosions').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
-        stats_avg_play_time: Math.round(stats_storage.get('mins_played') / stats_storage.get('games_played')) || 0,
+        stat_games_played: stats_store.get('games_played').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
+        stat_explosions: stats_store.get('explosions').toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
+        stats_avg_play_time: Math.round(stats_store.get('mins_played') / stats_store.get('games_played')) || 0,
         bnr_short_desc: bnr_config.short_desc,
         bnr_long_desc: bnr_config.long_desc,
         bnr_tag: bnr_config.tag
@@ -200,7 +200,7 @@ function mongoose_connected() {
         }
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Started http webserver on port ` + config_storage.get('webserver_port')));
         // Open socket.io connection
-        socket_handler(fastify, stats_storage, config_storage, bot);
+        socket_handler(fastify, stats_store, config_storage, bot);
         // Connect discord bot
         if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
             config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {

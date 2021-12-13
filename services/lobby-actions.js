@@ -245,7 +245,7 @@ exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
     let games_completed = 0;
     for (let i = 0; i < lobby_details.games.length; i++) {
         if (!lobby_details.games[i].is_completed) {
-            games_payload.push(await game_actions.game_export(lobby_details, i, source, req_plyr_id));
+            games_payload.push(await game_actions.game_export(lobby_details, i, undefined, source, req_plyr_id));
         }
         if (lobby_details.games[i].is_completed) games_completed++;
     }

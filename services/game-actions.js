@@ -136,7 +136,7 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
 // Desc : calls the appropriate card function based on card action, returns structured callback to be sent to client
 // Target data structure : { plyr_id, card_id, deck_pos }
 // Author(s) : RAk3rman
-exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_id, target) {
+exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_id, target, stats_store) {
     // Find card details based on card_id
     let card_details = await card_actions.find_card(card_id, lobby_details.games[game_pos].cards);
     // Callback payload data structure
@@ -175,8 +175,10 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     else { callback.err = "Invalid card action"; }
     // Check if callback was successful (complete request and no errors)
     if (!callback.incomplete && !callback.err) {
-        // Reached end of successful card execution, update events
+        // Reached end of successful card execution, update events and statistics
         await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target.plyr_id, callback.card_id, undefined);
+        let stats_desc = card_details.action.includes("randchick") ? "randchick" : card_details.action;
+        stats_store.set(stats_desc, stats_store.get(stats_desc) + 1);
     }
     return callback;
 }
@@ -216,10 +218,10 @@ exports.advance_turn = async function (lobby_details, game_pos) {
     }
 }
 
-// // Name : game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot)
+// // Name : game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_store, bot)
 // // Desc : recursively count down when a player has an EC in their hand
 // // Author(s) : RAk3rman
-// exports.explode_tick = async function (slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) {
+// exports.explode_tick = async function (slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_store, bot) {
 //     // Get game details
 //     let game_details = await game_actions.game_details_slug(slug);
 //     // Check if placed_by is active
@@ -252,8 +254,8 @@ exports.advance_turn = async function (lobby_details, game_pos) {
 //                 await card_actions.kill_player(game_details, plyr_id);
 //                 await game_actions.discard_card(game_details, card_id);
 //                 game_details.turns_remaining = 0;
-//                 stats_storage.set('explosions', stats_storage.get('explosions') + 1);
-//                 if (await game_actions.is_winner(game_details, stats_storage, bot) === true) {
+//                 stats_store.set('explosions', stats_store.get('explosions') + 1);
+//                 if (await game_actions.is_winner(game_details, stats_store, bot) === true) {
 //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} Game has ended, a player has won`));
 //                     fastify.io.emit(slug + "-update", await game_actions.get_game_export(slug, "reset-game", "winner_callback"));
 //                 } else {
@@ -265,13 +267,13 @@ exports.advance_turn = async function (lobby_details, game_pos) {
 //                 return;
 //             }
 //             // Call function again
-//             setTimeout(function(){ game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_storage, bot) }, 1000);
+//             setTimeout(function(){ game_actions.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_storage, stats_store, bot) }, 1000);
 //             return;
 //         }
 //     }
 // }
 
-// Name : game_actions.is_winner(game_details, stats_storage, bot)
+// Name : game_actions.is_winner(game_details, stats_store, bot)
 // Desc : check to see if there is a winner
 // Author(s) : RAk3rman
 exports.is_winner = async function (lobby_details, game_pos) {
@@ -288,8 +290,8 @@ exports.is_winner = async function (lobby_details, game_pos) {
     // // Determine if there is a winner, end game if so
     // if (ctn === 1) {
     //     // Update stats
-    //     stats_storage.set('games_played', stats_storage.get('games_played') + 1);
-    //     stats_storage.set('mins_played', stats_storage.get('mins_played') + moment().diff(moment(game_details.start_time), 'minutes'));
+    //     stats_store.set('games_played', stats_store.get('games_played') + 1);
+    //     stats_store.set('mins_played', stats_store.get('mins_played') + moment().diff(moment(game_details.start_time), 'minutes'));
     //     // Send message if bot is configured
     //     if (config_storage.has('discord_bot_token') && config_storage.get('discord_bot_token') !== '' &&
     //         config_storage.has('discord_bot_channel') && config_storage.get('discord_bot_channel') !== '') {
@@ -314,7 +316,7 @@ exports.is_winner = async function (lobby_details, game_pos) {
     //         embed.field("Duration :timer:", moment().diff(moment(game_details.start_time), 'minutes') + " minutes", true);
     //         embed.field("EC chance :fire:", "1 EC / " + draw_deck.length + " cards -> " + Math.floor((1 / (draw_deck.length === 0 ? 1 : draw_deck.length))*100) + "%", true);
     //         embed.field("Lobby games :receipt:", (win_count + 1) + " played", true);
-    //         embed.field("Connections :link:", stats_storage.get("sockets_active") + " sockets active", true);
+    //         embed.field("Connections :link:", stats_store.get("sockets_active") + " sockets active", true);
     //         embed.field("Packs :card_box:", print_packs, true);
     //         embed.field("Players :busts_in_silhouette:", print_players, false);
     //         embed.footer("Release v" + pkg.version);
@@ -379,10 +381,10 @@ exports.get_players = async function (lobby_details, game_pos) {
     return players;
 }
 
-// Name : game_actions.game_export(lobby_details, game_pos, source, req_plyr_id)
+// Name : game_actions.game_export(lobby_details, game_pos, cb_data, source, req_plyr_id)
 // Desc : prepares game data for export to client
 // Author(s) : RAk3rman
-exports.game_export = async function (lobby_details, game_pos, source, req_plyr_id) {
+exports.game_export = async function (lobby_details, game_pos, cb_data, source, req_plyr_id) {
     if (!lobby_details) return;
     // Reference to game details
     let game_details = lobby_details.games[game_pos];
@@ -433,6 +435,7 @@ exports.game_export = async function (lobby_details, game_pos, source, req_plyr_
         discard_deck: discard_deck,
         packs: lobby_details.packs,
         play_timeout: lobby_details.play_timeout,
+        cb_data: cb_data,
         req_plyr_id: req_plyr_id,
         trigger: source.trim()
     }

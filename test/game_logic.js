@@ -15,7 +15,7 @@ const pkg = require('../package.json');
 const wipe = chalk.white;
 const dataStore = require('data-store');
 const config_storage = new dataStore({path: '../config/config.json'});
-const stats_storage = new dataStore({path: './config/stats.json'});
+const stats_store = new dataStore({path: './test/logs/stats.json'});
 const winston = require('winston');
 
 // Services
@@ -47,7 +47,7 @@ const logger = winston.createLogger({
 before(done => {
     console.log(chalk.blue.bold('\nExploding Chickens v' + pkg.version + ' | Game Logic Test Cases'));
     // Check configuration values
-    setup.check_values(config_storage, stats_storage);
+    setup.check_values(config_storage, stats_store);
     // Connect to mongodb using mongoose
     console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_storage.get('mongodb_url') + `"`));
     mongoose.connect(config_storage.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
@@ -312,7 +312,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
         if ((Math.random() < 0.3 || play_all) && (player_hand[i].action !== "chicken" || play_chicken)) {
             // Make blind attempt to play card
             let target = { plyr_id: undefined, card_id: undefined, deck_pos: undefined }
-            let callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
+            let callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
             // Ensure err wasn't thrown, if so, do nothing and try to play another card
             // Errors are sent to the client in the callback and appear in a popup when they attempt to play the card
             if (!callback.err) {
@@ -338,7 +338,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
                         assert.fail('callback on ' + callback.card_id + ' should be complete');
                     }
                     // Play card with new target parameters
-                    callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target);
+                    callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
                     // Make sure we exited cleanly after making callback complete
                     assert.isUndefined(callback.err, 'callback on ' + callback.card_id + ' should not throw errors (' + callback.err + ')');
                 } else {

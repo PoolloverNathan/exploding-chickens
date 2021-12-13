@@ -22,8 +22,8 @@ let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
 
 // Export to app.js file
-module.exports = function (fastify, stats_storage, config_storage, bot) {
-    stats_storage.set('sockets_active', 0);
+module.exports = function (fastify, stats_store, config_storage, bot) {
+    stats_store.set('sockets_active', 0);
     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Successfully opened socket.io connection`));
 
     // Name : socket.on.connection
@@ -31,9 +31,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
     // Author(s) : RAk3rman
     fastify.io.on('connection', function (socket) {
         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.green('new-connection  ')} ${chalk.dim.blue(socket.id)}`));
-        stats_storage.set('sockets_active', stats_storage.get('sockets_active') + 1);
+        stats_store.set('sockets_active', stats_store.get('sockets_active') + 1);
         let player_data = {};
-        let draw_cooldown = false;
+        let card_lock = false;
 
         // Name : socket.on.player-online
         // Desc : runs when the client receives game data and is hosting a valid player
@@ -43,15 +43,15 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to mark existing player as online`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
+                wf_l_get, // Get lobby_details
                 async function(lobby_details, req_data, action, socket_id, callback) { // Send game data
                     player_data = req_data;
                     await player_actions.update_sockets_open(lobby_details, req_data.plyr_id, "inc");
                     await lobby_details.save();
-                    await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                     callback(false, `Player now ${chalk.dim.green('connected')}`, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.retrieve-lobby
@@ -62,13 +62,13 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to retrieve lobby data`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
+                wf_l_get, // Get lobby_details
                 async function(lobby_details, req_data, action, socket_id, callback) { // Send lobby data
                     socket.join(lobby_details.slug);
-                    await update_lobby_ui(lobby_details, socket_id, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, socket_id, action, socket_id, req_data.plyr_id);
                     callback(false, `Retrieved and sent lobby data`, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.retrieve-game
@@ -79,14 +79,13 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.game_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to retrieve game data`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_game, // Get game_details
+                wf_g_get, // Get game_details
                 async function(lobby_details, game_pos, req_data, action, socket_id, callback) { // Send game data
                     socket.join(lobby_details.slug);
-                    socket.join(lobby_details.games[game_pos].slug);
-                    await update_game_ui(lobby_details, game_pos, socket_id, action, socket_id, req_data.plyr_id);
+                    await update_g_ui(lobby_details, game_pos, undefined, socket_id, action, socket_id, req_data.plyr_id);
                     callback(false, `Retrieved and sent game data`, lobby_details, game_pos, req_data, action, socket_id);
                 }
-            ], wf_final_game_callback);
+            ], wf_g_final_callback);
         })
 
         // Name : socket.on.create-player
@@ -97,7 +96,7 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to create new player`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
+                wf_l_get, // Get lobby_details
                 async function(lobby_details, req_data, action, socket_id, callback) { // Validation checks
                     let options = ["bear.png", "bull.png", "cat.png", "dog.png", "elephant.png", "flamingo.png", "fox.png", "lion.png", "mandrill.png", "meerkat.png", "monkey.png", "panda.png", "puma.png", "raccoon.png", "wolf.png"];
                     if (req_data.nickname === undefined || // Not blank
@@ -121,10 +120,10 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     await lobby_actions.partition_players(lobby_details);
                     await lobby_details.save();
                     fastify.io.to(socket_id).emit("player-created", req_data.plyr_id);
-                    await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                     callback(false, `Created new player`, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.start-games
@@ -135,9 +134,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to start all games`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
-                wf_validate_host, // Validate req player is host
-                wf_validate_not_in_progress, // Validate we are not in progress
+                wf_l_get, // Get lobby_details
+                wf_l_validate_host, // Validate req player is host
+                wf_l_validate_not_in_progress, // Validate we are not in progress
                 async function(lobby_details, req_data, action, socket_id, callback) { // Start game if player cap is satisfied
                     if (lobby_details.players.length < (lobby_details.include_host ? 2 : 3)) {
                         callback(true, `At least 2 players are required`, lobby_details, req_data, action, socket_id);
@@ -147,11 +146,11 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                         await lobby_actions.start_games(lobby_details);
                         await event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, undefined, undefined);
                         await lobby_details.save();
-                        await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                        await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                         callback(false, `All active lobby games have been ${chalk.dim.green('started')}`, lobby_details, req_data, action, socket_id);
                     }
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.reset-games
@@ -162,160 +161,68 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to reset all games`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
-                wf_validate_host, // Validate req player is host
+                wf_l_get, // Get lobby_details
+                wf_l_validate_host, // Validate req player is host
                 async function(lobby_details, req_data, action, socket_id, callback) { // Reset all games
                     await lobby_actions.reset_games(lobby_details);
                     await event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, undefined, undefined);
                     await lobby_details.save();
-                    await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                     callback(false, `All active lobby games have been ${chalk.dim.yellow('reset')}`, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
-        // // Name : socket.on.play-card
-        // // Desc : runs when a card is played on the client
-        // // Author(s) : RAk3rman
-        // // TODO : Redesign play card structure
-        // socket.on('play-card', async function (data) {
-        //     if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} ${chalk.dim.green(data.card_id)} Received request to play card`));
-        //     // Verify game exists
-        //     if (await game.exists({ slug: data.slug, "players._id": data.plyr_id })) {
-        //         // Get game details
-        //         let game_details = await game_actions.game_details_slug(data.slug);
-        //         if (validate_turn(data.plyr_id, game_details)) {
-        //             if (game_details.status === "in_game") {
-        //                 // Send card id to router
-        //                 let action_res = await game_actions.base_router(game_details, data.plyr_id, data.card_id, data.target, stats_storage, config_storage, bot, socket.id, fastify);
-        //                 if (action_res.data === "true") {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} ${chalk.dim.greenBright(data.card_id)} Card action completed, no callbacks`));
-        //                     // Update clients
-        //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.plyr_id)).nickname, undefined);
-        //                     fastify.io.to(socket.id).emit(data.slug + "-play-card", {
-        //                         card: card_details,
-        //                         game_details: await game_actions.get_game_export(data.slug, "play-card       ", data.plyr_id)
-        //                     });
-        //                     await update_game_ui(data.slug, undefined, "play-card       ", socket.id, data.plyr_id);
-        //                 } else if (action_res.trigger === "seethefuture") {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} ${chalk.dim.greenBright(action_res.trigger)} Card action completed, seethefuture callback`));
-        //                     // Update clients
-        //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.plyr_id)).nickname, undefined);
-        //                     await update_game_ui(data.slug, undefined, "play-card       ", socket.id, "seethefuture_callback");
-        //                     // Trigger stf callback
-        //                     fastify.io.to(socket.id).emit(data.slug + "-callback", {
-        //                         trigger: "seethefuture",
-        //                         payload: await card_actions.filter_cards("draw_deck", game_details["cards"])
-        //                     });
-        //                 } else if (action_res.trigger === "favor_target") {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} ${chalk.dim.greenBright(action_res.trigger)} Favor callback, requesting target player`));
-        //                     // Trigger favor_target callback
-        //                     fastify.io.to(socket.id).emit(data.slug + "-callback", {
-        //                         trigger: "favor_target",
-        //                         payload: {
-        //                             game_details: await game_actions.get_game_export(data.slug, "play-card       ", data.plyr_id),
-        //                             card_id: data.card_id
-        //                         }
-        //                     });
-        //                 } else if (action_res.trigger === "chicken_target") {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} ${chalk.dim.greenBright(action_res.trigger)} Chicken placement callback, requesting target position`));
-        //                     // Trigger favor_target callback
-        //                     fastify.io.to(socket.id).emit(data.slug + "-callback", {
-        //                         trigger: "chicken_target",
-        //                         payload: {
-        //                             max_pos: action_res.data["max_pos"],
-        //                             card_id: action_res.data["card_id"]
-        //                         }
-        //                     });
-        //                 } else if (action_res.trigger === "favor_taken") {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} ${chalk.dim.greenBright(action_res.trigger)} Favor callback, notifying player of card taken`));
-        //                     // Trigger favor_taken callback
-        //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.plyr_id)).nickname, data.target !== undefined ? (await player_actions.get_player_details(game_details, data.target)).nickname : undefined);
-        //                     fastify.io.emit(data.slug + "-callback", {
-        //                         trigger: "favor_taken",
-        //                         payload: {
-        //                             game_details: await game_actions.get_game_export(data.slug, "play-card       ", data.plyr_id),
-        //                             target_plyr_id: action_res.data["target_plyr_id"],
-        //                             favor_player_name: action_res.data["favor_player_name"],
-        //                             card_image_loc: action_res.data["card_image_loc"],
-        //                             used_gator: action_res.data["used_gator"]
-        //                         }
-        //                     });
-        //                 } else if (action_res.trigger === "hotpotato") {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Hot Potato callback`));
-        //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.plyr_id)).nickname, undefined);
-        //                     await update_game_ui(data.slug, undefined, "draw-card", socket.id, data.plyr_id);
-        //                 } else if (action_res.trigger === "drawbottom") {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Draw from the Bottom callback`));
-        //                     let card_details = await card_actions.find_card(data.card_id, game_details["cards"]);
-        //                     await game_actions.log_event(game_details, "play-card", card_details.action, card_details._id, (await player_actions.get_player_details(game_details, data.plyr_id)).nickname, undefined);
-        //                     await update_game_ui(data.slug, undefined, "play-card", socket.id, "drawbottom");
-        //                     fastify.io.to(socket.id).emit(data.slug + "-draw-card", action_res.data);
-        //                 } else if (action_res.trigger === "error") {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} ${chalk.dim.red('game-error')} ` + action_res.data));
-        //                     fastify.io.to(socket.id).emit(data.slug + "-error", { msg: action_res.data });
-        //                 } else {
-        //                     console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Invalid error when playing card`));
-        //                 }
-        //             } else {
-        //                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Player attempted to play card while game is in lobby`));
-        //                 fastify.io.to(socket.id).emit(data.slug + "-error", { msg: "Game has not started" });
-        //             }
-        //         } else {
-        //             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Player attempted to play a card when it is not their turn`));
-        //             fastify.io.to(socket.id).emit(data.slug + "-error", { msg: "Please wait your turn" });
-        //         }
-        //     } else {
-        //         console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('play-card       ')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Target game does not exist`));
-        //         fastify.io.to(socket.id).emit(data.slug + "-error", { msg: "GAME-DNE" });
-        //     }
-        // })
-        //
-        // // Name : socket.on.draw-card
-        // // Desc : runs when a card is drawn on the client
-        // // Author(s) : RAk3rman
-        // socket.on('draw-card', async function (data) {
-        //     let action = "draw-card       ";
-        //     if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to draw card`));
-        //     waterfall([
-        //         async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-        //         wf_get_game, // Get game_details
-        //         wf_validate_in_progress, // Validate we are in game
-        //         wf_validate_turn, // Validate it is req player's turn
-        //         async function(game_details, req_data, action, socket_id, callback) { // Verify player isn't exploding
-        //             for (let i = 0; i < game_details.players.length; i++) {
-        //                 if (game_details.players[i]._id === req_data.plyr_id) {
-        //                     if (game_details.players[i].status !== "exploding") {
-        //                         callback(false, game_details, req_data, action, socket_id);
-        //                     } else {
-        //                         callback(true, `You cannot draw a card now`, req_data.slug, action, socket_id, req_data.plyr_id);
-        //                     }
-        //                 }
-        //             }
-        //         },
-        //         async function(game_details, req_data, action, socket_id, callback) { // Draw card
-        //             if (!draw_cooldown) {
-        //                 // Handle draw cooldown
-        //                 draw_cooldown = true;
-        //                 setTimeout( function () {draw_cooldown = false}, 300);
-        //                 // Draw card from draw deck and check if it is a chicken
-        //                 let card_drawn = await game_actions.draw_card(game_details, req_data.plyr_id, "top");
-        //                 if (card_drawn.action !== "chicken") await game_actions.advance_turn(game_details);
-        //                 await game_actions.log_event(game_details, action.trim(), card_drawn.action, card_drawn._id, (await player_actions.get_player_details(game_details, req_data.plyr_id)).nickname, undefined);
-        //                 await update_game_ui(req_data.slug, undefined, action, socket_id, req_data.plyr_id);
-        //                 fastify.io.to(socket_id).emit(req_data.slug + "-draw-card", card_drawn);
-        //                 if (card_drawn.action === "chicken") await game_actions.explode_tick(game_details.slug, 15, req_data.plyr_id, card_drawn._id, "public/cards/base/chicken.png", socket_id, fastify, config_storage, stats_storage, bot);
-        //                 callback(false, `${chalk.greenBright(card_drawn._id)} Drew new card`, req_data.slug, action, socket_id, req_data.plyr_id);
-        //             } else {
-        //                 callback(true, `You cannot draw a card now`, req_data.slug, action, socket_id, req_data.plyr_id);
-        //             }
-        //         }
-        //     ], wf_final_game_callback);
-        // })
+        // Name : socket.on.play-card
+        // Desc : runs when a card is played on the client
+        // Author(s) : RAk3rman
+        socket.on('play-card', async function (data) {
+            let action = "play-card       ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.game_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to play card`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_g_get, // Get game_details
+                wf_g_validate_in_progress, // Validate we are in game
+                wf_g_validate_turn, // Validate it is req player's turn
+                wf_g_validate_lock, // Validate player is able to modify cards
+                async function(lobby_details, game_pos, req_data, action, socket_id, callback) {
+                    // Play card
+                    let cb_data = await game_actions.play_card(lobby_details, game_pos, req_data.card_id, req_data.plyr_id, req_data.target, stats_store);
+                    if (cb_data.err) card_lock = false; callback(true, cb_data.err, lobby_details, game_pos, req_data, action, socket_id); // Throw err if play_card throws err
+                    await update_g_ui(lobby_details, game_pos, cb_data, socket_id, action, socket_id, req_data.plyr_id);
+                    // Start explode tick if we are exploding
+
+                    card_lock = false; callback(false, `Played card ` + req_data.card_id, lobby_details, game_pos, req_data, action, socket_id);
+                }
+            ], wf_g_final_callback);
+        })
+
+        // Name : socket.on.draw-card
+        // Desc : runs when a card is drawn on the client
+        // Author(s) : RAk3rman
+        socket.on('draw-card', async function (data) {
+            let action = "draw-card       ";
+            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to draw card`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_g_get, // Get game_details
+                wf_g_validate_in_progress, // Validate we are in game
+                wf_g_validate_turn, // Validate it is req player's turn
+                wf_g_validate_lock, // Validate player is able to modify cards
+                async function(lobby_details, game_pos, req_data, action, socket_id, callback) {
+                    // Make sure we aren't exploding
+                    if (!await player_actions.is_exploding(await card_actions.filter_cards(req_data.plyr_id, lobby_details.games[game_pos].cards))) {
+                        card_lock = false; callback(true, 'Cannot draw while exploding', lobby_details, game_pos, req_data, action, socket_id);
+                    }
+                    // Draw card
+                    let card_details = await game_actions.draw_card(lobby_details, game_pos, req_data.plyr_id);
+                    await update_g_ui(lobby_details, game_pos, undefined, socket_id, action, socket_id, req_data.plyr_id);
+                    // Start explode tick if we are exploding
+
+                    card_lock = false; callback(false, `Drew card ` + card_details._id, lobby_details, game_pos, req_data, action, socket_id);
+                }
+            ], wf_g_final_callback);
+        })
 
         // Name : socket.on.update-option
         // Desc : updates a lobby option
@@ -325,19 +232,19 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to update lobby option`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
-                wf_validate_host, // Validate req player is host
-                wf_validate_not_in_progress, // Validate we are not in progress
+                wf_l_get, // Get lobby_details
+                wf_l_validate_host, // Validate req player is host
+                wf_l_validate_not_in_progress, // Validate we are not in progress
                 async function(lobby_details, req_data, action, socket_id, callback) { // Update option
                     let result = await lobby_actions.update_option(lobby_details, req_data.option, req_data.value);
                     if (!result) callback(true, `Invalid option`, lobby_details, req_data, action, socket_id);
                     if (req_data.option === "include_host") req_data.value = lobby_details.include_host;
                     await event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, req_data.option, req_data.value);
                     await lobby_details.save();
-                    await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                     callback(false, `Updated option: ` + req_data.option, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.kick-player
@@ -348,16 +255,16 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to kick player`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
-                wf_validate_host, // Validate req player is host
+                wf_l_get, // Get lobby_details
+                wf_l_validate_host, // Validate req player is host
                 async function(lobby_details, req_data, action, socket_id, callback) { // Kick player
                     await player_actions.kick_player(lobby_details, req_data.plyr_id, req_data.kick_plyr_id);
                     await event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, req_data.kick_plyr_id, undefined, undefined);
                     await lobby_details.save();
-                    await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                     callback(false, `Kicked player: ` + req_data.kick_plyr_id, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.make-host
@@ -368,16 +275,16 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to transfer host role`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
-                wf_validate_host, // Validate req player is host
+                wf_l_get, // Get lobby_details
+                wf_l_validate_host, // Validate req player is host
                 async function(lobby_details, req_data, action, socket_id, callback) { // Make host
                     await player_actions.make_host(lobby_details, req_data.plyr_id, req_data.suc_plyr_id);
                     await event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, req_data.suc_plyr_id, undefined, undefined);
                     await lobby_details.save();
-                    await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                     callback(false, `Transferred host role from: ` + req_data.plyr_id + ` -> ` + req_data.suc_plyr_id, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.import-pack
@@ -388,9 +295,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to import card pack`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
-                wf_validate_host, // Validate req player is host
-                wf_validate_not_in_progress, // Validate we are not in progress
+                wf_l_get, // Get lobby_details
+                wf_l_validate_host, // Validate req player is host
+                wf_l_validate_not_in_progress, // Validate we are not in progress
                 async function(lobby_details, req_data, action, socket_id, callback) { // Verify pack isn't imported already
                     if (!lobby_details.packs.includes(req_data.pack_name)) {
                         callback(false, lobby_details, req_data, action, socket_id);
@@ -411,10 +318,10 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     }
                     await event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, req_data.pack_name, undefined);
                     await lobby_details.save();
-                    await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                     callback(false, `Imported card pack: ` + req_data.pack_name, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.export-pack
@@ -425,9 +332,9 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
             if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to export card pack`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
-                wf_get_lobby, // Get lobby_details
-                wf_validate_host, // Validate req player is host
-                wf_validate_not_in_progress, // Validate we are not in progress
+                wf_l_get, // Get lobby_details
+                wf_l_validate_host, // Validate req player is host
+                wf_l_validate_not_in_progress, // Validate we are not in progress
                 async function(lobby_details, req_data, action, socket_id, callback) { // Verify pack is imported already
                     if (lobby_details.packs.includes(req_data.pack_name)) {
                         callback(false, lobby_details, req_data, action, socket_id);
@@ -448,10 +355,10 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
                     }
                     await event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, req_data.pack_name, undefined);
                     await lobby_details.save();
-                    await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                    await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                     callback(false, `Exported card pack: ` + req_data.pack_name, lobby_details, req_data, action, socket_id);
                 }
-            ], wf_final_lobby_callback);
+            ], wf_l_final_callback);
         })
 
         // Name : socket.on.check-lobby-slug
@@ -474,189 +381,209 @@ module.exports = function (fastify, stats_storage, config_storage, bot) {
         // Author(s) : RAk3rman
         socket.on('disconnect', async function () {
             let action = "player-offline  ";
-            stats_storage.set('sockets_active', stats_storage.get('sockets_active') - 1);
+            stats_store.set('sockets_active', stats_store.get('sockets_active') - 1);
             console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.red('new-disconnect  ')} ${chalk.dim.blue(socket.id)}`));
             // Check if active player is using socket
             if (player_data.plyr_id !== undefined) {
                 if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(player_data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(player_data.plyr_id)} Received request to mark existing player as offline`));
                 waterfall([
                     async function(callback) {callback(null, player_data, action, socket.id)}, // Start waterfall
-                    wf_get_lobby, // Get lobby_details
+                    wf_l_get, // Get lobby_details
                     async function(lobby_details, req_data, action, socket_id, callback) { // Update sockets open
                         await player_actions.update_sockets_open(lobby_details, req_data.plyr_id, "dec");
                         await lobby_details.save();
-                        await update_lobby_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
+                        await update_l_ui(lobby_details, undefined, action, socket_id, req_data.plyr_id);
                         callback(false, `Player now ${chalk.dim.red('disconnected')}`, lobby_details, req_data, action, socket_id);
                     }
-                ], wf_final_lobby_callback);
+                ], wf_l_final_callback);
             }
         });
+
+        // Name : wf_l_final_callback(err, msg, lobby_details, req_data, action, req_sock)
+        // Desc : final callback from waterfall, handles error if triggered
+        // Author(s) : RAk3rman
+        async function wf_l_final_callback(err, msg, lobby_details, req_data, action, req_sock) {
+            if (err) {
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.lobby_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_data.plyr_id)} ${chalk.dim.red('lobby-error')} ` + msg));
+                fastify.io.to(req_sock).emit(req_data.lobby_slug + "-lobby-error", {
+                    msg: msg,
+                    lobby_details: await lobby_actions.lobby_export(lobby_details, action, req_data.plyr_id)
+                });
+            } else {
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.lobby_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_data.plyr_id)} ` + msg));
+            }
+        }
+
+        // Name : wf_g_final_callback(err, msg, lobby_details, game_pos, req_data, action, req_sock)
+        // Desc : final callback from waterfall, handles error if triggered
+        // Author(s) : RAk3rman
+        async function wf_g_final_callback(err, msg, lobby_details, game_pos, req_data, action, req_sock) {
+            if (err) {
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.game_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_data.plyr_id)} ${chalk.dim.red('game-error')} ` + msg));
+                fastify.io.to(req_sock).emit(req_data.game_slug + "-game-error", {
+                    msg: msg,
+                    game_details: await game_actions.game_export(lobby_details, game_pos, undefined, action, req_data.plyr_id)
+                });
+            } else {
+                console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.game_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_data.plyr_id)} ` + msg));
+            }
+        }
+
+        // Name : wf_l_get(req_data, action, req_sock, callback)
+        // Desc : get lobby details from waterfall
+        // Author(s) : RAk3rman
+        async function wf_l_get(req_data, action, req_sock, callback) {
+            // Determine if we should filter by slug and plyr_id
+            let filter = req_data.plyr_id === "spectator" ? { slug: req_data.lobby_slug } : { slug: req_data.lobby_slug, "players._id": req_data.plyr_id };
+            // Determine if lobby exists
+            if (await lobby.exists(filter)) {
+                callback(false, await lobby_actions.lobby_details_slug(req_data.lobby_slug), req_data, action, req_sock);
+            } else {
+                callback(true, "LOBBY-DNE", undefined, req_data, action, req_sock);
+            }
+        }
+
+        // Name : wf_g_get(req_data, action, req_sock, callback)
+        // Desc : get game details from waterfall
+        // Author(s) : RAk3rman
+        async function wf_g_get(req_data, action, req_sock, callback) {
+            // Determine if we should filter by slug and plyr_id
+            let filter = req_data.plyr_id === "spectator" ? { slug: req_data.lobby_slug } : { slug: req_data.lobby_slug, games: { $elemMatch: { slug: req_data.game_slug }}, "players._id": req_data.plyr_id };
+            // Determine if game exists
+            if (await lobby.exists(filter)) {
+                let lobby_details = await lobby_actions.lobby_details_slug(req_data.lobby_slug);
+                for (let i = 0; i < lobby_details.games.length; i++) {
+                    if (lobby_details.games[i].slug === req_data.game_slug) {
+                        callback(false, lobby_details, i, req_data, action, req_sock);
+                    }
+                }
+            } else {
+                callback(true, "GAME-DNE", undefined, undefined, req_data, action, req_sock);
+            }
+        }
+
+        // Name : wf_l_validate_host(lobby_details, req_data, action, req_sock, callback)
+        // Desc : validate req user is host from waterfall
+        // Author(s) : RAk3rman
+        async function wf_l_validate_host(lobby_details, req_data, action, req_sock, callback) {
+            // Find player
+            for (let i = 0; i < lobby_details.players.length; i++) {
+                if (lobby_details.players[i]._id === req_data.plyr_id) {
+                    // Check if the user is of type host
+                    if (lobby_details.players[i].is_host) {
+                        callback(false, lobby_details, req_data, action, req_sock);
+                    } else {
+                        callback(true, "You are not the host", lobby_details, req_data, action, req_sock);
+                    }
+                }
+            }
+        }
+
+        // Name : wf_validate_not_in_progress(lobby_details, req_data, action, req_sock, callback)
+        // Desc : validate that the lobby is not in_progress
+        // Author(s) : RAk3rman
+        async function wf_l_validate_not_in_progress(lobby_details, req_data, action, req_sock, callback) {
+            // Verify the object is not in progress
+            if (!lobby_details.in_progress) {
+                callback(false, lobby_details, req_data, action, req_sock);
+            } else {
+                callback(true, "Must be in lobby", lobby_details, req_data, action, req_sock);
+            }
+        }
+
+        // Name : wf_l_validate_in_progress(lobby_details, req_data, action, req_sock, callback)
+        // Desc : validate that the lobby is in_progress
+        // Author(s) : RAk3rman
+        async function wf_l_validate_in_progress(lobby_details, req_data, action, req_sock, callback) {
+            // Verify the object is in progress
+            if (lobby_details.in_progress) {
+                callback(false, lobby_details, req_data, action, req_sock);
+            } else {
+                callback(true, "Must be in progress", lobby_details, req_data, action, req_sock);
+            }
+        }
+
+        // Name : wf_g_validate_not_in_progress(lobby_details, game_pos, req_data, action, req_sock, callback)
+        // Desc : validate that the game is not in_progress
+        // Author(s) : RAk3rman
+        async function wf_g_validate_not_in_progress(lobby_details, game_pos, req_data, action, req_sock, callback) {
+            // Verify the object is not in progress
+            if (!lobby_details.games[game_pos].in_progress) {
+                callback(false, lobby_details, req_data, action, req_sock);
+            } else {
+                callback(true, "Must be in lobby", lobby_details, game_pos, req_data, action, req_sock);
+            }
+        }
+
+        // Name : wf_g_validate_in_progress(lobby_details, game_pos, req_data, action, req_sock, callback)
+        // Desc : validate that the game is in_progress
+        // Author(s) : RAk3rman
+        async function wf_g_validate_in_progress(lobby_details, game_pos, req_data, action, req_sock, callback) {
+            // Verify the object is in progress
+            if (lobby_details.games[game_pos].in_progress) {
+                callback(false, lobby_details, req_data, action, req_sock);
+            } else {
+                callback(true, "Must be in progress", lobby_details, game_pos, req_data, action, req_sock);
+            }
+        }
+
+        // Name : wf_g_validate_turn(lobby_details, game_pos, req_data, action, req_sock, callback)
+        // Desc : validate req user is on their turn
+        // Author(s) : RAk3rman
+        async function wf_g_validate_turn(lobby_details, game_pos, req_data, action, req_sock, callback) {
+            // Find player
+            if (await player_actions.get_turn_plyr_id(lobby_details, game_pos) === req_data.plyr_id) {
+                callback(false, lobby_details, game_pos, req_data, action, req_sock);
+            } else {
+                callback(true, "It is not your turn", lobby_details, game_pos, req_data, action, req_sock);
+            }
+        }
+
+        // Name : wf_g_validate_lock(lobby_details, game_pos, req_data, action, req_sock, callback)
+        // Desc : validate req user is able to draw or play a card
+        // Author(s) : RAk3rman
+        async function wf_g_validate_lock(lobby_details, game_pos, req_data, action, req_sock, callback) {
+            // Find player
+            if (!card_lock) {
+                card_lock = true;
+                callback(false, lobby_details, game_pos, req_data, action, req_sock);
+            } else {
+                callback(true, "Task pending", lobby_details, game_pos, req_data, action, req_sock);
+            }
+        }
+
+        // Name : update_l_ui(lobby_details, tar_sock, source, req_sock, plyr_id)
+        // Desc : sends an event containing lobby data
+        // Author(s) : RAk3rman
+        async function update_l_ui(lobby_details, tar_sock, source, req_sock, plyr_id) {
+            // Get raw pretty lobby details
+            let pretty_lobby_details = await lobby_actions.lobby_export(lobby_details, source, plyr_id);
+            if (pretty_lobby_details !== {}) {
+                // Send lobby data
+                if (tar_sock === undefined) {
+                    fastify.io.to(lobby_details.slug).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
+                } else {
+                    fastify.io.to(tar_sock).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
+                }
+                if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_lobby_details.slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(plyr_id)} Emitted lobby update event`));
+            }
+        }
+
+        // Name : update_g_ui(lobby_details, game_pos, tar_sock, source, req_sock, plyr_id)
+        // Desc : sends an event containing game data
+        // Author(s) : RAk3rman
+        async function update_g_ui(lobby_details, game_pos, cb_data, tar_sock, source, req_sock, plyr_id) {
+            // Get raw pretty game details
+            let pretty_game_details = await game_actions.game_export(lobby_details, game_pos, cb_data, source, plyr_id);
+            if (pretty_game_details !== {}) {
+                // Send game data
+                if (tar_sock === undefined) {
+                    fastify.io.to(lobby_details.slug).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
+                } else {
+                    fastify.io.to(tar_sock).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
+                }
+                if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_game_details.game_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(plyr_id)} Emitted game update event`));
+            }
+        }
     })
-
-    // Name : wf_final_lobby_callback(err, msg, lobby_details, req_data, action, socket_id)
-    // Desc : final callback from waterfall, handles error if triggered
-    // Author(s) : RAk3rman
-    async function wf_final_lobby_callback(err, msg, lobby_details, req_data, action, socket_id) {
-        if (err) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.lobby_slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(req_data.plyr_id)} ${chalk.dim.red('lobby-error')} ` + msg));
-            fastify.io.to(socket_id).emit(req_data.lobby_slug + "-lobby-error", {
-                msg: msg,
-                lobby_details: await lobby_actions.lobby_export(lobby_details, action, req_data.plyr_id)
-            });
-        } else {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.lobby_slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(req_data.plyr_id)} ` + msg));
-        }
-    }
-
-    // Name : wf_final_game_callback(err, msg, lobby_details, game_pos, req_data, action, socket_id)
-    // Desc : final callback from waterfall, handles error if triggered
-    // Author(s) : RAk3rman
-    async function wf_final_game_callback(err, msg, lobby_details, game_pos, req_data, action, socket_id) {
-        if (err) {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.game_slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(req_data.plyr_id)} ${chalk.dim.red('game-error')} ` + msg));
-            fastify.io.to(socket_id).emit(req_data.game_slug + "-game-error", {
-                msg: msg,
-                game_details: await game_actions.game_export(lobby_details, game_pos, action, req_data.plyr_id)
-            });
-        } else {
-            console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.game_slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(req_data.plyr_id)} ` + msg));
-        }
-    }
-
-    // Name : wf_get_lobby(req_data, action, socket_id, callback)
-    // Desc : get lobby details from waterfall
-    // Author(s) : RAk3rman
-    async function wf_get_lobby(req_data, action, socket_id, callback) {
-        // Determine if we should filter by slug and plyr_id
-        let filter = req_data.plyr_id === "spectator" ? { slug: req_data.lobby_slug } : { slug: req_data.lobby_slug, "players._id": req_data.plyr_id };
-        // Determine if lobby exists
-        if (await lobby.exists(filter)) {
-            callback(false, await lobby_actions.lobby_details_slug(req_data.lobby_slug), req_data, action, socket_id);
-        } else {
-            callback(true, "LOBBY-DNE", undefined, req_data, action, socket_id);
-        }
-    }
-
-    // Name : wf_get_game(req_data, action, socket_id, callback)
-    // Desc : get game details from waterfall
-    // Author(s) : RAk3rman
-    async function wf_get_game(req_data, action, socket_id, callback) {
-        // Determine if we should filter by slug and plyr_id
-        let filter = req_data.plyr_id === "spectator" ? { slug: req_data.lobby_slug } : { slug: req_data.lobby_slug, games: { $elemMatch: { slug: req_data.game_slug }}, "players._id": req_data.plyr_id };
-        // Determine if game exists
-        if (await lobby.exists(filter)) {
-            let lobby_details = await lobby_actions.lobby_details_slug(req_data.lobby_slug);
-            for (let i = 0; i < lobby_details.games.length; i++) {
-                if (lobby_details.games[i].slug === req_data.game_slug) {
-                    callback(false, lobby_details, i, req_data, action, socket_id);
-                }
-            }
-        } else {
-            callback(true, "GAME-DNE", undefined, undefined, req_data, action, socket_id);
-        }
-    }
-
-    // Name : wf_validate_host(lobby_details, req_data, action, socket_id, callback)
-    // Desc : validate req user is host from waterfall
-    // Author(s) : RAk3rman
-    async function wf_validate_host(lobby_details, req_data, action, socket_id, callback) {
-        // Find player
-        for (let i = 0; i < lobby_details.players.length; i++) {
-            if (lobby_details.players[i]._id === req_data.plyr_id) {
-                // Check if the user is of type host
-                if (lobby_details.players[i].is_host) {
-                    callback(false, lobby_details, req_data, action, socket_id);
-                } else {
-                    callback(true, "You are not the host", lobby_details, req_data, action, socket_id);
-                }
-            }
-        }
-    }
-
-    // Name : wf_validate_not_in_progress(details, req_data, action, socket_id, callback)
-    // Desc : validate that the game is in_lobby
-    // Author(s) : RAk3rman
-    async function wf_validate_not_in_progress(details, req_data, action, socket_id, callback) {
-        // Verify the object is not in progress
-        if (!details.in_progress) {
-            callback(false, details, req_data, action, socket_id);
-        } else {
-            callback(true, "Lobby must be reset first", details, req_data, action, socket_id);
-        }
-    }
-
-    // Name : wf_validate_in_progress(details, req_data, action, socket_id, callback)
-    // Desc : validate that the game is in_game
-    // Author(s) : RAk3rman
-    async function wf_validate_in_progress(details, req_data, action, socket_id, callback) {
-        // Verify the object is in progress
-        if (details.in_progress) {
-            callback(false, details, req_data, action, socket_id);
-        } else {
-            callback(true, "Lobby must be started first", details, req_data, action, socket_id);
-        }
-    }
-
-    // Name : wf_validate_turn(game_details, req_data, action, socket_id, callback)
-    // Desc : validate req user is on their turn
-    // Author(s) : RAk3rman
-    async function wf_validate_turn(game_details, req_data, action, socket_id, callback) {
-        // Find player
-        for (let i = 0; i < game_details.players.length; i++) {
-            if (game_details.players[i]._id === req_data.plyr_id) {
-                // Check if seat positions match
-                if (game_details.players[i].seat === game_details.seat_playing) {
-                    callback(false, game_details, req_data, action, socket_id);
-                } else {
-                    callback(true, "Please wait your turn", req_data.slug, action, socket_id, req_data.plyr_id);
-                }
-            }
-        }
-    }
-
-    // Name : validate_turn(plyr_id, game_details)
-    // Desc : returns a bool stating if the plyr_id is on its turn
-    // Author(s) : RAk3rman
-    function validate_turn(plyr_id, game_details) {
-        // Find player
-        for (let i = 0; i < game_details.players.length; i++) {
-            if (game_details.players[i]._id === plyr_id) {
-                return game_details.players[i].seat === game_details.seat_playing;
-            }
-        }
-    }
-
-    // Name : update_lobby_ui(lobby_details, target, source, socket_id, plyr_id)
-    // Desc : sends an event containing lobby data
-    // Author(s) : RAk3rman
-    async function update_lobby_ui(lobby_details, target, source, socket_id, plyr_id) {
-        // Get raw pretty lobby details
-        let pretty_lobby_details = await lobby_actions.lobby_export(lobby_details, source, plyr_id);
-        if (pretty_lobby_details !== {}) {
-            // Send lobby data
-            if (target === undefined) {
-                fastify.io.to(lobby_details.slug).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
-            } else {
-                fastify.io.to(target).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
-            }
-            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_lobby_details.slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} Emitted lobby update event`));
-        }
-    }
-
-    // Name : update_game_ui(lobby_details, game_pos, target, source, socket_id, plyr_id)
-    // Desc : sends an event containing game data
-    // Author(s) : RAk3rman
-    async function update_game_ui(lobby_details, game_pos, target, source, socket_id, plyr_id) {
-        // Get raw pretty game details
-        let pretty_game_details = await game_actions.game_export(lobby_details, game_pos, source, plyr_id);
-        if (pretty_game_details !== {}) {
-            // Send game data
-            if (target === undefined) {
-                fastify.io.to(lobby_details.games[game_pos].slug).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
-            } else {
-                fastify.io.to(target).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
-            }
-            if (config_storage.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_game_details.game_slug)} ${chalk.dim.blue(socket_id)} ${chalk.dim.magenta(plyr_id)} Emitted game update event`));
-        }
-    }
 };
