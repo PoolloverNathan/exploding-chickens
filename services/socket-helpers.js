@@ -9,7 +9,7 @@ let lobby = require('../models/lobby.js');
 const chalk = require('chalk');
 const wipe = chalk.white;
 const moment = require('moment');
-const pkg = require('./package.json');
+const pkg = require('../package.json');
 
 // Services
 let lobby_actions = require('./lobby-actions.js');
@@ -18,13 +18,14 @@ let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
 let socket_helpers = require('./socket-helpers.js');
+const {placeContent} = require("tailwindcss/lib/plugins");
 
-// Name : socket_helpers.update_l_ui(lobby_details, tar_sock, source, req_sock, plyr_id)
+// Name : socket_helpers.update_l_ui(lobby_details, req_plyr_id, req_sock, tar_sock, source, fastify, config_store)
 // Desc : sends an event containing lobby data
 // Author(s) : RAk3rman
-exports.update_l_ui = async function (lobby_details, fastify, tar_sock, source, req_sock, plyr_id, config_store) {
+exports.update_l_ui = async function (lobby_details, req_plyr_id, req_sock, tar_sock, source, fastify, config_store) {
     // Get raw pretty lobby details
-    let pretty_lobby_details = await lobby_actions.lobby_export(lobby_details, source, plyr_id);
+    let pretty_lobby_details = await lobby_actions.lobby_export(lobby_details, source, req_plyr_id);
     if (pretty_lobby_details !== {}) {
         // Send lobby data
         if (tar_sock === undefined) {
@@ -32,16 +33,16 @@ exports.update_l_ui = async function (lobby_details, fastify, tar_sock, source, 
         } else {
             fastify.io.to(tar_sock).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
         }
-        if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_lobby_details.slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(plyr_id)} Emitted lobby update event`));
+        if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_lobby_details.slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_plyr_id)} Emitted lobby update event`));
     }
 }
 
-// Name : socket_helpers.update_g_ui(lobby_details, game_pos, tar_sock, source, req_sock, plyr_id)
+// Name : socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, source, fastify, config_store)
 // Desc : sends an event containing game data
 // Author(s) : RAk3rman
-exports.update_g_ui = async function (lobby_details, game_pos, fastify, cb_data, tar_sock, source, req_sock, plyr_id, config_store) {
+exports.update_g_ui = async function (lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, source, fastify, config_store) {
     // Get raw pretty game details
-    let pretty_game_details = await game_actions.game_export(lobby_details, game_pos, cb_data, source, plyr_id);
+    let pretty_game_details = await game_actions.game_export(lobby_details, game_pos, cb_data, source, req_plyr_id);
     if (pretty_game_details !== {}) {
         // Send game data
         if (tar_sock === undefined) {
@@ -49,18 +50,18 @@ exports.update_g_ui = async function (lobby_details, game_pos, fastify, cb_data,
         } else {
             fastify.io.to(tar_sock).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
         }
-        if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_game_details.game_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(plyr_id)} Emitted game update event`));
+        if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_game_details.game_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_plyr_id)} Emitted game update event`));
     }
 }
 
-// Name : socket_helpers.explode_tick(slug, count, plyr_id, card_id, card_url, socket_id, fastify, config_store, stats_store, bot)
+// Name : socket_helpers.explode_tick(lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, source, fastify, bot, config_store, stats_store)
 // Desc : recursively count down when a player has an EC in their hand
 // Author(s) : RAk3rman
-exports.explode_tick = async function (lobby_id, game_pos, plyr_id, ctn, bot, config_store, stats_store) {
+exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, source, fastify, bot, config_store, stats_store) {
     // Get lobby_details
     let lobby_details = await lobby_actions.lobby_details_id(lobby_id);
     // Get player hand
-    let plyr_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let plyr_hand = await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards);
     // Get details of exploding chicken in player's hand
     let chicken_card = undefined;
     plyr_hand.every(card => {
@@ -73,13 +74,21 @@ exports.explode_tick = async function (lobby_id, game_pos, plyr_id, ctn, bot, co
     // Make sure target player is still exploding
     if (!chicken_card) return;
     // Update game ui with callback
-    // TODO call update_g_ui with structured callback
+    let cb_data = {
+        err:         undefined,           // If an error is thrown, a string containing the error msg will be contained in this value
+        card_id:     chicken_card._id,    // ID of the card being referenced
+        card_action: chicken_card.action, // Action of the card being referenced
+        data:        { count: ctn, placed_by_name: (await player_actions.get_player_details(lobby_details, chicken_card.placed_by_plyr_id))?.nickname },
+        target:      { plyr_id: undefined, card_id: undefined, deck_pos: undefined },
+        incomplete:  false                // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
+    };
+    await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, source, fastify, config_store);
     // Decrement count or force play chicken
     if (ctn > -1) {
         ctn--;
-        setTimeout(function(){ socket_helpers.explode_tick(lobby_id, game_pos, plyr_id, ctn, bot, config_store, stats_store) }, 1000);
+        setTimeout(function(){ socket_helpers.explode_tick(lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, source, fastify, bot, config_store, stats_store) }, 1000);
     } else {
-        await game_actions.play_card(lobby_details, game_pos, chicken_card._id, plyr_id, undefined, stats_store);
+        await game_actions.play_card(lobby_details, game_pos, chicken_card._id, req_plyr_id, undefined, stats_store);
         if (await game_actions.is_winner(lobby_details, game_pos)) {
             await game_actions.complete_game(lobby_details, game_pos);
             await socket_helpers.bot_summary(lobby_details, game_pos, bot, config_store, stats_store);
