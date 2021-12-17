@@ -191,11 +191,15 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                     // Play card
                     let cb_data = await game_actions.play_card(lobby_details, game_pos, req_data.card_id, req_data.plyr_id, req_data.target, stats_store);
                     await lobby_details.save();
-                    if (cb_data.err) card_lock = false; callback(true, cb_data.err, lobby_details, game_pos, req_data, action, socket_id); // Throw err if play_card throws err
-                    await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, socket_id, undefined, action, fastify, config_store);
-                    // Start explode tick if we are exploding
-                    await socket_helpers.explode_tick(lobby_details._id, game_pos, req_data.plyr_id, socket_id, undefined, 10, action, fastify, bot, config_store, stats_store);
-                    card_lock = false; callback(false, `Played card ` + req_data.card_id, lobby_details, game_pos, req_data, action, socket_id);
+                    // Throw err if play_card throws err
+                    if (cb_data.err) {
+                        card_lock = false; callback(true, cb_data.err, lobby_details, game_pos, req_data, action, socket_id);
+                    } else {
+                        await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, socket_id, undefined, action, fastify, config_store);
+                        // Start explode tick if we are exploding
+                        await socket_helpers.explode_tick(lobby_details._id, game_pos, req_data.plyr_id, socket_id, undefined, 10, action, fastify, bot, config_store, stats_store);
+                        card_lock = false; callback(false, `Played card ` + req_data.card_id, lobby_details, game_pos, req_data, action, socket_id);
+                    }
                 }
             ], wf_g_final_callback);
         })
@@ -214,16 +218,17 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 wf_g_validate_lock, // Validate player is able to modify cards
                 async function(lobby_details, game_pos, req_data, action, socket_id, callback) {
                     // Make sure we aren't exploding
-                    if (!await player_actions.is_exploding(await card_actions.filter_cards(req_data.plyr_id, lobby_details.games[game_pos].cards))) {
+                    if (await player_actions.is_exploding(await card_actions.filter_cards(req_data.plyr_id, lobby_details.games[game_pos].cards))) {
                         card_lock = false; callback(true, 'Cannot draw while exploding', lobby_details, game_pos, req_data, action, socket_id);
+                    } else {
+                        // Draw card
+                        let card_details = await game_actions.draw_card(lobby_details, game_pos, req_data.plyr_id);
+                        await lobby_details.save();
+                        await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, socket_id, undefined, action, fastify, config_store);
+                        // Start explode tick if we are exploding
+                        await socket_helpers.explode_tick(lobby_details._id, game_pos, req_data.plyr_id, socket_id, undefined, 10, action, fastify, bot, config_store, stats_store);
+                        card_lock = false; callback(false, `Drew card ` + card_details._id, lobby_details, game_pos, req_data, action, socket_id);
                     }
-                    // Draw card
-                    let card_details = await game_actions.draw_card(lobby_details, game_pos, req_data.plyr_id);
-                    await lobby_details.save();
-                    await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, socket_id, undefined, action, fastify, config_store);
-                    // Start explode tick if we are exploding
-                    await socket_helpers.explode_tick(lobby_details._id, game_pos, req_data.plyr_id, socket_id, undefined, 10, action, fastify, bot, config_store, stats_store);
-                    card_lock = false; callback(false, `Drew card ` + card_details._id, lobby_details, game_pos, req_data, action, socket_id);
                 }
             ], wf_g_final_callback);
         })
@@ -525,7 +530,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
         async function wf_g_validate_in_progress(lobby_details, game_pos, req_data, action, req_sock, callback) {
             // Verify the object is in progress
             if (lobby_details.games[game_pos].in_progress) {
-                callback(false, lobby_details, req_data, action, req_sock);
+                callback(false, lobby_details, game_pos, req_data, action, req_sock);
             } else {
                 callback(true, "Must be in progress", lobby_details, game_pos, req_data, action, req_sock);
             }

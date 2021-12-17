@@ -8,10 +8,9 @@ const toast_turn = Swal.mixin({
     toast: true,
     position: 'top',
     showConfirmButton: false,
-    padding: '0.3rem'
+    padding: '0.4rem',
+    background: "hsla(var(--b1) / var(--tw-bg-opacity))"
 });
-// Global variables
-let is_turn = false;
 
 // Name : frontend-game.itr_update_players(game_details)
 // Desc : updates players
@@ -27,7 +26,7 @@ function itr_update_players(game_details) {
         // Check for dead filter
         let filter = game_details.players[i].is_dead ? "filter grayscale" : "";
         center_payload += "<div class=\"block text-center mb-1\">\n" +
-            "    <h1 class=\"text-gray-600 font-medium text-sm\">\n" +
+            "    <h1 class=\"text-base-content font-medium text-sm\">\n" +
             "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].sockets_open, "", "itr_stat_player_dot_" + game_details.players[i]._id) + "\n" +
             "    </h1>\n" +
             "    <div class=\"flex flex-col items-center -space-y-3 px-3\" id=\"itr_stat_player_halo_" + game_details.players[i]._id + "\">\n" +
@@ -128,46 +127,19 @@ function itr_update_hand(game_details) {
                 }
             }
             // Toggle turn banner
-            if (game_details.turn_seat_pos === game_details.players[i].seat_pos && !is_turn && game_details.in_progress) {
+            if (game_details.turn_seat_pos === game_details.players[i].seat_pos && game_details.in_progress) {
                 toast_turn.fire({
                     icon: 'info',
                     html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Your turn</h1>'
                 });
-                is_turn = true;
             } else if (game_details.turn_seat_pos !== game_details.players[i].seat_pos && game_details.in_progress) {
                 toast_turn.close();
-                is_turn = false;
                 session_user.can_draw = false;
             }
             break;
         }
     }
     document.getElementById("itr_ele_player_hand").innerHTML = payload;
-}
-
-// Name : frontend-game.itr_deal_hand(game_details)
-// Desc : deals users hand
-function itr_deal_hand(game_details, payload, pos) {
-    // Find current player
-    for (let i = 0; i < game_details.players.length; i++) {
-        if (game_details.players[i]._id === session_user._id) {
-            session_user.can_draw = true;
-            // Add cards to hand, recursively
-            let play_card_funct = "";
-            // Allow to play if seat is playing AND if the card is a defuse or hotpotato allow play while exploding, else don't allow
-            if (game_details.turn_seat_pos === game_details.players[i].seat_pos &&
-                (game_details.players[i].cards[pos].action === "defuse" || game_details.players[i].cards[pos].action === "hotpotato" || !game_details.players[i].is_exploding)) {
-                play_card_funct = "play_card('" + game_details.players[i].cards[pos]._id + "', '')";
-            }
-            payload += "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[pos]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('" + card_url(game_details.players[i].cards[pos]) + "');\"></div>";
-            document.getElementById("itr_ele_player_hand").innerHTML = payload;
-            anm_draw_card(game_details.players[i].cards[pos]);
-            pos += 1;
-            if (pos < game_details.players[i].cards.length) {
-                setTimeout(function(){ itr_deal_hand(game_details, payload, pos) }, 500);
-            }
-        }
-    }
 }
 
 // Name : frontend-game.itr_trigger_exp(count, placed_by_name, card_url)

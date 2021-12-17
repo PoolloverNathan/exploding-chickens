@@ -3,14 +3,6 @@ Filename : exploding-chickens/public/js/lobby/interface.js
 Desc     : handles ui updates and actions on the interface
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-// Swal toast settings
-const toast_turn = Swal.mixin({
-    toast: true,
-    position: 'top',
-    showConfirmButton: false,
-    padding: '0.3rem'
-});
-
 // Name : frontend-game.itr_update_games(lobby_details)
 // Desc : updates game rooms
 function itr_update_games(lobby_details) {

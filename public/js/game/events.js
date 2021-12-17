@@ -12,7 +12,8 @@ const toast_alert = Swal.mixin({
     showConfirmButton: false,
     timer: 3000,
     padding: '0.4rem',
-    timerProgressBar: true
+    timerProgressBar: true,
+    background: "hsla(var(--b1) / var(--tw-bg-opacity))"
 });
 // Set localStorage timeout
 lscache.setExpiryMilliseconds(3600000);
@@ -22,8 +23,7 @@ let events_data = {};
 let events_length = 0;
 let session_user = {
     _id: undefined,
-    is_host: false,
-    can_draw: false
+    is_host: false
 };
 
 /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -144,30 +144,30 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
     }
 });
 
-// Name : frontend-game.socket.on.{slug}-callback
-// Desc : whenever an event occurs related to an error
-socket.on(window.location.pathname.split('/')[4] + "-callback", function (data) {
-    // See the future callback
-    if (data.trigger === "seethefuture") {
-        itr_trigger_stf(data.payload);
-    } else if (data.trigger === "favor_target") {
-        itr_trigger_pselect(data.payload.game_details, data.payload.card_id);
-    } else if (data.trigger === "chicken_target") {
-        itr_trigger_chicken_target(parseInt(data.payload.max_pos), data.payload.card_id);
-    } else if (data.trigger === "favor_taken") {
-        sbr_update_game_widgets(data.payload.game_details);
-        itr_update_players(data.payload.game_details);
-        itr_update_pcards(data.payload.game_details);
-        itr_update_discard(data.payload.game_details);
-        itr_update_hand(data.payload.game_details);
-        events_data = data.payload.game_details.events;
-        events_length = data.payload.game_details.events_length;
-        sbr_update_log();
-        if (session_user._id === data.payload.target_plyr_id) {
-            itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc, data.payload.used_gator);
-        }
-    }
-});
+// // Name : frontend-game.socket.on.{slug}-callback
+// // Desc : whenever an event occurs related to an error
+// socket.on(window.location.pathname.split('/')[4] + "-callback", function (data) {
+//     // See the future callback
+//     if (data.trigger === "seethefuture") {
+//         itr_trigger_stf(data.payload);
+//     } else if (data.trigger === "favor_target") {
+//         itr_trigger_pselect(data.payload.game_details, data.payload.card_id);
+//     } else if (data.trigger === "chicken_target") {
+//         itr_trigger_chicken_target(parseInt(data.payload.max_pos), data.payload.card_id);
+//     } else if (data.trigger === "favor_taken") {
+//         sbr_update_game_widgets(data.payload.game_details);
+//         itr_update_players(data.payload.game_details);
+//         itr_update_pcards(data.payload.game_details);
+//         itr_update_discard(data.payload.game_details);
+//         itr_update_hand(data.payload.game_details);
+//         events_data = data.payload.game_details.events;
+//         events_length = data.payload.game_details.events_length;
+//         sbr_update_log();
+//         if (session_user._id === data.payload.target_plyr_id) {
+//             itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc, data.payload.used_gator);
+//         }
+//     }
+// });
 
 // Name : frontend-game.socket.on.{slug}-game-error
 // Desc : whenever an event occurs related to an error
@@ -187,24 +187,24 @@ socket.on(window.location.pathname.split('/')[4] + "-game-error", function (data
     }
 });
 
-// Name : frontend-game.socket.on.{slug}-draw-card
-// Desc : whenever the player draws a card, triggers animation
-socket.on(window.location.pathname.split('/')[4] + "-draw-card", function (data) {
-    anm_draw_card(data);
-});
-
-// Name : frontend-game.socket.on.{slug}-play-card
-// Desc : whenever the player plays a card, triggers animation
-socket.on(window.location.pathname.split('/')[4] + "-play-card", function (data) {
-    anm_play_card(data);
-});
-
-// Name : frontend-game.socket.on.{slug}-explode-tick
-// Desc : whenever the player plays a card, triggers animation
-socket.on(window.location.pathname.split('/')[4] + "-explode-tick", function (data) {
-    console.log("explode-tick");
-    itr_trigger_exp(data.count, data.placed_by_name, data.card_url);
-});
+// // Name : frontend-game.socket.on.{slug}-draw-card
+// // Desc : whenever the player draws a card, triggers animation
+// socket.on(window.location.pathname.split('/')[4] + "-draw-card", function (data) {
+//     anm_draw_card(data);
+// });
+//
+// // Name : frontend-game.socket.on.{slug}-play-card
+// // Desc : whenever the player plays a card, triggers animation
+// socket.on(window.location.pathname.split('/')[4] + "-play-card", function (data) {
+//     anm_play_card(data);
+// });
+//
+// // Name : frontend-game.socket.on.{slug}-explode-tick
+// // Desc : whenever the player plays a card, triggers animation
+// socket.on(window.location.pathname.split('/')[4] + "-explode-tick", function (data) {
+//     console.log("explode-tick");
+//     itr_trigger_exp(data.count, data.placed_by_name, data.card_url);
+// });
 
 // Name : frontend-game.socket.on.connect
 // Desc : whenever we connect to the backend
