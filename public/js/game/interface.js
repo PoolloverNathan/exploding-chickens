@@ -142,12 +142,12 @@ function itr_update_hand(game_details) {
     document.getElementById("itr_ele_player_hand").innerHTML = payload;
 }
 
-// Name : frontend-game.itr_trigger_exp(count, placed_by_name, card_url)
+// Name : frontend-game.itr_trigger_exp(count, card_details, placed_by_name)
 // Desc : triggers the exploding chicken ui to appear
-function itr_trigger_exp(count, placed_by_name, card_url) {
+function itr_trigger_exp(count, card_details, placed_by_name) {
     // Append html overlay
     let placed_by_txt = "";
-    if (placed_by_name !== "") {
+    if (placed_by_name !== undefined) {
         placed_by_txt = "<div class=\"flex items-center justify-center tooltip-box\">\n" +
             "    <div class=\"tooltip\">\n" +
             "        <span class=\"triangle\"></span>\n" +
@@ -156,7 +156,7 @@ function itr_trigger_exp(count, placed_by_name, card_url) {
             "</div>";
     }
     if (count === 15 || document.getElementById("itr_val_defuse_counter") === null) {
-        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/" + card_url + "');\">\n" +
+        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/" + card_url(card_details) + "');\">\n" +
             "    <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain border-dashed border-4 border-green-500 h-full\" style=\"border-color: rgb(178, 234, 55); color: rgb(178, 234, 55);\">\n" +
             "        <div class=\"flex flex-wrap content-center justify-center h-full w-full\">\n" +
             "            <div class=\"block text-center space-y-2\">\n" +

@@ -76,8 +76,7 @@ function sbr_update_game_widgets(game_details) {
     let stat_header = "<div class=\"widget w-full p-2.5 rounded-lg border border-base-200 dark:bg-gray-900 dark:border-gray-800\">\n";
     let stat_icon;
     let stat_text = "...";
-    let stat_color_a = "";
-    let stat_color_b = "";
+    let stat_color = "";
     // Construct status widget
     if (session_user.is_host) {
         stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg border border-base-200 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_game()\">\n";
@@ -85,24 +84,22 @@ function sbr_update_game_widgets(game_details) {
             "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\" />\n" +
             "</svg>";
         stat_text = "Reset <span class=\"hidden sm:inline-block\">game</span>";
-        stat_color_a = "text-base-content";
-        stat_color_b = "text-base-content";
+        stat_color = "text-white";
     } else {
         stat_text = game_details.is_completed ? "Completed" : "In game";
         stat_icon = "<svg class=\"stroke-current text-info\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
             "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" />\n" +
             "</svg>\n";
-        stat_color_a = "text-base-content";
-        stat_color_b = "text-base-content";
+        stat_color = "text-base-content";
     }
     // Update status widget
     document.getElementById("sbr_ele_status").innerHTML = stat_header +
         "    <div class=\"flex flex-row items-center justify-between\">\n" +
         "        <div class=\"flex flex-col text-left\">\n" +
-        "            <div class=\"text-xs uppercase truncate " + stat_color_a + "\">\n" +
+        "            <div class=\"text-xs uppercase truncate " + stat_color + "\">\n" +
         "                Status\n" +
         "            </div>\n" +
-        "            <div class=\"text-lg font-bold truncate " + stat_color_b + "\">\n" +
+        "            <div class=\"text-lg font-bold truncate " + stat_color + "\">\n" +
         "                " + stat_text + "\n" +
         "            </div>\n" +
         "        </div>\n" + stat_icon +

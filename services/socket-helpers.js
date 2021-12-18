@@ -54,10 +54,10 @@ exports.update_g_ui = async function (lobby_details, game_pos, req_plyr_id, req_
     }
 }
 
-// Name : socket_helpers.explode_tick(lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, source, fastify, bot, config_store, stats_store)
+// Name : socket_helpers.explode_tick(lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, fastify, bot, config_store, stats_store)
 // Desc : recursively count down when a player has an EC in their hand
 // Author(s) : RAk3rman
-exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, source, fastify, bot, config_store, stats_store) {
+exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, fastify, bot, config_store, stats_store) {
     // Get lobby_details
     let lobby_details = await lobby_actions.lobby_details_id(lobby_id);
     // Get player hand
@@ -73,26 +73,23 @@ exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock
     });
     // Make sure target player is still exploding
     if (!chicken_card) return;
-    // Update game ui with callback
-    let cb_data = {
-        err:         undefined,           // If an error is thrown, a string containing the error msg will be contained in this value
-        card_id:     chicken_card._id,    // ID of the card being referenced
-        card_action: chicken_card.action, // Action of the card being referenced
-        data:        { count: ctn, placed_by_name: (await player_actions.get_player_details(lobby_details, chicken_card.placed_by_plyr_id))?.nickname },
-        target:      { plyr_id: undefined, card_id: undefined, deck_pos: undefined },
-        incomplete:  false                // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
-    };
-    await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, source, fastify, config_store);
+    // Generate callback from data struct
+    let cb_data = game_actions.generate_cb(undefined, chicken_card, { count: ctn, placed_by_name: (await player_actions.get_player_details(lobby_details, chicken_card.placed_by_plyr_id))?.nickname }, { plyr_id: undefined, card_id: undefined, deck_pos: undefined }, false);
+    await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "explode-tick", fastify, config_store);
     // Decrement count or force play chicken
     if (ctn > -1) {
         ctn--;
-        setTimeout(function(){ socket_helpers.explode_tick(lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, source, fastify, bot, config_store, stats_store) }, 1000);
+        setTimeout(function(){ socket_helpers.explode_tick(lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, fastify, bot, config_store, stats_store) }, 1000);
     } else {
-        await game_actions.play_card(lobby_details, game_pos, chicken_card._id, req_plyr_id, undefined, stats_store);
+        await game_actions.play_card(lobby_details, game_pos, chicken_card._id, req_plyr_id, cb_data.target, stats_store);
         if (await game_actions.is_winner(lobby_details, game_pos)) {
             await game_actions.complete_game(lobby_details, game_pos);
             await socket_helpers.bot_summary(lobby_details, game_pos, bot, config_store, stats_store);
+            await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "completed-game", fastify, config_store);
+        } else {
+            await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "play-chicken", fastify, config_store);
         }
+        await lobby_details.save();
     }
 }
 

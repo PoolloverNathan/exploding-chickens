@@ -101,8 +101,8 @@ exports.favor_targeted = async function (lobby_details, game_pos, card_id, plyr_
 // Author(s) : RAk3rman
 exports.favor_random = async function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
     // If the player is playing a randchick, make sure they have two
-    let double_result = await card_actions.verify_double(lobby_details, game_pos, plyr_id, card_id, callback.card_action);
-    if (!double_result && callback.card_action.includes("randchick")) {
+    let double_result = await card_actions.verify_double(lobby_details, game_pos, plyr_id, card_id, callback.card.action);
+    if (!double_result && callback.card.action.includes("randchick")) {
         callback.err = "You must have 2 identical cards";
         return;
     }
@@ -210,8 +210,9 @@ exports.reverse = async function (lobby_details, game_pos, card_id, callback) {
     } else if (lobby_details.games[game_pos].turn_dir === "backward") {
         lobby_details.games[game_pos].turn_dir = "forward";
     }
-    // Discard card
+    // Discard card and advance turn
     await game_actions.discard_card(lobby_details, game_pos, card_id);
+    await game_actions.advance_turn(lobby_details, game_pos);
 }
 
 // Name : card_actions.seethefuture(lobby_details, game_pos, card_id, callback)

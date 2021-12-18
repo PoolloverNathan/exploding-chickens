@@ -318,38 +318,38 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
             // Errors are sent to the client in the callback and appear in a popup when they attempt to play the card
             if (!callback.err) {
                 // Log that a card was played
-                logger.info('Attempting to play (' + callback.card_id + ')', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
+                logger.info('Attempting to play (' + callback.card._id + ')', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
                 // Check if callback was complete or incomplete
                 // We shouldn't expect any errors with these group of cards
                 if (callback.incomplete) {
                     // Make sure we are in card group that should require a callback
                     // These cards require special action and cannot be played blindly
                     let incomplete_group = ['defuse', 'favor', 'favorgator', 'randchick-1', 'randchick-2', 'randchick-3', 'randchick-4'];
-                    assert.isTrue(incomplete_group.includes(callback.card_action), 'callback on ' + callback.card_id + ' should be in complete group');
+                    assert.isTrue(incomplete_group.includes(callback.card.action), 'callback on ' + callback.card._id + ' should be in complete group');
                     // Return complete callback
-                    if (callback.card_action === 'defuse') { // Provide deck pos target
+                    if (callback.card.action === 'defuse') { // Provide deck pos target
                         target.deck_pos = Math.floor(Math.random() * callback.data.max_pos);
-                    } else if (callback.card_action === 'favor') { // Provide plyr_id and card_id target
+                    } else if (callback.card.action === 'favor') { // Provide plyr_id and card_id target
                         target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
                         let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
                         target.card_id = target_hand.length !== 0 ? target_hand[Math.floor(Math.random() * (target_hand.length - 1))]._id : undefined;
-                    } else if (callback.card_action.includes('randchick') || callback.card_action === 'favorgator') { // Provide plyr_id target
+                    } else if (callback.card.action.includes('randchick') || callback.card.action === 'favorgator') { // Provide plyr_id target
                         target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
                     } else {
-                        assert.fail('callback on ' + callback.card_id + ' should be complete');
+                        assert.fail('callback on ' + callback.card._id + ' should be complete');
                     }
                     // Play card with new target parameters
                     callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
                     // Make sure we exited cleanly after making callback complete
-                    assert.isUndefined(callback.err, 'callback on ' + callback.card_id + ' should not throw errors (' + callback.err + ')');
+                    assert.isUndefined(callback.err, 'callback on ' + callback.card._id + ' should not throw errors (' + callback.err + ')');
                 } else {
                     // Make sure we are in card group that should not require a callback
                     // These cards can be played without any user interaction, no callbacks needed
                     let complete_group = ['attack', 'chicken', 'reverse', 'seethefuture', 'shuffle', 'skip', 'hotpotato', 'scrambledeggs', 'superskip', 'safetydraw', 'drawbottom'];
-                    assert.isTrue(complete_group.includes(callback.card_action), 'callback on ' + callback.card_id + ' should be in incomplete group');
+                    assert.isTrue(complete_group.includes(callback.card.action), 'callback on ' + callback.card._id + ' should be in incomplete group');
                 }
                 // Log that card was played
-                logger.info('Card played (' + callback.card_id + ')', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
+                logger.info('Card played (' + callback.card._id + ')', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
                 stats.cards++;
             }
         }

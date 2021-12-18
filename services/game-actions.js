@@ -94,6 +94,20 @@ exports.export_cards = async function (lobby_details, game_pos, pack_name) {
     }
 }
 
+// Name : game_actions.generate_cb(err, card, data, target, incomplete)
+// Desc : generates a callback data struct that is sent to the client
+// Author(s) : RAk3rman
+exports.generate_cb = function (err, card, data, target, incomplete) {
+    // Callback payload data structure
+    return {
+        err:         err,        // If an error is thrown, a string containing the error msg will be contained in this value
+        card:        card,       // Card details being referenced
+        data:        data,       // Optional data sent after a card action is complete (see the future cards, defuse positions, etc...)
+        target:      target,     // Array that describes the possible targets of this card = { plyr_id, card_id, deck_pos }
+        incomplete:  incomplete  // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
+    };
+}
+
 // Name : game_actions.draw_card(lobby_details, game_pos, plyr_id)
 // Desc : draw a card from the draw deck and place at the end of a players hand
 // Author(s) : Vincent Do, RAk3rman
@@ -131,20 +145,13 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
 exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_id, target, stats_store) {
     // Find card details based on card_id
     let card_details = await card_actions.find_card(card_id, lobby_details.games[game_pos].cards);
-    // Callback payload data structure
-    let callback = {
-        err:         undefined,           // If an error is thrown, a string containing the error msg will be contained in this value
-        card_id:     card_details._id,    // ID of the card being referenced
-        card_action: card_details.action, // Action of the card being referenced
-        data:        undefined,           // Optional data sent after a card action is complete (see the future cards, defuse positions, etc...)
-        target:      target,              // Array that describes the possible targets of this card = { plyr_id, card_id, deck_pos }
-        incomplete:  false                // Boolean if we received an incomplete request (still need favor target, waiting for defuse position, etc...)
-    };
+    // Generate callback from data struct
+    let callback = game_actions.generate_cb(undefined, card_details, undefined, target, false);
     // Ensure that the card is allowed to be played now
     let exp_only = ['defuse', 'hotpotato', 'chicken'];
-    if (await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && !exp_only.includes(callback.card_action)) {
+    if (await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && !exp_only.includes(callback.card.action)) {
         callback.err = "Cannot be used while exploding"; return callback; // Player is exploding and player attempted to use a card that cannot stop a chicken
-    } else if (!await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && exp_only.includes(callback.card_action)) {
+    } else if (!await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && exp_only.includes(callback.card.action)) {
         callback.err = "Can only be used when exploding"; return callback; // Player is not exploding but player tried to use a card that can stop a chicken
     }
     // BASE DECK
@@ -168,7 +175,7 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     // Check if callback was successful (complete request and no errors)
     if (!callback.incomplete && !callback.err) {
         // Reached end of successful card execution, update events and statistics
-        await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target.plyr_id, callback.card_id, undefined);
+        await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target.plyr_id, callback.card._id, undefined);
         let stats_desc = card_details.action.includes("randchick") ? "randchick" : card_details.action;
         stats_store.set(stats_desc, stats_store.get(stats_desc) + 1);
     }
@@ -229,7 +236,17 @@ exports.is_winner = async function (lobby_details, game_pos) {
 // Desc : assuming the game has completed, update player details and clean game data
 // Author(s) : RAk3rman
 exports.complete_game = async function (lobby_details, game_pos) {
-
+    // Dump cards and reset variables
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        lobby_details.games[game_pos].cards[i].assign = "out_of_play";
+        lobby_details.games[game_pos].cards[i].pos = i;
+        lobby_details.games[game_pos].cards[i].placed_by_plyr_id = "";
+    }
+    lobby_details.games[game_pos].in_progress = false;
+    lobby_details.games[game_pos].is_completed = true;
+    lobby_details.games[game_pos].turns_seat_pos = 0;
+    lobby_details.games[game_pos].turn_dir = "forward";
+    lobby_details.games[game_pos].turn_remain = 1;
 }
 
 // Name : game_actions.reset_game(lobby_details, game_pos)
@@ -237,10 +254,15 @@ exports.complete_game = async function (lobby_details, game_pos) {
 // Author(s) : RAk3rman
 exports.reset_game = async function (lobby_details, game_pos) {
     // Reset cards
-    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         lobby_details.games[game_pos].cards[i].assign = "draw_deck";
         lobby_details.games[game_pos].cards[i].pos = i;
         lobby_details.games[game_pos].cards[i].placed_by_plyr_id = "";
+    }
+    // Reset players
+    let players = await game_actions.get_players(lobby_details, game_pos);
+    for (let i = 0; i < players.length; i++) {
+        players[i].is_dead = false;
     }
     // Reset game variables
     lobby_details.games[game_pos].in_progress = false;
@@ -319,7 +341,7 @@ exports.game_export = async function (lobby_details, game_pos, cb_data, source, 
         discard_deck: discard_deck,
         packs: lobby_details.packs,
         play_timeout: lobby_details.play_timeout,
-        cb_data: cb_data,
+        callback: cb_data,
         req_plyr_id: req_plyr_id,
         trigger: source.trim()
     }

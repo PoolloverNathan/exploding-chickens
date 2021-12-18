@@ -81,7 +81,7 @@ function card_icon(game_details, player_pos, turns) {
 // Name : frontend-game.card_url(card_details)
 // Desc : returns the image url for a card
 function card_url(card_details) {
-    if (card_details.action === "randchick-1" || card_details.action === "randchick-2" || card_details.action === "randchick-3" || card_details.action === "randchick-4") {
+    if (card_details.action === "randchick-1" || card_details.action === "randchick-2" || card_details.action === "randchick-3" || card_details.action === "randchick-4" || card_details.action === "chicken") {
         return "/public/cards/" + card_details.pack + "/" + card_details.action + ".png";
     }
     return "/public/cards/" + card_details.pack + "/" + card_details._id + ".png";

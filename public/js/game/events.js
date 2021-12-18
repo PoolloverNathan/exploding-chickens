@@ -32,116 +32,117 @@ let session_user = {
 
 // Name : frontend-game.socket.on.{slug}-lobby-update
 // Desc : whenever an event occurs containing a lobby update
-socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (data) {
-    console.log("Lobby Trigger: " + data.trigger);
-    console.log(data);
+socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (payload) {
+    console.log("Lobby Trigger: " + payload.trigger);
+    console.log(payload);
     // Check browser session
-    setup_session_check(data);
+    setup_session_check(payload);
     // Update events log
-    events_data = data.events;
-    events_length = data.events_length;
+    events_data = payload.events;
+    events_length = payload.events_length;
     sbr_update_log();
     // Update elements based on update trigger
-    if (data.trigger === "player-online") { // Existing player connected
-        sbr_update_pstatus(data);
-        itr_update_pstatus(data);
-    } else if (data.trigger === "make-host") {
+    if (payload.trigger === "player-online") { // Existing player connected
+        sbr_update_pstatus(payload);
+        itr_update_pstatus(payload);
+    } else if (payload.trigger === "make-host") {
         // Update host designation in session_user
-        for (let i = 0; i < data.players.length; i++) {
+        for (let i = 0; i < payload.players.length; i++) {
             // Check if individual player exists
-            if (data.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).plyr_id) {
+            if (payload.players[i]._id === JSON.parse(lscache.get('ec_session_' + window.location.pathname.split('/')[2])).plyr_id) {
                 // Update session_user _id and is_host
                 session_user = {
-                    _id: data.players[i]._id,
-                    is_host: data.players[i].type === "host"
+                    _id: payload.players[i]._id,
+                    is_host: payload.players[i].type === "host"
                 };
                 break;
             }
         }
-        sbr_update_lobby_widgets(data);
-        sbr_update_options(data);
-        sbr_update_players(data);
-        sbr_update_packs(data);
+        sbr_update_lobby_widgets(payload);
+        sbr_update_options(payload);
+        sbr_update_players(payload);
+        sbr_update_packs(payload);
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Host was updated</h1>'
         });
-    } else if (data.trigger === "kick-player") {
-        sbr_update_lobby_widgets(data);
-        sbr_update_players(data);
-        itr_update_games(data);
+    } else if (payload.trigger === "kick-player") {
+        sbr_update_lobby_widgets(payload);
+        sbr_update_players(payload);
+        itr_update_games(payload);
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Player was kicked</h1>'
         });
-    } else if (data.trigger === "player-offline") { // Existing player disconnected
-        sbr_update_pstatus(data);
-        itr_update_pstatus(data);
+    } else if (payload.trigger === "player-offline") { // Existing player disconnected
+        sbr_update_pstatus(payload);
+        itr_update_pstatus(payload);
     } else { // Update entire ui
-        sbr_update_lobby_widgets(data);
-        sbr_update_options(data);
-        sbr_update_players(data);
-        sbr_update_packs(data);
-        itr_update_games(data);
+        sbr_update_lobby_widgets(payload);
+        sbr_update_options(payload);
+        sbr_update_players(payload);
+        sbr_update_packs(payload);
+        itr_update_games(payload);
     }
 });
 
 // Name : frontend-game.socket.on.{slug}-game-update
 // Desc : whenever an event occurs containing a game update
-socket.on(window.location.pathname.split('/')[4] + "-game-update", function (data) {
-    console.log("Game Trigger: " + data.trigger);
-    console.log(data);
+socket.on(window.location.pathname.split('/')[4] + "-game-update", function (payload) {
+    console.log("Game Trigger: " + payload.trigger);
+    console.log(payload);
     // Check browser session
-    setup_session_check(data);
+    setup_session_check(payload);
     // Update events log
-    events_data = data.events;
-    events_length = data.events_length;
+    events_data = payload.events;
+    events_length = payload.events_length;
     sbr_update_log();
     // Update elements based on update trigger
-    if (data.trigger === "reset-game") { // Game was reset or there is a winner
-        sbr_update_game_widgets(data);
-        sbr_update_pstatus(data);
-        itr_update_pstatus(data);
-        itr_update_pcards(data);
-        itr_update_discard(data);
-        itr_update_hand(data);
-        // Check if we have a winner
-        let winner = false;
-        for (let i = 0; i < data.players.length; i++) {
-            if (data.players[i].status === "winner") {
-                itr_display_winner(data, data.players[i].nickname, 0);
-                winner = true;
-                break;
-            }
+    if (payload.trigger === "play-card") { // A card was played by a player
+        sbr_update_game_widgets(payload);
+        itr_update_players(payload);
+        itr_update_pcards(payload);
+        if (payload.req_plyr_id === session_user._id && !payload.callback.incomplete) { // Trigger animation if this player played a card
+            anm_play_card(payload);
+        } else if (payload.callback.incomplete) {
+            console.log("INCOMPLETE CALLBACK TO HANDLE");
+            // TODO Handle incomplete callbacks
+        } else {
+            itr_update_discard(payload);
+            itr_update_hand(payload);
         }
-        if (winner === false) {
-            toast_alert.fire({
-                icon: 'info',
-                html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been reset</h1>'
-            });
+        return;
+    } else if (payload.trigger === "draw-card") { // A card was drawn by a player
+        sbr_update_game_widgets(payload);
+        itr_update_pcards(payload);
+        itr_update_hand(payload);
+        if (payload.req_plyr_id === session_user._id) { // Trigger animation if this player drew a card
+            anm_draw_card(payload);
         }
-    } else if (data.trigger === "play-card") { // A card was played by a player
-        if (data.req_plyr_id !== session_user._id) {
-            itr_update_discard(data);
-            itr_update_hand(data);
-        }
-        sbr_update_game_widgets(data);
-        itr_update_players(data);
-        itr_update_pcards(data);
-    } else if (data.trigger === "draw-card") { // A card was drawn by a player
-        sbr_update_game_widgets(data);
-        itr_update_pcards(data);
-        itr_update_hand(data);
-    } else { // Update entire ui
-        sbr_update_game_widgets(data);
-        sbr_update_players(data);
-        sbr_update_packs(data);
-        itr_update_players(data);
-        itr_update_discard(data);
-        itr_update_hand(data);
+        return;
+    } else if (payload.trigger === "explode-tick") { // A player is currently exploding
+        itr_trigger_exp(payload.callback.data.count, payload.callback.card, payload.callback.data.placed_by_name);
+        return;
+    } else if (payload.trigger === "reset-game") {
+        toast_alert.fire({
+            icon: 'info',
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been reset</h1>'
+        });
+    } else if (payload.trigger === "game-complete") {
+        toast_alert.fire({
+            icon: 'info',
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been won</h1>'
+        });
     }
+    // Update entire UI
+    sbr_update_game_widgets(payload);
+    sbr_update_players(payload);
+    sbr_update_packs(payload);
+    itr_update_players(payload);
+    itr_update_discard(payload);
+    itr_update_hand(payload);
 });
 
 // // Name : frontend-game.socket.on.{slug}-callback
@@ -171,44 +172,25 @@ socket.on(window.location.pathname.split('/')[4] + "-game-update", function (dat
 
 // Name : frontend-game.socket.on.{slug}-game-error
 // Desc : whenever an event occurs related to an error
-socket.on(window.location.pathname.split('/')[4] + "-game-error", function (data) {
-    console.log(data);
-    if (data.msg === "GAME-DNE") {
+socket.on(window.location.pathname.split('/')[4] + "-game-error", function (payload) {
+    console.log(payload);
+    if (payload.msg === "GAME-DNE") {
         window.location.href = "/";
-    } else if (data.msg === "PLYR-NAME") {
-        setup_user_prompt(data.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please enter a valid nickname (letters only)", "");
-    } else if (data.msg === "PLYR-AVTR") {
-        setup_user_prompt(data.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please select an avatar", "");
+    } else if (payload.msg === "PLYR-NAME") {
+        setup_user_prompt(payload.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please enter a valid nickname (letters only)", "");
+    } else if (payload.msg === "PLYR-AVTR") {
+        setup_user_prompt(payload.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please select an avatar", "");
     } else {
         toast_alert.fire({
             icon: 'error',
-            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">' + data.msg + '</h1>'
+            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">' + payload.msg + '</h1>'
         });
     }
 });
 
-// // Name : frontend-game.socket.on.{slug}-draw-card
-// // Desc : whenever the player draws a card, triggers animation
-// socket.on(window.location.pathname.split('/')[4] + "-draw-card", function (data) {
-//     anm_draw_card(data);
-// });
-//
-// // Name : frontend-game.socket.on.{slug}-play-card
-// // Desc : whenever the player plays a card, triggers animation
-// socket.on(window.location.pathname.split('/')[4] + "-play-card", function (data) {
-//     anm_play_card(data);
-// });
-//
-// // Name : frontend-game.socket.on.{slug}-explode-tick
-// // Desc : whenever the player plays a card, triggers animation
-// socket.on(window.location.pathname.split('/')[4] + "-explode-tick", function (data) {
-//     console.log("explode-tick");
-//     itr_trigger_exp(data.count, data.placed_by_name, data.card_url);
-// });
-
 // Name : frontend-game.socket.on.connect
 // Desc : whenever we connect to the backend
-socket.on("connect", function (data) {
+socket.on("connect", function (payload) {
     // Update _id to mark as online
     session_user._id = undefined;
     // Request game update
@@ -233,7 +215,7 @@ socket.on("connect", function (data) {
 
 // Name : frontend-game.socket.on.disconnect
 // Desc : whenever we disconnect from the backend
-socket.on("disconnect", function (data) {
+socket.on("disconnect", function (payload) {
     // Update status dot
     document.getElementById("status_ping").innerHTML = "<span class=\"animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75\"></span>\n" +
         "<span class=\"relative inline-flex rounded-full h-2 w-2 bg-error\"></span>"
