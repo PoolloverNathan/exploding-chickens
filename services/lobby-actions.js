@@ -26,13 +26,9 @@ let event_actions = require('./event-actions.js');
 // Author(s) : RAk3rman
 exports.create_lobby = async function () {
     // Create new lobby
-    try {
-        return await Lobby.create({
-            slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2})
-        });
-    } catch (err) {
-        throw new Error(err);
-    }
+    return await Lobby.create({
+        slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2})
+    });
 }
 
 // Name : lobby_actions.lobby_details_slug(slug)
@@ -40,11 +36,7 @@ exports.create_lobby = async function () {
 // Author(s) : RAk3rman
 exports.lobby_details_slug = async function (slug) {
     // Find lobby and return
-    try {
-        return await Lobby.findOne({ slug: slug });
-    } catch (err) {
-        throw new Error(err);
-    }
+    return Lobby.findOne({ slug: slug });
 }
 
 // Name : lobby_actions.lobby_details_id(_id)
@@ -52,23 +44,7 @@ exports.lobby_details_slug = async function (slug) {
 // Author(s) : RAk3rman
 exports.lobby_details_id = async function (_id) {
     // Find lobby and return
-    try {
-        return await Lobby.findOne({ _id: _id });
-    } catch (err) {
-        throw new Error(err);
-    }
-}
-
-// Name : lobby_actions.save_lobby(lobby_details)
-// Desc : saves a lobby_details object
-// Author(s) : RAk3rman
-exports.save_lobby = async function (lobby_details) {
-    // Save lobby
-    try {
-        return await lobby_details.save();
-    } catch (err) {
-        throw new Error(err);
-    }
+    return Lobby.findOne({_id: _id});
 }
 
 // Name : lobby_actions.partition_players(lobby_details)
@@ -166,11 +142,11 @@ exports.start_games = async function (lobby_details) {
             let host_id = "";
             for (let j = 0; j < lobby_details.players.length; j++) {
                 if (lobby_details.players[j].game_assign?.equals(lobby_details.games[i]._id)) {
-                    await event_actions.log_event(lobby_details.games[i], "include-player", lobby_details.players[j]._id, "", "", "");
+                    event_actions.log_event(lobby_details.games[i], "include-player", lobby_details.players[j]._id, "", "", "");
                 }
                 if (lobby_details.players[j].is_host) host_id = lobby_details.players[j]._id;
             }
-            await event_actions.log_event(lobby_details.games[i], "start-game", host_id, "", "", "");
+            event_actions.log_event(lobby_details.games[i], "start-game", host_id, "", "", "");
         }
     }
     // Update lobby settings
@@ -236,7 +212,7 @@ exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
     // Prepare events payload
     let events_payload = [];
     for (let i = lobby_details.events.length - 1; i >= 0 && i >= (lobby_details.events.length - 20); i--) {
-        events_payload.push(await event_actions.parse_event(lobby_details, lobby_details.events[i]));
+        events_payload.push(event_actions.parse_event(lobby_details, lobby_details.events[i]));
     }
     // Prepare games payload
     let games_payload = [];
@@ -281,11 +257,7 @@ exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
 // Author(s) : RAk3rman
 exports.delete_lobby = async function (_id) {
     // Delete lobby and return
-    try {
-        return await Lobby.deleteOne({ _id: _id });
-    } catch (err) {
-        throw new Error(err);
-    }
+    return Lobby.deleteOne({ _id: _id });
 }
 
 // Name : lobby_actions.lobby_purge(suppress_debug)
@@ -293,15 +265,11 @@ exports.delete_lobby = async function (_id) {
 // Author(s) : RAk3rman
 exports.lobby_purge = async function (suppress_debug) {
     // Filter which objects to purge
-    try {
-        let to_purge = await Lobby.find({ created: { $lte: moment().subtract(config_store.get('purge_age_hrs'), "hours").toISOString() } });
-        to_purge.forEach(ele => {
-            // Delete lobby
-            lobby_actions.delete_lobby(ele._id).then(() => {
-                if (!suppress_debug) console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted lobby created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));
-            });
+    let to_purge = await Lobby.find({ created: { $lte: moment().subtract(config_store.get('purge_age_hrs'), "hours").toISOString() } });
+    to_purge.forEach(ele => {
+        // Delete lobby
+        lobby_actions.delete_lobby(ele._id).then(() => {
+            if (!suppress_debug) console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted lobby created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));
         });
-    } catch (err) {
-        throw new Error(err);
-    }
+    });
 }

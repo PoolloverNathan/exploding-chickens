@@ -20,7 +20,7 @@ let event_actions = require('./event-actions.js');
 // Name : player_actions.create_player(lobby_details, nickname, avatar)
 // Desc : creates a new player
 // Author(s) : RAk3rman
-exports.create_player = async function (lobby_details, nickname, avatar) {
+exports.create_player = function (lobby_details, nickname, avatar) {
     // Push new player into existing lobby, await game assignment
     let plyr_id = nanoid(10);
     lobby_details.players.push({
@@ -35,7 +35,7 @@ exports.create_player = async function (lobby_details, nickname, avatar) {
 // Name : player_actions.get_player_details(lobby_details, plyr_id)
 // Desc : return the details for a target player
 // Author(s) : RAk3rman
-exports.get_player_details = async function (lobby_details, plyr_id) {
+exports.get_player_details = function (lobby_details, plyr_id) {
     // Find player and return details
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.players[i]._id === plyr_id) {
@@ -48,7 +48,7 @@ exports.get_player_details = async function (lobby_details, plyr_id) {
 // Name : player_actions.get_player_pos(lobby_details, plyr_id)
 // Desc : return the details for a target player
 // Author(s) : RAk3rman
-exports.get_player_pos = async function (lobby_details, plyr_id) {
+exports.get_player_pos = function (lobby_details, plyr_id) {
     // Find player and return details
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.players[i]._id === plyr_id) {
@@ -213,7 +213,7 @@ exports.kick_player = async function (lobby_details, host_plyr_id, kick_plyr_id)
         return;
     }
     // Get kick position
-    let kick_player_pos = await player_actions.get_player_pos(lobby_details, kick_plyr_id);
+    let kick_player_pos = player_actions.get_player_pos(lobby_details, kick_plyr_id);
     // Check if lobby is in progress (we can do this the easy way or the hard way)
     if (!lobby_details.in_progress) {
         // Disable and partition players

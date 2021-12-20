@@ -36,7 +36,7 @@ console.log(chalk.white('--> Description: ' + pkg.description));
 console.log(chalk.white('--> Github: ' + pkg.homepage + '\n'));
 
 // Check configuration values
-setup.check_values(config_store, stats_store);
+setup.check_values(config_store, stats_store, false);
 
 // Discord bot setup
 let bot;

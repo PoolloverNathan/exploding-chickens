@@ -12,6 +12,7 @@ let mongoose = require('mongoose');
 const moment = require('moment');
 const chalk = require('chalk');
 const pkg = require('../package.json');
+const fs = require('fs');
 const wipe = chalk.white;
 const dataStore = require('data-store');
 const config_store = new dataStore({path: '../config/config.json'});
@@ -47,7 +48,7 @@ const logger = winston.createLogger({
 before(done => {
     console.log(chalk.blue.bold('\nExploding Chickens v' + pkg.version + ' | Game Logic Test Cases'));
     // Check configuration values
-    setup.check_values(config_store, stats_store);
+    setup.check_values(config_store, stats_store, false);
     // Connect to mongodb using mongoose
     console.log(wipe(`${chalk.bold.yellow('MongoDB')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Attempting to connect using url "` + config_store.get('mongodb_url') + `"`));
     mongoose.connect(config_store.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
@@ -57,6 +58,37 @@ before(done => {
         done();
     });
     mongoose.connect(config_store.get('mongodb_url'), {useNewUrlParser: true,  useUnifiedTopology: true, connectTimeoutMS: 10000});
+});
+
+// Name : test.config_setup
+// Desc : tests the configuration setup functions
+// Author(s) : RAk3rman
+describe('Config setup', function() {
+    describe('#setup.check_values()', function() {
+        // Temp setup config and stats store
+        const temp_config_store = new dataStore({path: './test/temp_config.json'});
+        const temp_stats_store = new dataStore({path: './test/temp_stats.json'});
+        // Check configuration values
+        it('check datastore values', function() {
+            setup.check_values(temp_config_store, temp_stats_store, true);
+        })
+        // Verify that the config_store was set to defaults
+        it('verify config defaults', function() {
+            assert.equal(temp_config_store.get('webserver_port'), 3000, 'verify webserver_port default value');
+            assert.equal(temp_config_store.get('mongodb_url'), 'mongodb://localhost:27017/exploding-chickens', 'verify mongodb_url default value');
+            assert.equal(temp_config_store.get('purge_age_hrs'), 12, 'verify purge_age_hrs default value');
+            assert.equal(temp_config_store.get('verbose_debug'), false, 'verify verbose_debug default value');
+            assert.equal(temp_config_store.get('discord_bot_token'), '', 'verify discord_bot_token default value');
+            assert.equal(temp_config_store.get('discord_bot_channel'), '', 'verify discord_bot_channel default value');
+        })
+        // Verify that the stats_store was set to defaults
+        it('verify stats defaults', function() {
+            let stats_array = ['games_played', 'mins_played', 'attack', 'defuse', 'chicken', 'favor', 'randchick', 'reverse', 'seethefuture', 'shuffle', 'skip', 'hotpotato', 'favorgator', 'scrambledeggs', 'superskip', 'safetydraw', 'drawbottom', 'sockets_active'];
+            stats_array.forEach(element => {
+                assert.equal(temp_stats_store.has(element), true, 'verify stats value exists');
+            })
+        })
+    })
 });
 
 // Name : test.lobby_setup
@@ -82,7 +114,7 @@ describe('Lobby setup', function() {
             assert.equal(lobby_details.games.length, 0);
         });
     });
-    describe('#lobby_actions.game_details_slug(slug)', function() {
+    describe('#lobby_actions.lobby_details_slug()', function() {
         let lobby_details_test;
         it('search for existing lobby', function(done) {
             lobby_actions.lobby_details_slug(lobby_details.slug).then(result => {
@@ -94,7 +126,7 @@ describe('Lobby setup', function() {
             assert.equal(lobby_details.slug, lobby_details_test.slug);
         });
     });
-    describe('#lobby_actions.lobby_details_id(_id)', function() {
+    describe('#lobby_actions.lobby_details_id()', function() {
         let lobby_details_test;
         it('search for existing lobby', function(done) {
             lobby_actions.lobby_details_id(lobby_details._id).then(result => {
@@ -109,25 +141,102 @@ describe('Lobby setup', function() {
 });
 
 // Name : test.players
-// Desc : adds players to a sample game and tests interaction
+// Desc : adds players to a sample lobby and tests interaction
 // Author(s) : RAk3rman
-// describe('Players', function() {
-//
-// });
+describe('Players', function() {
+    let lobby_details;
+    it('create new sample lobby', function(done) {
+        lobby_actions.create_lobby().then(result => {
+            lobby_details = result;
+            lobby_id = result._id;
+            done();
+        })
+    });
+    describe('#player_actions.create_player()', function() {
+        it('add 10 players to lobby', function() {
+            for (let i = 0; i < 10; i++) {
+                player_actions.create_player(lobby_details, 'P' + i, 'default.png');
+            }
+        });
+        it('verify player count', function() {
+            assert.equal(lobby_details.players.length, 10, 'player count should be 10');
+        });
+    })
+    describe('#player_actions.get_player_details()', function() {
+        it('player details exist', function() {
+            for (let i = 0; i < 10; i++) {
+                assert.isNotNull(player_actions.get_player_details(lobby_details, lobby_details.players[i]._id), 'should not be null');
+            }
+        });
+        it('check non-existent player', function() {
+            assert.isNull(player_actions.get_player_details(lobby_details, ''), 'should be null');
+            assert.isNull(player_actions.get_player_details(lobby_details, 'PLAYER-DNE'), 'should be null');
+        });
+    })
+    describe('#player_actions.get_player_pos()', function() {
+        it('player position exist', function() {
+            for (let i = 0; i < 10; i++) {
+                assert.isNotNull(player_actions.get_player_pos(lobby_details, lobby_details.players[i]._id), 'should not be null');
+            }
+        });
+        it('check non-existent player', function() {
+            assert.isNull(player_actions.get_player_pos(lobby_details, ''), 'should be null');
+            assert.isNull(player_actions.get_player_pos(lobby_details, 'PLAYER-DNE'), 'should be null');
+        });
+    })
+    describe('#player_actions.get_turn_plyr_id()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.update_sockets_open()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.create_hand()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.randomize_seats()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.next_seat()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.disable_player()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.kick_player()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.make_host()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.sort_hand()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.is_exploding()', function() {
+        // TODO Implement test
+    })
+    describe('#player_actions.player_export()', function() {
+        // TODO Implement test
+    })
+});
 
 // Name : test.cards
-// Desc : adds cards to a sample game and tests interaction
+// Desc : adds cards to a sample lobby and tests interaction
 // Author(s) : RAk3rman
 // describe('Cards', function() {
 //
 // });
 
-// Name : test.gameplay
-// Desc : tests game functions and interaction
+// Name : test.events
+// Desc : adds events to a sample lobby and tests parse-ability
 // Author(s) : RAk3rman
-// describe('Gameplay', function() {
-//
-// });
+describe('Events', function() {
+    describe('#event_actions.log_event()', function() {
+        // TODO Implement test
+    })
+    describe('#event_actions.parse_event()', function() {
+        // TODO Implement test
+    })
+});
 
 // Name : test.lobby_deletion
 // Desc : deletes a test lobby and cleans up
@@ -163,12 +272,12 @@ describe('Lobby deletion', function() {
 });
 
 // Name : test.simulation
-// Desc : simulates game play over 30 lobbies with a variable number of players over 3 rounds
+// Desc : simulates game play over 6 lobbies with (2 + 3 * n) number of players over 3 rounds
 // Author(s) : RAk3rman
 describe('Simulation (final boss)', function() {
     let stats = { lobbies: 0, games: 0, cards: 0 }
-    // Create 10 lobbies
-    for (let i = 0; i < 10; i++) {
+    // Create 6 lobbies
+    for (let i = 0; i < 6; i++) {
         let plyr_ctn = 2 + 3 * i;
         let rounds = 3;
         simulate_lobby(i + 1, plyr_ctn, rounds, stats);
@@ -187,67 +296,47 @@ function simulate_lobby(id, plyr_ctn, rounds, stats) {
         this.timeout(plyr_ctn * 200 + 3000); // Dynamically increase timeout for larger lobbies
         stats.lobbies++;
         let lobby_details;
-        describe('Setup lobby', function () {
-            it('create lobby', async function() {
-                lobby_details = await lobby_actions.create_lobby();
-            });
+        it('Setup lobby', async function () {
+            // Create new lobby
+            lobby_details = await lobby_actions.create_lobby();
+            // Select grouping method
             let grp_method_options = ['random', 'wins'];
             let grp_method_choice = grp_method_options[Math.floor(Math.random() * grp_method_options.length)];
-            it('choose grp_method (' + grp_method_choice + ')', async function() {
-                await lobby_actions.update_option(lobby_details, 'grp_method', grp_method_choice);
-            });
+            await lobby_actions.update_option(lobby_details, 'grp_method', grp_method_choice);
+            // Select room size
             let room_size_options = ['2', '3', '4', '5', '6'];
             let room_size_choice = room_size_options[Math.floor(Math.random() * room_size_options.length)];
-            it('choose room_size (' + room_size_choice + ')', async function() {
-                await lobby_actions.update_option(lobby_details, 'room_size', room_size_choice);
-            });
+            await lobby_actions.update_option(lobby_details, 'room_size', room_size_choice);
+            // Select play timeout (even though it is redundant in testing)
+            let play_timeout_options = ['-1', '30', '60', '120'];
+            let play_timeout_choice = play_timeout_options[Math.floor(Math.random() * play_timeout_options.length)];
+            await lobby_actions.update_option(lobby_details, 'play_timeout', play_timeout_choice);
+            // Add players to game and select if we want to include host
             let include_host_choice = (Math.random() < 0.5) && plyr_ctn > 2;
-            it('choose include_host (' + !include_host_choice + ')', async function() {
-                if (include_host_choice) await lobby_actions.update_option(lobby_details, 'include_host', '');
-            });
-            it('populate players (' + plyr_ctn + ')', async function() {
-                if ((plyr_ctn - (include_host_choice ? 1 : 0)) % 2 !== 0 && lobby_details.room_size === 2) plyr_ctn += 1;
-                for (let i = 0; i < plyr_ctn; i++) {
-                    await player_actions.create_player(lobby_details, 'P' + i, 'default.png');
-                }
-            });
+            if ((plyr_ctn - (include_host_choice ? 1 : 0)) % 2 !== 0 && lobby_details.room_size === 2) plyr_ctn += 1;
+            for (let i = 0; i < plyr_ctn; i++) {
+                player_actions.create_player(lobby_details, 'P' + i, 'default.png');
+            }
+            if (include_host_choice) await lobby_actions.update_option(lobby_details, 'include_host', '');
+            // Import expansion packs
             let packs = ['yolking_around'];
             for (let i = 0; i < packs.length; i++) {
-                if (Math.random() < 0.5) packs.splice(i, 1);
+                if (Math.random() < 0.5) lobby_details.packs.push(packs[i]);
             }
-            it('import expansion packs (' + packs + ')', async function() {
-                for (let i = 0; i < packs.length; i++) {
-                    lobby_details.packs.push(packs[i]);
-                }
-            });
         })
         // Simulate unique games over unique rounds
         for (let i = 0; i < rounds; i++) {
-            describe('Round #' + (i + 1),function () {
-                it('partition players', async function() {
-                    await lobby_actions.partition_players(lobby_details);
-                });
-                it('start games', async function() {
-                    await lobby_actions.start_games(lobby_details);
-                });
-                it('simulate games to completion', async function() {
-                    await simulate_games(lobby_details, stats);
-                });
-                it('audit integrity of games', async function() {
-                    await audit_games(lobby_details);
-                });
-                it('reset games', async function() {
-                    await lobby_actions.reset_games(lobby_details);
-                });
+            it('Round #' + (i + 1),async function () {
+                await lobby_actions.partition_players(lobby_details);
+                await lobby_actions.start_games(lobby_details);
+                await simulate_games(lobby_details, stats);
+                await audit_games(lobby_details);
+                await lobby_actions.reset_games(lobby_details);
             })
         }
-        describe('Teardown lobby', function () {
-            it('delete lobby', async function() {
-                await lobby_actions.delete_lobby(lobby_details._id);
-            });
-            it('verifying deletion', async function() {
-                assert.isNotOk(await Lobby.exists({ _id: lobby_id }));
-            });
+        it('Teardown lobby', async function () {
+            await lobby_actions.delete_lobby(lobby_details._id);
+            assert.isNotOk(await Lobby.exists({ _id: lobby_id }));
         })
     });
 }
@@ -310,7 +399,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
         // For this card, give the user a 30% chance of playing it
         // If play_all is true, try to play every card in the hand
         // Then, make sure the card we are about to play is not a chicken unless play_chicken is true
-        if ((Math.random() < 0.3 || play_all) && (player_hand[i].action !== "chicken" || play_chicken)) {
+        if ((Math.random() < 0.5 || play_all) && (player_hand[i].action !== "chicken" || play_chicken)) {
             // Make blind attempt to play card
             let target = { plyr_id: undefined, card_id: undefined, deck_pos: undefined }
             let callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
@@ -326,6 +415,9 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
                     // These cards require special action and cannot be played blindly
                     let incomplete_group = ['defuse', 'favor', 'favorgator', 'randchick-1', 'randchick-2', 'randchick-3', 'randchick-4'];
                     assert.isTrue(incomplete_group.includes(callback.card.action), 'callback on ' + callback.card._id + ' should be in complete group');
+                    // Provide value where we can enforce incompleteness and errors
+                    let enforce_errors = true;
+                    let enforce_incomplete = true;
                     // Return complete callback
                     if (callback.card.action === 'defuse') { // Provide deck pos target
                         target.deck_pos = Math.floor(Math.random() * callback.data.max_pos);
@@ -333,15 +425,18 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
                         target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
                         let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
                         target.card_id = target_hand.length !== 0 ? target_hand[Math.floor(Math.random() * (target_hand.length - 1))]._id : undefined;
+                        enforce_incomplete = false;
                     } else if (callback.card.action.includes('randchick') || callback.card.action === 'favorgator') { // Provide plyr_id target
                         target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
+                        enforce_incomplete = false;
                     } else {
                         assert.fail('callback on ' + callback.card._id + ' should be complete');
                     }
                     // Play card with new target parameters
                     callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
                     // Make sure we exited cleanly after making callback complete
-                    assert.isUndefined(callback.err, 'callback on ' + callback.card._id + ' should not throw errors (' + callback.err + ')');
+                    if (enforce_errors) assert.isUndefined(callback.err, 'callback on ' + callback.card._id + ' should not throw errors (' + callback.err + ')');
+                    if (enforce_incomplete) assert.isFalse(callback.incomplete, 'callback on ' + callback.card._id + ' should be complete');
                 } else {
                     // Make sure we are in card group that should not require a callback
                     // These cards can be played without any user interaction, no callbacks needed
@@ -385,6 +480,9 @@ function audit_games(lobby_details) {
 // Desc : clean everything up after test cases
 // Author(s) : RAk3rman
 after(done => {
+    // Clean up temp config and stats store
+    fs.unlinkSync('./test/temp_config.json');
+    fs.unlinkSync('./test/temp_stats.json');
     // Close mongoose connection
     console.log(wipe(`${chalk.bold.yellow('Mongoose')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Closing mongodb connection`));
     mongoose.disconnect().then(result => {done()});

@@ -134,7 +134,7 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
         await game_actions.advance_turn(lobby_details, game_pos);
     }
     // Update event log and return card details
-    await event_actions.log_event(lobby_details.games[game_pos], "draw-card", plyr_id, undefined, draw_deck[pos], undefined);
+    event_actions.log_event(lobby_details.games[game_pos], "draw-card", plyr_id, undefined, draw_deck[pos], undefined);
     return draw_deck[pos];
 }
 
@@ -175,7 +175,7 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     // Check if callback was successful (complete request and no errors)
     if (!callback.incomplete && !callback.err) {
         // Reached end of successful card execution, update events and statistics
-        await event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target.plyr_id, callback.card._id, undefined);
+        event_actions.log_event(lobby_details.games[game_pos], "play-card", req_plyr_id, target.plyr_id, callback.card._id, undefined);
         let stats_desc = card_details.action.includes("randchick") ? "randchick" : card_details.action;
         stats_store.set(stats_desc, stats_store.get(stats_desc) + 1);
     }
@@ -297,7 +297,7 @@ exports.game_export = async function (lobby_details, game_pos, cb_data, source, 
     // Prepare events payload
     let events_payload = [];
     for (let i = game_details.events.length - 1; i >= 0 && i >= (game_details.events.length - 20); i--) {
-        events_payload.push(await event_actions.parse_event(lobby_details, game_details.events[i]));
+        events_payload.push(event_actions.parse_event(lobby_details, game_details.events[i]));
     }
     // Prepare players payload
     let players_payload = [];
@@ -358,4 +358,3 @@ exports.delete_game = async function (lobby_details, game_id) {
         }
     }
 }
-

@@ -406,7 +406,7 @@ exports.kill_player = async function (lobby_details, game_pos, plyr_id) {
         }
     }
     // Find player and update is_dead
-    lobby_details.players[await player_actions.get_player_pos(lobby_details, plyr_id)].is_dead = true;
+    lobby_details.players[player_actions.get_player_pos(lobby_details, plyr_id)].is_dead = true;
 }
 
 // Name : card_actions.filter_cards(assign, card_array)
