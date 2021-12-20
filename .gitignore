@@ -5,6 +5,8 @@
 
 \.nyc_output
 
+coverage/
+
 node_modules/
 
 config/config\.json
