@@ -30,9 +30,6 @@ let event_actions = require('../services/event-actions.js');
 const {uniqueNamesGenerator, adjectives, animals} = require("unique-names-generator");
 const {get_turn_plyr_id} = require("../services/player-actions");
 
-// Variables
-let lobby_id;
-
 // Setup event logger
 const logger = winston.createLogger({
     level: 'info',
@@ -91,18 +88,15 @@ describe('Config setup', function() {
     })
 });
 
-// Name : test.lobby_setup
+// Name : test.lobbies
 // Desc : creates a test lobby and initializes to sample values
 // Author(s) : RAk3rman
-describe('Lobby setup', function() {
+describe('Lobbies', function() {
     let lobby_details;
     describe('#lobby_actions.create_lobby()', function() {
-        it('create new sample lobby', function(done) {
-            lobby_actions.create_lobby().then(result => {
-                lobby_details = result;
-                lobby_id = result._id;
-                done();
-            })
+        it('create new sample lobby', async function() {
+            lobby_details = await lobby_actions.create_lobby();
+            await lobby_details.save();
         });
         it('slug exists', function() {
             assert(lobby_details.slug);
@@ -114,30 +108,126 @@ describe('Lobby setup', function() {
             assert.equal(lobby_details.games.length, 0);
         });
     });
-    describe('#lobby_actions.lobby_details_slug()', function() {
-        let lobby_details_test;
-        it('search for existing lobby', function(done) {
-            lobby_actions.lobby_details_slug(lobby_details.slug).then(result => {
-                lobby_details_test = result;
+    describe('#lobby_actions.partition_players()', function() {
+        it('add 10 players to lobby', function() {
+            for (let i = 0; i < 10; i++) {
+                player_actions.create_player(lobby_details, 'P' + i, 'default.png');
+                event_actions.log_event(lobby_details, 'create-player', lobby_details.players[i]._id, undefined, undefined, undefined);
+            }
+        });
+        it('partition players', async function() {
+            await lobby_actions.partition_players(lobby_details);
+        });
+        it('verify game count of 2', function() {
+            assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
+        });
+        it('kick 5 players', function() {
+            for (let i = 1; i < 6; i++) {
+                player_actions.kick_player(lobby_details, lobby_details.players[0]._id, lobby_details.players[i]._id);
+                event_actions.log_event(lobby_details, 'kick-player', lobby_details.players[0]._id, lobby_details.players[i]._id, undefined, undefined);
+            }
+        });
+        it('partition players', async function() {
+            await lobby_actions.partition_players(lobby_details);
+        });
+        it('verify game count of 1', function() {
+            assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
+        });
+    })
+    describe('#lobby_actions.start_games()', function() {
+        it('start games', async function() {
+            await lobby_actions.start_games(lobby_details);
+        });
+        it('verify game started properly', function() {
+            assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
+            assert.isTrue(lobby_details.games[0].in_progress, 'game should be in progress');
+            assert.isTrue(lobby_details.in_progress, 'lobby should be in progress');
+        });
+    })
+    describe('#lobby_actions.reset_games()', function() {
+        it('reset games', async function() {
+            await lobby_actions.reset_games(lobby_details);
+        });
+        it('verify game reset properly', function() {
+            assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
+            assert.isEmpty(lobby_details.games[0].events, 'events array should be empty');
+            assert.isFalse(lobby_details.games[0].in_progress, 'game should not be in progress');
+            assert.isFalse(lobby_details.in_progress, 'lobby should not be in progress');
+        });
+    })
+    describe('#lobby_actions.update_option()', function() {
+        it('modify grp_method', async function() {
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'grp_method', 'wins'));
+            assert.equal(lobby_details.grp_method, 'wins');
+            assert.isFalse(await lobby_actions.update_option(lobby_details, 'grp_method', undefined));
+            assert.equal(lobby_details.grp_method, 'wins');
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'grp_method', 'random'));
+            assert.equal(lobby_details.grp_method, 'random');
+        });
+        it('modify room_size', async function() {
+            for (let i = 2; i < 7; i++) {
+                assert.isTrue(await lobby_actions.update_option(lobby_details, 'room_size', i));
+                assert.equal(lobby_details.room_size, i);
+            }
+            assert.isFalse(await lobby_actions.update_option(lobby_details, 'room_size', undefined));
+            assert.equal(lobby_details.room_size, 6);
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'room_size', 5));
+            assert.equal(lobby_details.room_size, 5);
+        });
+        it('modify play_timeout', async function() {
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'play_timeout', '30'));
+            assert.equal(lobby_details.play_timeout, '30');
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'play_timeout', '60'));
+            assert.equal(lobby_details.play_timeout, '60');
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'play_timeout', '120'));
+            assert.equal(lobby_details.play_timeout, '120');
+            assert.isFalse(await lobby_actions.update_option(lobby_details, 'play_timeout', undefined));
+            assert.equal(lobby_details.play_timeout, '120');
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'play_timeout', '-1'));
+            assert.equal(lobby_details.play_timeout, '-1');
+        });
+        it('modify include_host', async function() {
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'include_host', undefined));
+            assert.isFalse(lobby_details.include_host);
+            assert.isUndefined(lobby_details.players[0].game_assign);
+            assert.equal(lobby_details.players[0].seat_pos, -1);
+            assert.isTrue(await lobby_actions.update_option(lobby_details, 'include_host', undefined));
+            assert.isTrue(lobby_details.include_host);
+        });
+    })
+    describe('#lobby_actions.lobby_export()', function() {
+        it('export lobby', async function() {
+            let lobby_export = await lobby_actions.lobby_export(lobby_details, 'tests', 'spectator');
+            assert.isNotNull(lobby_export);
+        });
+    })
+    describe('#lobby_actions.delete_lobby(lobby_id))', function() {
+        it('deleting sample lobby', function(done) {
+            lobby_actions.delete_lobby(lobby_details._id).then(result => {
                 done();
             })
         });
-        it('games match', function() {
-            assert.equal(lobby_details.slug, lobby_details_test.slug);
+        it('verifying deletion', async function() {
+            assert.isNotOk(await Lobby.exists({ _id: lobby_details._id }));
         });
-    });
-    describe('#lobby_actions.lobby_details_id()', function() {
-        let lobby_details_test;
-        it('search for existing lobby', function(done) {
-            lobby_actions.lobby_details_id(lobby_details._id).then(result => {
-                lobby_details_test = result;
+    })
+    describe('#lobby_actions.lobby_purge()', function() {
+        let lobby_details;
+        it('create purgeable lobby', async function () {
+            lobby_details = await Lobby.create({
+                slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2}),
+                created: moment().subtract(config_store.get('purge_age_hrs'), "hours")
+            });
+        });
+        it('purging lobby', function(done) {
+            lobby_actions.lobby_purge(true).then(result => {
                 done();
             })
         });
-        it('lobbies match', function() {
-            assert.equal(lobby_details.slug, lobby_details_test.slug);
+        it('verifying purge', async function() {
+            assert.isNotOk(await Lobby.exists({ _id: lobby_details._id }));
         });
-    });
+    })
 });
 
 // Name : test.players
@@ -145,12 +235,9 @@ describe('Lobby setup', function() {
 // Author(s) : RAk3rman
 describe('Players', function() {
     let lobby_details;
-    it('create new sample lobby', function(done) {
-        lobby_actions.create_lobby().then(result => {
-            lobby_details = result;
-            lobby_id = result._id;
-            done();
-        })
+    it('create new sample lobby', async function() {
+        lobby_details = await lobby_actions.create_lobby();
+        await lobby_details.save();
     });
     describe('#player_actions.create_player()', function() {
         it('add 10 players to lobby', function() {
@@ -230,45 +317,17 @@ describe('Players', function() {
 // Desc : adds events to a sample lobby and tests parse-ability
 // Author(s) : RAk3rman
 describe('Events', function() {
+    let lobby_details;
+    it('create new sample lobby', async function() {
+        lobby_details = await lobby_actions.create_lobby();
+        await lobby_details.save();
+    });
     describe('#event_actions.log_event()', function() {
         // TODO Implement test
     })
     describe('#event_actions.parse_event()', function() {
         // TODO Implement test
     })
-});
-
-// Name : test.lobby_deletion
-// Desc : deletes a test lobby and cleans up
-// Author(s) : RAk3rman
-describe('Lobby deletion', function() {
-    describe('#lobby_actions.lobby_purge()', function() {
-        let lobby_details;
-        it('create purgeable lobby', async function () {
-            lobby_details = await Lobby.create({
-                slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2}),
-                created: moment().subtract(config_store.get('purge_age_hrs'), "hours")
-            });
-        });
-        it('purging lobby', function(done) {
-            lobby_actions.lobby_purge(true).then(result => {
-                done();
-            })
-        });
-        it('verifying purge', async function() {
-            assert.isNotOk(await Lobby.exists({ _id: lobby_details._id }));
-        });
-    });
-    describe('#lobby_actions.delete_lobby(lobby_id))', function() {
-        it('deleting sample lobby', function(done) {
-            lobby_actions.delete_lobby(lobby_id).then(result => {
-                done();
-            })
-        });
-        it('verifying deletion', async function() {
-            assert.isNotOk(await Lobby.exists({ _id: lobby_id }));
-        });
-    });
 });
 
 // Name : test.simulation
@@ -299,6 +358,7 @@ function simulate_lobby(id, plyr_ctn, rounds, stats) {
         it('Setup lobby', async function () {
             // Create new lobby
             lobby_details = await lobby_actions.create_lobby();
+            await lobby_details.save();
             // Select grouping method
             let grp_method_options = ['random', 'wins'];
             let grp_method_choice = grp_method_options[Math.floor(Math.random() * grp_method_options.length)];
@@ -336,7 +396,7 @@ function simulate_lobby(id, plyr_ctn, rounds, stats) {
         }
         it('Teardown lobby', async function () {
             await lobby_actions.delete_lobby(lobby_details._id);
-            assert.isNotOk(await Lobby.exists({ _id: lobby_id }));
+            assert.isNotOk(await Lobby.exists({ _id: lobby_details._id }));
         })
     });
 }

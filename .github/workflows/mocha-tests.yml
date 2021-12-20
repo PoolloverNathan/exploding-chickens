@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-
+    name: Build
     runs-on: ubuntu-latest
 
     strategy:
@@ -31,5 +31,4 @@ jobs:
         mongodb-version: ${{ matrix.mongodb-version }}
 
     - run: npm install
-
     - run: npm run codecov

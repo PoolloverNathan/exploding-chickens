@@ -20,6 +20,7 @@ let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
 let socket_helpers = require('./socket-helpers.js');
+const Lobby = require("../models/lobby.js");
 
 // Export to app.js file
 module.exports = function (fastify, stats_store, config_store, bot) {
@@ -446,7 +447,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
             let filter = req_data.plyr_id === "spectator" ? { slug: req_data.lobby_slug } : { slug: req_data.lobby_slug, "players._id": req_data.plyr_id };
             // Determine if lobby exists
             if (await lobby.exists(filter)) {
-                callback(false, await lobby_actions.lobby_details_slug(req_data.lobby_slug), req_data, action, req_sock);
+                callback(false, await Lobby.findOne({ slug: req_data.lobby_slug}), req_data, action, req_sock);
             } else {
                 callback(true, "LOBBY-DNE", undefined, req_data, action, req_sock);
             }
@@ -460,7 +461,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
             let filter = req_data.plyr_id === "spectator" ? { slug: req_data.lobby_slug } : { slug: req_data.lobby_slug, games: { $elemMatch: { slug: req_data.game_slug }}, "players._id": req_data.plyr_id };
             // Determine if game exists
             if (await lobby.exists(filter)) {
-                let lobby_details = await lobby_actions.lobby_details_slug(req_data.lobby_slug);
+                let lobby_details = await Lobby.findOne({ slug: req_data.lobby_slug});
                 for (let i = 0; i < lobby_details.games.length; i++) {
                     if (lobby_details.games[i].slug === req_data.game_slug) {
                         callback(false, lobby_details, i, req_data, action, req_sock);

@@ -31,22 +31,6 @@ exports.create_lobby = async function () {
     });
 }
 
-// Name : lobby_actions.lobby_details_slug(slug)
-// Desc : returns the details for a lobby slug
-// Author(s) : RAk3rman
-exports.lobby_details_slug = async function (slug) {
-    // Find lobby and return
-    return Lobby.findOne({ slug: slug });
-}
-
-// Name : lobby_actions.lobby_details_id(_id)
-// Desc : returns the details for a lobby id
-// Author(s) : RAk3rman
-exports.lobby_details_id = async function (_id) {
-    // Find lobby and return
-    return Lobby.findOne({_id: _id});
-}
-
 // Name : lobby_actions.partition_players(lobby_details)
 // Desc : takes a lobby and partitions players into open game rooms based on grouping settings
 // Author(s) : RAk3rman
@@ -204,7 +188,7 @@ exports.update_option = async function (lobby_details, option, value) {
     return false;
 }
 
-// Name : game_actions.lobby_export(lobby_details, source, req_plyr_id)
+// Name : lobby_actions.lobby_export(lobby_details, source, req_plyr_id)
 // Desc : prepares lobby data for export to client
 // Author(s) : RAk3rman
 exports.lobby_export = async function (lobby_details, source, req_plyr_id) {

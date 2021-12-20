@@ -19,6 +19,7 @@ let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
 let socket_helpers = require('./socket-helpers.js');
 const {placeContent} = require("tailwindcss/lib/plugins");
+const Lobby = require("../models/lobby.js");
 
 // Name : socket_helpers.update_l_ui(lobby_details, req_plyr_id, req_sock, tar_sock, source, fastify, config_store)
 // Desc : sends an event containing lobby data
@@ -59,7 +60,7 @@ exports.update_g_ui = async function (lobby_details, game_pos, req_plyr_id, req_
 // Author(s) : RAk3rman
 exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, fastify, bot, config_store, stats_store) {
     // Get lobby_details
-    let lobby_details = await lobby_actions.lobby_details_id(lobby_id);
+    let lobby_details = await Lobby.findOne({_id: lobby_id});
     // Get player hand
     let plyr_hand = await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards);
     // Get details of exploding chicken in player's hand
