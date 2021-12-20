@@ -1,4 +1,4 @@
-name: Tests + Code Coverage
+name: Mocha Tests
 
 on:
   push:
@@ -32,4 +32,4 @@ jobs:
 
     - run: npm install
 
-    - run: npm test
+    - run: npm run codecov
