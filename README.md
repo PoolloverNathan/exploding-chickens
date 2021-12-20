@@ -1,6 +1,6 @@
 # Exploding Chickens
 
-[![Mocha Tests](https://github.com/rak3rman/exploding-chickens/actions/workflows/main.yml/badge.svg)](https://github.com/rak3rman/exploding-chickens/actions/workflows/main.yml)
+[![Mocha Tests](https://github.com/rak3rman/exploding-chickens/actions/workflows/mocha-tests.yml/badge.svg)](https://github.com/rak3rman/exploding-chickens/actions/workflows/mocha-tests.yml)
 [![Codecov](https://codecov.io/gh/rak3rman/exploding-chickens/branch/main/graph/badge.svg?token=QB6J8LJ9BO)](https://codecov.io/gh/rak3rman/exploding-chickens)
 ![Language](https://img.shields.io/badge/Language-Node.js-informational.svg?style=flat) 
 ![License](https://img.shields.io/badge/License-MPL2.0-red.svg)
