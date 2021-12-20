@@ -1,6 +1,9 @@
 language: node_js
 node_js:
   - "node"
-script: "npm install; npm test"
 services:
   - mongodb
+before_install:
+  - npm install -g codecov
+script:
+  - nyc --reporter=lcov mocha && codecov

@@ -1,6 +1,9 @@
 # Exploding Chickens
 
-[![Build status](https://travis-ci.com/RAK3RMAN/exploding-chickens.svg?branch=main)](https://travis-ci.com/RAK3RMAN/exploding-chickens) ![Language](https://img.shields.io/badge/Language-Node.js-informational.svg?style=flat) ![License](https://img.shields.io/badge/License-MPL2.0-red.svg)
+[![Build status](https://travis-ci.com/RAK3RMAN/exploding-chickens.svg?branch=main)](https://travis-ci.com/RAK3RMAN/exploding-chickens)
+[![codecov](https://codecov.io/gh/rak3rman/exploding-chickens/branch/main/graph/badge.svg?token=QB6J8LJ9BO)](https://codecov.io/gh/rak3rman/exploding-chickens)
+![Language](https://img.shields.io/badge/Language-Node.js-informational.svg?style=flat) 
+![License](https://img.shields.io/badge/License-MPL2.0-red.svg)
 
 #### Play the game at [https://chickens.rakerman.com](https://chickens.rakerman.com)
 #### Give us anonymous feedback on [Typeform](https://7ojkgwi952s.typeform.com/to/qWPf6y4Z)
@@ -44,31 +47,10 @@ The config file will be populated with the following default values:
 The npm package supports multiple ways to run the project.
 - ``npm run start`` Runs the project, plain and simple.
 - ``npm run dev`` Builds the project (see build cmd below), then starts the project and watches for all file changes. Restarts the instance if critical files are updated.
-- ``npm run test`` Runs a test suite built using [mocha](https://mochajs.org/) and [chai assert](https://www.chaijs.com/api/assert/). Tests can be found in path ``/test`` . Travis-CI also runs these tests.
+- ``npm run test`` Runs a test suite built using [mocha](https://mochajs.org/) and [chai assert](https://www.chaijs.com/api/assert/). Tests can be found in path ``/test`` . Code coverage reports generated using [Istanbul](https://istanbul.js.org/). Travis-CI also runs these tests.
 - ``npm run build`` Builds and compresses the css package, along with any other assets. If something new doesn't look right, give this a shot.
 
 Use ``^C`` to exit any of these instances. Currently, there are no exit commands or words.
-
-## Development
-Communal development is a key part of this project.
-As we all try to make this project the best we can, please adhere to the following style guidelines:
-- Preface all text files with the following header comment. If you are editing an item within the file, please add your name to the author section if the contribution was beyond a stylistic nature.
-```
-/*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-Filename : exploding-chickens/services/file.js
-Desc     : a couple lines (1-3+) about the purpose of
-           the file and what it does
-Author(s): RAk3rman
-\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
-```
-- Preface all portions of code with the following header comment. If you are editing a code block, please add your name to the author section if the contribution was beyond a stylistic nature.
-```
-// Name : global_path.function_name(param1, param2)
-// Desc : a brief 1-2 line description
-// Author(s) : RAk3rman
-```
-- Please use underscore separated function names (ex. my_function_is_awesome).
-- Make sure in line comments are clear. Use good coding practices.
 
 ## Contributors
 - **Radison Akerman** // Creator + Coding Wizard
