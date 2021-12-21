@@ -245,6 +245,9 @@ describe('Players', function() {
                 player_actions.create_player(lobby_details, 'P' + i, 'default.png');
             }
         });
+        it('partition players', async function() {
+            await lobby_actions.partition_players(lobby_details);
+        });
         it('verify player count', function() {
             assert.equal(lobby_details.players.length, 10, 'player count should be 10');
         });
@@ -322,11 +325,84 @@ describe('Events', function() {
         lobby_details = await lobby_actions.create_lobby();
         await lobby_details.save();
     });
+    it('add 10 players to lobby', function() {
+        for (let i = 0; i < 10; i++) {
+            player_actions.create_player(lobby_details, 'P' + i, 'default.png');
+            event_actions.log_event(lobby_details, 'create-player', lobby_details.players[i]._id, undefined, undefined, undefined);
+        }
+    });
+    it('partition players', async function() {
+        await lobby_actions.partition_players(lobby_details);
+    });
     describe('#event_actions.log_event()', function() {
-        // TODO Implement test
+        it('logging every type of event', function() {
+            // Valid events
+            event_actions.log_event(lobby_details, 'create-player', lobby_details.players[0]._id, undefined, undefined, undefined);
+            event_actions.log_event(lobby_details, 'include-player', lobby_details.players[0]._id, undefined, undefined, undefined);
+            event_actions.log_event(lobby_details, 'start-games', lobby_details.players[0]._id, undefined, undefined, undefined);
+            event_actions.log_event(lobby_details, 'start-game', lobby_details.players[0]._id, undefined, undefined, undefined);
+            event_actions.log_event(lobby_details, 'reset-games', lobby_details.players[0]._id, undefined, undefined, undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'attack', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'chicken', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'defuse', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'favor', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-2', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-3', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-4', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'reverse', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'seethefuture', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'shuffle', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'skip', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'hotpotato', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'scrambledeggs', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'superskip', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'safetydraw', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'drawbottom', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'favorgator', undefined);
+            event_actions.log_event(lobby_details, 'draw-card', lobby_details.players[0]._id, undefined, lobby_details.games[0].cards[0]._id, undefined);
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'grp_method', 'random');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'grp_method', 'wins');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'room_size', '2');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'room_size', '3');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'room_size', '4');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'room_size', '5');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'room_size', '6');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'play_timeout', '-1');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'play_timeout', '30');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'play_timeout', '60');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'play_timeout', '120');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'include_host', 'true');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'include_host', 'false');
+            event_actions.log_event(lobby_details, 'kick-player', lobby_details.players[0]._id, lobby_details.players[1]._id, undefined, undefined);
+            event_actions.log_event(lobby_details, 'make-host', lobby_details.players[0]._id, lobby_details.players[1]._id, undefined, undefined);
+            event_actions.log_event(lobby_details, 'import-pack', lobby_details.players[0]._id, undefined, 'yolking_around', undefined);
+            event_actions.log_event(lobby_details, 'export-pack', lobby_details.players[0]._id, undefined, 'yolking_around', undefined);
+            event_actions.log_event(lobby_details, 'game-won', lobby_details.players[0]._id, undefined, undefined, undefined);
+            // Invalid events
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'CARD-DNE', undefined);
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'grp_method', undefined);
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'room_size', '1');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'room_size', '7');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'play_timeout', '-999');
+            event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'OPTION-DNE', undefined);
+            event_actions.log_event(lobby_details, 'import-pack', lobby_details.players[0]._id, undefined, 'PACK-DNE', undefined);
+            event_actions.log_event(lobby_details, 'export-pack', lobby_details.players[0]._id, undefined, 'PACK-DNE', undefined);
+            event_actions.log_event(lobby_details, 'invalid', undefined, undefined, undefined, undefined);
+        });
     })
     describe('#event_actions.parse_event()', function() {
-        // TODO Implement test
+        let splice_pos = 52;
+        it('check valid events', function() {
+            for (let i = 0; i < splice_pos; i++) {
+                assert.notEqual(event_actions.parse_event(lobby_details, lobby_details.events[i]).desc, 'Invalid event action', 'event action should be valid');
+            }
+        })
+        it('check invalid events', function() {
+            for (let i = splice_pos; i < lobby_details.events.length; i++) {
+                assert.equal(event_actions.parse_event(lobby_details, lobby_details.events[i]).desc, 'Invalid event action', 'event action should not be valid');
+            }
+        })
     })
 });
 

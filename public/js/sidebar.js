@@ -4,6 +4,8 @@ Desc     : handles ui updates and actions on the sidebar
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Global variables
+const player_actions = require("./player-actions.js");
+const moment = require("moment");
 let auth_token = "undefined";
 
 // Name : frontend-game.sbr_update_lobby_widgets(lobby_details)
@@ -281,7 +283,7 @@ moment.updateLocale('en', {
     }
 });
 
-// Name : frontend-game.sbr_update_log(details)
+// Name : frontend-game.sbr_update_log()
 // Desc : updates the game log list
 setInterval(sbr_update_log, 1000);
 function sbr_update_log() {
