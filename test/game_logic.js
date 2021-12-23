@@ -88,12 +88,26 @@ describe('Config setup', function() {
     })
 });
 
+// Name : test.setup_test_lobby
+// Desc : creates a test lobby with 10 players
+// Author(s) : RAk3rman
+async function setup_test_lobby(lobby_details, plyr_ctn) {
+    // Create lobby
+    lobby_details = await lobby_actions.create_lobby();
+    // Add 10 players to lobby
+    for (let i = 0; i < plyr_ctn; i++) {
+        player_actions.create_player(lobby_details, 'P' + i, 'default.png');
+        event_actions.log_event(lobby_details, 'create-player', lobby_details.players[i]._id, undefined, undefined, undefined);
+    }
+    return lobby_details;
+}
+
 // Name : test.lobbies
 // Desc : creates a test lobby and initializes to sample values
 // Author(s) : RAk3rman
 describe('Lobbies', function() {
-    let lobby_details;
     describe('#lobby_actions.create_lobby()', function() {
+        let lobby_details;
         it('create new sample lobby', async function() {
             lobby_details = await lobby_actions.create_lobby();
             await lobby_details.save();
@@ -109,53 +123,92 @@ describe('Lobbies', function() {
         });
     });
     describe('#lobby_actions.partition_players()', function() {
-        it('add 10 players to lobby', function() {
-            for (let i = 0; i < 10; i++) {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic random partition with 10 players', async function() {
+            // Update partition grouping method
+            await lobby_actions.update_option(lobby_details, 'grp_method', 'random');
+            // Partition 10 players
+            await lobby_actions.partition_players(lobby_details);
+            // Test expected configuration
+            assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
+        });
+        it('basic win # partition with 10 players', async function() {
+            // Update partition grouping method
+            await lobby_actions.update_option(lobby_details, 'grp_method', 'wins');
+            // Partition 10 players
+            await lobby_actions.partition_players(lobby_details);
+            // Test expected configuration
+            assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
+        });
+        it('partition after kicking 5 players', async function() {
+            // Kick 5 players (but not the host)
+            for (let i = 1; i < 6; i++) {
+                await player_actions.kick_player(lobby_details, lobby_details.players[0]._id, lobby_details.players[i]._id);
+                event_actions.log_event(lobby_details, 'kick-player', lobby_details.players[0]._id, lobby_details.players[i]._id, undefined, undefined);
+            }
+            // Partition 5 players who remain
+            await lobby_actions.partition_players(lobby_details);
+            // Test expected configuration
+            assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
+        });
+        it('partition while games are in progress', async function() {
+            // Start games
+            await lobby_actions.start_games(lobby_details);
+            // Add 5 players to lobby
+            for (let i = 1; i < 6; i++) {
                 player_actions.create_player(lobby_details, 'P' + i, 'default.png');
                 event_actions.log_event(lobby_details, 'create-player', lobby_details.players[i]._id, undefined, undefined, undefined);
             }
-        });
-        it('partition players', async function() {
+            // Partition 10 players (5 in game (don't touch) and 5 awaiting assignment)
             await lobby_actions.partition_players(lobby_details);
-        });
-        it('verify game count of 2', function() {
+            // Test expected configuration
             assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
+            // Reset games
+            await lobby_actions.reset_games(lobby_details);
         });
-        it('kick 5 players', function() {
-            for (let i = 1; i < 6; i++) {
-                player_actions.kick_player(lobby_details, lobby_details.players[0]._id, lobby_details.players[i]._id);
-                event_actions.log_event(lobby_details, 'kick-player', lobby_details.players[0]._id, lobby_details.players[i]._id, undefined, undefined);
-            }
-        });
-        it('partition players', async function() {
+        it('partition after games have been completed', async function() {
+            // Partition 10 players
             await lobby_actions.partition_players(lobby_details);
-        });
-        it('verify game count of 1', function() {
-            assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
+            // Test expected configuration
+            assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
+            // Start games
+            await lobby_actions.start_games(lobby_details);
+            //
         });
     })
     describe('#lobby_actions.start_games()', function() {
-        it('start games', async function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic start with 2 new games', async function() {
+            // Partition 10 players
+            await lobby_actions.partition_players(lobby_details);
+            // Start games
             await lobby_actions.start_games(lobby_details);
-        });
-        it('verify game started properly', function() {
-            assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
+            // Test expected configuration
+            assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
             assert.isTrue(lobby_details.games[0].in_progress, 'game should be in progress');
             assert.isTrue(lobby_details.in_progress, 'lobby should be in progress');
         });
     })
     describe('#lobby_actions.reset_games()', function() {
-        it('reset games', async function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic reset with 2 new games', async function() {
+            // Partition 10 players
+            await lobby_actions.partition_players(lobby_details);
+            // Start games
             await lobby_actions.reset_games(lobby_details);
-        });
-        it('verify game reset properly', function() {
-            assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
+            // Test expected configuration
+            assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
             assert.isEmpty(lobby_details.games[0].events, 'events array should be empty');
             assert.isFalse(lobby_details.games[0].in_progress, 'game should not be in progress');
             assert.isFalse(lobby_details.in_progress, 'lobby should not be in progress');
         });
     })
     describe('#lobby_actions.update_option()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('modify grp_method', async function() {
             assert.isTrue(await lobby_actions.update_option(lobby_details, 'grp_method', 'wins'));
             assert.equal(lobby_details.grp_method, 'wins');
@@ -196,12 +249,19 @@ describe('Lobbies', function() {
         });
     })
     describe('#lobby_actions.lobby_export()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('export lobby', async function() {
+            // Partition 10 players
+            await lobby_actions.partition_players(lobby_details);
+            // Export lobby
             let lobby_export = await lobby_actions.lobby_export(lobby_details, 'tests', 'spectator');
             assert.isNotNull(lobby_export);
         });
     })
-    describe('#lobby_actions.delete_lobby(lobby_id))', function() {
+    describe('#lobby_actions.delete_lobby()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('deleting sample lobby', function(done) {
             lobby_actions.delete_lobby(lobby_details._id).then(result => {
                 done();
@@ -517,6 +577,7 @@ async function simulate_games(lobby_details, stats) {
             }
             turn_ctn++;
         }
+        // Game has finished, prelim assertions
         assert.isAbove(turn_ctn, 1, 'ensure number of turns is greater than 1');
         assert.isTrue(await game_actions.is_winner(lobby_details, i), 'ensure we have a winner');
     }

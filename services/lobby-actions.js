@@ -61,11 +61,11 @@ exports.partition_players = async function (lobby_details) {
         // Generate group
         let grp = [];
         for (let i = 0; i < room_size && player_bucket.length > 0; i++) {
-            if (lobby_details.grp_method === "random") {
+            if (lobby_details.grp_method === "wins") {
+                grp.push(player_bucket.splice(0, 1)[0]._id);
+            } else {
                 let rand_index = Math.floor(Math.random() * player_bucket.length);
                 grp.push(player_bucket.splice(rand_index, 1)[0]._id);
-            } else if (lobby_details.grp_method === "wins") {
-                grp.push(player_bucket.splice(0, 1)[0]._id);
             }
         }
         groups.push(grp);
