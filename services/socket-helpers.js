@@ -5,7 +5,7 @@ Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Packages
-let lobby = require('../models/lobby.js');
+let Lobby = require('../models/lobby.js');
 const chalk = require('chalk');
 const wipe = chalk.white;
 const moment = require('moment');
@@ -18,8 +18,6 @@ let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
 let socket_helpers = require('./socket-helpers.js');
-const {placeContent} = require("tailwindcss/lib/plugins");
-const Lobby = require("../models/lobby.js");
 
 // Name : socket_helpers.update_l_ui(lobby_details, req_plyr_id, req_sock, tar_sock, source, fastify, config_store)
 // Desc : sends an event containing lobby data

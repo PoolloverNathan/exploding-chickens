@@ -6,7 +6,7 @@ Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Packages
-let lobby = require('../models/lobby.js');
+let Lobby = require('../models/lobby.js');
 const moment = require('moment');
 const chalk = require('chalk');
 const wipe = chalk.white;
@@ -20,7 +20,6 @@ let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
 let socket_helpers = require('./socket-helpers.js');
-const Lobby = require("../models/lobby.js");
 
 // Export to app.js file
 module.exports = function (fastify, stats_store, config_store, bot) {
