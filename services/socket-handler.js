@@ -376,7 +376,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
         socket.on('check-lobby-slug', async function (data) {
             if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-lobby-slug')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to verify lobby slug`));
             // Check to see if game exists
-            if (await lobby.exists({ slug: data.slug })) {
+            if (await Lobby.exists({ slug: data.slug })) {
                 fastify.io.to(socket.id).emit("slug-response", data.slug);
                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan('check-lobby-slug')} ${chalk.dim.yellow(data.slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Lobby slug is ${chalk.dim.green('valid')}`));
             } else {
@@ -445,7 +445,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
             // Determine if we should filter by slug and plyr_id
             let filter = req_data.plyr_id === "spectator" ? { slug: req_data.lobby_slug } : { slug: req_data.lobby_slug, "players._id": req_data.plyr_id };
             // Determine if lobby exists
-            if (await lobby.exists(filter)) {
+            if (await Lobby.exists(filter)) {
                 callback(false, await Lobby.findOne({ slug: req_data.lobby_slug}), req_data, action, req_sock);
             } else {
                 callback(true, "LOBBY-DNE", undefined, req_data, action, req_sock);
@@ -459,7 +459,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
             // Determine if we should filter by slug and plyr_id
             let filter = req_data.plyr_id === "spectator" ? { slug: req_data.lobby_slug } : { slug: req_data.lobby_slug, games: { $elemMatch: { slug: req_data.game_slug }}, "players._id": req_data.plyr_id };
             // Determine if game exists
-            if (await lobby.exists(filter)) {
+            if (await Lobby.exists(filter)) {
                 let lobby_details = await Lobby.findOne({ slug: req_data.lobby_slug});
                 for (let i = 0; i < lobby_details.games.length; i++) {
                     if (lobby_details.games[i].slug === req_data.game_slug) {
