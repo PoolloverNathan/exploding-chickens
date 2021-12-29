@@ -245,6 +245,20 @@ describe('Lobbies', function() {
             assert.isTrue(lobby_details.include_host);
         });
     })
+    describe('#lobby_actions.check_completion()', function() {
+        it('check completion of an unfinished game', async function() {
+            await lobby_actions.start_games(lobby_details);
+            await lobby_actions.check_completion(lobby_details);
+        });
+        it('check completion of a finished game', async function() {
+            lobby_details.games[0].in_progress = true;
+            lobby_details.games[0].is_completed = true;
+            for (let i = 6; i < 10; i++) {
+                lobby_details.players[i].is_dead = true;
+            }
+            await lobby_actions.check_completion(lobby_details);
+        });
+    })
     describe('#lobby_actions.lobby_export()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
