@@ -61,7 +61,7 @@ exports.get_player_pos = function (lobby_details, plyr_id) {
 // Name : player_actions.get_turn_plyr_id(lobby_details, game_pos)
 // Desc : return the plyr_id of the player who is currently playing
 // Author(s) : RAk3rman
-exports.get_turn_plyr_id = async function (lobby_details, game_pos) {
+exports.get_turn_plyr_id = function (lobby_details, game_pos) {
     // Find player and return details
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign) && lobby_details.games[game_pos].turn_seat_pos === lobby_details.players[i].seat_pos) {

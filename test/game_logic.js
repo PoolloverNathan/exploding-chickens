@@ -335,7 +335,20 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.get_turn_plyr_id()', function() {
-        // TODO Implement test
+        it('player id exist', function() {
+            assert.isNotNull(player_actions.get_turn_plyr_id(lobby_details, 0), 'should not be null');
+        });
+        it('player id exist', function() {
+            assert.isNotNull(player_actions.get_turn_plyr_id(lobby_details, 1), 'should not be null');
+        });
+        it('check non-existent player id', function() {
+            lobby_details.games[0].turn_seat_pos = -1;
+            lobby_details.games[1].turn_seat_pos = -1;
+            assert.isNull(player_actions.get_turn_plyr_id(lobby_details, 0), 'should be null');
+            assert.isNull(player_actions.get_turn_plyr_id(lobby_details, 1), 'should be null');
+            lobby_details.games[0].turn_seat_pos = 0;
+            lobby_details.games[1].turn_seat_pos = 0;
+        });
     })
     describe('#player_actions.update_sockets_open()', function() {
         // TODO Implement test
