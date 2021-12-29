@@ -5,7 +5,7 @@ Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Packages
-let Lobby = require('../models/lobby.js');
+const Lobby = require("../models/lobby.js");
 const chalk = require('chalk');
 const wipe = chalk.white;
 const moment = require('moment');
@@ -28,9 +28,9 @@ exports.update_l_ui = async function (lobby_details, req_plyr_id, req_sock, tar_
     if (pretty_lobby_details !== {}) {
         // Send lobby data
         if (tar_sock === undefined) {
-            fastify.io.to(lobby_details.slug).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
+            fastify.io.to(lobby_details.slug).emit("lobby-update", pretty_lobby_details);
         } else {
-            fastify.io.to(tar_sock).emit(pretty_lobby_details.slug + "-lobby-update", pretty_lobby_details);
+            fastify.io.to(tar_sock).emit("lobby-update", pretty_lobby_details);
         }
         if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_lobby_details.slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_plyr_id)} Emitted lobby update event`));
     }
@@ -45,9 +45,9 @@ exports.update_g_ui = async function (lobby_details, game_pos, req_plyr_id, req_
     if (pretty_game_details !== {}) {
         // Send game data
         if (tar_sock === undefined) {
-            fastify.io.to(lobby_details.slug).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
+            fastify.io.to(lobby_details.slug).emit("game-update", pretty_game_details);
         } else {
-            fastify.io.to(tar_sock).emit(pretty_game_details.game_slug + "-game-update", pretty_game_details);
+            fastify.io.to(tar_sock).emit("game-update", pretty_game_details);
         }
         if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(source)} ${chalk.dim.yellow(pretty_game_details.game_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_plyr_id)} Emitted game update event`));
     }
@@ -82,8 +82,16 @@ exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock
     } else {
         game_actions.play_card(lobby_details, game_pos, chicken_card._id, req_plyr_id, cb_data.target, stats_store);
         if (game_actions.is_winner(lobby_details, game_pos)) {
-            game_actions.complete_game(lobby_details, game_pos);
+            // Mark game as completed
+            let winner_plyr_id = game_actions.complete_game(lobby_details, game_pos);
+            event_actions.log_event(lobby_details, "game-won", winner_plyr_id, undefined, undefined, undefined);
+            event_actions.log_event(lobby_details.games[game_pos], "game-won", winner_plyr_id, undefined, undefined, undefined);
+            // Update statistics
+            stats_store.set("games_played", stats_store.get("games_played") + 1);
+            stats_store.set("mins_played", stats_store.get("mins_played") + moment().diff(moment(lobby_details.games[game_pos].created), 'minutes'));
+            // Send bot summary and update game ui
             await socket_helpers.bot_summary(lobby_details, game_pos, bot, config_store, stats_store);
+            await socket_helpers.update_l_ui(lobby_details, req_plyr_id, req_sock, tar_sock, "completed-game", fastify, config_store);
             await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "completed-game", fastify, config_store);
         } else {
             await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "play-chicken", fastify, config_store);

@@ -30,9 +30,9 @@ let session_user = {
  SOCKET.IO EVENTS
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-// Name : frontend-game.socket.on.{slug}-lobby-update
+// Name : frontend-game.socket.on.lobby-update
 // Desc : whenever an event occurs containing a lobby update
-socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (data) {
+socket.on("lobby-update", function (data) {
     console.log("Lobby Trigger: " + data.trigger);
     console.log(data);
     // Check browser session
@@ -50,12 +50,12 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
-        itr_update_games(data);
+        itr_create_games(data);
     } else if (data.trigger === "start-games") { // Game started
         sbr_update_lobby_widgets(data);
         sbr_update_options(data);
         sbr_update_pstatus(data);
-        itr_update_games(data);
+        itr_create_games(data);
         game_start_prompt(data);
     } else if (data.trigger === "make-host") {
         // Update host designation in session_user
@@ -82,7 +82,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
     } else if (data.trigger === "kick-player") {
         sbr_update_lobby_widgets(data);
         sbr_update_players(data);
-        itr_update_games(data);
+        itr_create_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
@@ -91,7 +91,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
     } else if (data.trigger === "import-pack") {
         sbr_update_lobby_widgets(data);
         sbr_update_packs(data);
-        itr_update_games(data);
+        itr_create_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'success',
@@ -100,7 +100,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
     } else if (data.trigger === "export-pack") {
         sbr_update_lobby_widgets(data);
         sbr_update_packs(data);
-        itr_update_games(data);
+        itr_create_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'success',
@@ -114,8 +114,17 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
-        itr_update_games(data);
+        itr_create_games(data);
     }
+});
+
+// Name : frontend-game.socket.on.game-update
+// Desc : whenever an event occurs containing a game update
+socket.on("game-update", function (payload) {
+    console.log("Game Trigger: " + payload.trigger);
+    console.log(payload);
+    // Update game room on ui
+    itr_update_game(payload);
 });
 
 // Name : frontend-game.socket.on.player-created

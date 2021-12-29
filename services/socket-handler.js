@@ -6,7 +6,7 @@ Author(s): RAk3rman
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
 // Packages
-let Lobby = require('../models/lobby.js');
+const Lobby = require("../models/lobby.js");
 const moment = require('moment');
 const chalk = require('chalk');
 const wipe = chalk.white;

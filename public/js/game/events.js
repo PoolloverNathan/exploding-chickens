@@ -30,9 +30,9 @@ let session_user = {
  SOCKET.IO EVENTS
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-// Name : frontend-game.socket.on.{slug}-lobby-update
+// Name : frontend-game.socket.on.lobby-update
 // Desc : whenever an event occurs containing a lobby update
-socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (payload) {
+socket.on("lobby-update", function (payload) {
     console.log("Lobby Trigger: " + payload.trigger);
     console.log(payload);
     // Check browser session
@@ -88,61 +88,63 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (pa
     }
 });
 
-// Name : frontend-game.socket.on.{slug}-game-update
+// Name : frontend-game.socket.on.game-update
 // Desc : whenever an event occurs containing a game update
-socket.on(window.location.pathname.split('/')[4] + "-game-update", function (payload) {
-    console.log("Game Trigger: " + payload.trigger);
-    console.log(payload);
-    // Check browser session
-    setup_session_check(payload);
-    // Update events log
-    events_data = payload.events;
-    events_length = payload.events_length;
-    sbr_update_log();
-    // Update elements based on update trigger
-    if (payload.trigger === "play-card") { // A card was played by a player
-        sbr_update_game_widgets(payload);
-        itr_update_players(payload);
-        itr_update_pcards(payload);
-        if (payload.req_plyr_id === session_user._id && !payload.callback.incomplete) { // Trigger animation if this player played a card
-            anm_play_card(payload);
-        } else if (payload.callback.incomplete) {
-            console.log("INCOMPLETE CALLBACK TO HANDLE");
-            // TODO Handle incomplete callbacks
-        } else {
-            itr_update_discard(payload);
+socket.on("game-update", function (payload) {
+    if (window.location.pathname.split('/')[4] === payload.game_slug) {
+        console.log("Game Trigger: " + payload.trigger);
+        console.log(payload);
+        // Check browser session
+        setup_session_check(payload);
+        // Update events log
+        events_data = payload.events;
+        events_length = payload.events_length;
+        sbr_update_log();
+        // Update elements based on update trigger
+        if (payload.trigger === "play-card") { // A card was played by a player
+            sbr_update_game_widgets(payload);
+            itr_update_players(payload);
+            itr_update_pcards(payload);
+            if (payload.req_plyr_id === session_user._id && !payload.callback.incomplete) { // Trigger animation if this player played a card
+                anm_play_card(payload);
+            } else if (payload.callback.incomplete) {
+                console.log("INCOMPLETE CALLBACK TO HANDLE");
+                // TODO Handle incomplete callbacks
+            } else {
+                itr_update_discard(payload);
+                itr_update_hand(payload);
+            }
+            return;
+        } else if (payload.trigger === "draw-card") { // A card was drawn by a player
+            sbr_update_game_widgets(payload);
+            itr_update_pcards(payload);
             itr_update_hand(payload);
+            if (payload.req_plyr_id === session_user._id) { // Trigger animation if this player drew a card
+                anm_draw_card(payload);
+            }
+            return;
+        } else if (payload.trigger === "explode-tick") { // A player is currently exploding
+            itr_trigger_exp(payload.callback.data.count, payload.callback.card, payload.callback.data.placed_by_name);
+            return;
+        } else if (payload.trigger === "reset-game") {
+            toast_alert.fire({
+                icon: 'info',
+                html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been reset</h1>'
+            });
+        } else if (payload.trigger === "game-complete") {
+            toast_alert.fire({
+                icon: 'info',
+                html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been won</h1>'
+            });
         }
-        return;
-    } else if (payload.trigger === "draw-card") { // A card was drawn by a player
+        // Update entire UI
         sbr_update_game_widgets(payload);
-        itr_update_pcards(payload);
+        sbr_update_players(payload);
+        sbr_update_packs(payload);
+        itr_update_players(payload);
+        itr_update_discard(payload);
         itr_update_hand(payload);
-        if (payload.req_plyr_id === session_user._id) { // Trigger animation if this player drew a card
-            anm_draw_card(payload);
-        }
-        return;
-    } else if (payload.trigger === "explode-tick") { // A player is currently exploding
-        itr_trigger_exp(payload.callback.data.count, payload.callback.card, payload.callback.data.placed_by_name);
-        return;
-    } else if (payload.trigger === "reset-game") {
-        toast_alert.fire({
-            icon: 'info',
-            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been reset</h1>'
-        });
-    } else if (payload.trigger === "game-complete") {
-        toast_alert.fire({
-            icon: 'info',
-            html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been won</h1>'
-        });
     }
-    // Update entire UI
-    sbr_update_game_widgets(payload);
-    sbr_update_players(payload);
-    sbr_update_packs(payload);
-    itr_update_players(payload);
-    itr_update_discard(payload);
-    itr_update_hand(payload);
 });
 
 // // Name : frontend-game.socket.on.{slug}-callback

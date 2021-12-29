@@ -223,7 +223,7 @@ exports.advance_turn = function (lobby_details, game_pos) {
 exports.is_winner = function (lobby_details, game_pos) {
     // Count the number of active players
     let ctn = 0;
-    for (let i = 0; i <= lobby_details.players.length - 1; i++) {
+    for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign) && !lobby_details.players[i].is_dead) {
             ctn++;
         }
@@ -235,18 +235,32 @@ exports.is_winner = function (lobby_details, game_pos) {
 // Name : game_actions.complete_game(lobby_details, game_pos)
 // Desc : assuming the game has completed, update player details and clean game data
 // Author(s) : RAk3rman
-exports.complete_game = function (lobby_details, game_pos) {
-    // Dump cards and reset variables
+exports.complete_game = async function (lobby_details, game_pos) {
+    // Dump cards
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         lobby_details.games[game_pos].cards[i].assign = "out_of_play";
         lobby_details.games[game_pos].cards[i].pos = i;
         lobby_details.games[game_pos].cards[i].placed_by_plyr_id = "";
     }
-    lobby_details.games[game_pos].in_progress = false;
+    // Reset variables
+    lobby_details.games[game_pos].in_progress = true;
     lobby_details.games[game_pos].is_completed = true;
-    lobby_details.games[game_pos].turns_seat_pos = 0;
+    lobby_details.games[game_pos].turn_seat_pos = 0;
     lobby_details.games[game_pos].turn_dir = "forward";
     lobby_details.games[game_pos].turn_remain = 1;
+    // Increment win count for winner
+    let winner_plyr_id;
+    let players = await game_actions.get_players(lobby_details, game_pos);
+    for (let i = 0; i < players.length; i++) {
+        players[i].is_dead = false;
+        if (!players[i].is_dead) {
+            lobby_details.players[i].wins++;
+            winner_plyr_id = lobby_details.players[i]._id;
+        }
+    }
+    // Check for lobby completion
+    await lobby_actions.check_completion(lobby_details);
+    return winner_plyr_id;
 }
 
 // Name : game_actions.reset_game(lobby_details, game_pos)
@@ -267,7 +281,7 @@ exports.reset_game = function (lobby_details, game_pos) {
     // Reset game variables
     lobby_details.games[game_pos].in_progress = false;
     lobby_details.games[game_pos].is_completed = false;
-    lobby_details.games[game_pos].turns_seat_pos = 0;
+    lobby_details.games[game_pos].turn_seat_pos = 0;
     lobby_details.games[game_pos].turn_dir = "forward";
     lobby_details.games[game_pos].turn_remain = 1;
     lobby_details.games[game_pos].created = Date.now();
@@ -327,6 +341,7 @@ exports.game_export = function (lobby_details, game_pos, cb_data, source, req_pl
         game_slug: game_details.slug,
         lobby_slug: lobby_details.slug,
         in_progress: game_details.in_progress,
+        is_completed: game_details.is_completed,
         turn_seat_pos: game_details.turn_seat_pos,
         turn_dir: game_details.turn_dir,
         turns_remain: game_details.turns_remain,
@@ -340,6 +355,7 @@ exports.game_export = function (lobby_details, game_pos, cb_data, source, req_pl
         discard_deck: discard_deck,
         packs: lobby_details.packs,
         play_timeout: lobby_details.play_timeout,
+        room_size: lobby_details.room_size,
         callback: cb_data,
         auth_token: req_plyr_id !== "spectator" ? lobby_details.auth_token : "undefined",
         req_plyr_id: req_plyr_id,

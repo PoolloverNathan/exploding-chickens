@@ -108,6 +108,40 @@ exports.partition_players = async function (lobby_details) {
     }
 }
 
+// Name : lobby_actions.update_option(lobby_details, option, value)
+// Desc : updates an option from the client
+// Author(s) : RAk3rman
+exports.update_option = async function (lobby_details, option, value) {
+    // Determine which option to change and verify parameter
+    if (option === "grp_method" && (value === "random" || value === "wins")) {
+        lobby_details.grp_method = value;
+        await lobby_actions.partition_players(lobby_details);
+        return true;
+    } else if (option === "room_size" && (value < 7 && value > 1)) {
+        lobby_details.room_size = value;
+        await lobby_actions.partition_players(lobby_details);
+        return true;
+    } else if (option === "play_timeout" && (value === "-1" || value === "30" || value === "60" || value === "120")) {
+        lobby_details.play_timeout = value;
+        return true;
+    } else if (option === "include_host") {
+        lobby_details.include_host = !lobby_details.include_host;
+        // Update host if not included in game
+        if (!lobby_details.include_host) {
+            for (let i = 0; i < lobby_details.players.length; i++) {
+                if (lobby_details.players[i].is_host) {
+                    lobby_details.players[i].game_assign = undefined;
+                    lobby_details.players[i].seat_pos = -1;
+                    break;
+                }
+            }
+        }
+        await lobby_actions.partition_players(lobby_details);
+        return true;
+    }
+    return false;
+}
+
 // Name : lobby_actions.start_games(lobby_details)
 // Desc : starts all games in lobby that aren't completed
 // Author(s) : RAk3rman
@@ -154,38 +188,28 @@ exports.reset_games = function (lobby_details) {
     lobby_details.in_progress = false;
 }
 
-// Name : lobby_actions.update_option(lobby_details, option, value)
-// Desc : updates an option from the client
+// Name : lobby_actions.check_completion(lobby_details)
+// Desc : checks if all games in progress are completed, if so return to lobby
 // Author(s) : RAk3rman
-exports.update_option = async function (lobby_details, option, value) {
-    // Determine which option to change and verify parameter
-    if (option === "grp_method" && (value === "random" || value === "wins")) {
-        lobby_details.grp_method = value;
-        await lobby_actions.partition_players(lobby_details);
-        return true;
-    } else if (option === "room_size" && (value < 7 && value > 1)) {
-        lobby_details.room_size = value;
-        await lobby_actions.partition_players(lobby_details);
-        return true;
-    } else if (option === "play_timeout" && (value === "-1" || value === "30" || value === "60" || value === "120")) {
-        lobby_details.play_timeout = value;
-        return true;
-    } else if (option === "include_host") {
-        lobby_details.include_host = !lobby_details.include_host;
-        // Update host if not included in game
-        if (!lobby_details.include_host) {
-            for (let i = 0; i < lobby_details.players.length; i++) {
-                if (lobby_details.players[i].is_host) {
-                    lobby_details.players[i].game_assign = undefined;
-                    lobby_details.players[i].seat_pos = -1;
-                    break;
-                }
-            }
+exports.check_completion = async function (lobby_details) {
+    // Loop through each game
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Break if we find a game that is in progress and not completed
+        if (lobby_details.games[i].in_progress && !lobby_details.games[i].is_completed) {
+            return;
         }
-        await lobby_actions.partition_players(lobby_details);
-        return true;
     }
-    return false;
+    // Update lobby settings
+    lobby_details.in_progress = false;
+    // Loop through each game
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Modify all games that were just completed
+        if (lobby_details.games[i].in_progress && lobby_details.games[i].is_completed) {
+            lobby_details.games[i].in_progress = false
+        }
+    }
+    // Partition players again to create new game rooms
+    await lobby_actions.partition_players(lobby_details);
 }
 
 // Name : lobby_actions.lobby_export(lobby_details, source, req_plyr_id)
@@ -202,7 +226,7 @@ exports.lobby_export = function (lobby_details, source, req_plyr_id) {
     let games_payload = [];
     let games_completed = 0;
     for (let i = 0; i < lobby_details.games.length; i++) {
-        if (!lobby_details.games[i].is_completed) {
+        if (!lobby_details.games[i].is_completed || (lobby_details.games[i].is_completed && lobby_details.games[i].in_progress)) {
             games_payload.push(game_actions.game_export(lobby_details, i, undefined, source, req_plyr_id));
         }
         if (lobby_details.games[i].is_completed) games_completed++;
