@@ -145,7 +145,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                     } else if (lobby_details.players.length % 2 === 1 && lobby_details.room_size === 2) {
                         callback(true, `Uneven number of players`, lobby_details, req_data, action, socket_id);
                     } else {
-                        await lobby_actions.start_games(lobby_details);
+                        lobby_actions.start_games(lobby_details);
                         event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, undefined, undefined);
                         await lobby_details.save();
                         await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
@@ -166,7 +166,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 wf_l_get, // Get lobby_details
                 wf_l_validate_host, // Validate req player is host
                 async function(lobby_details, req_data, action, socket_id, callback) { // Reset all games
-                    await lobby_actions.reset_games(lobby_details);
+                    lobby_actions.reset_games(lobby_details);
                     event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, undefined, undefined);
                     await lobby_details.save();
                     await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
@@ -189,7 +189,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 wf_g_validate_lock, // Validate player is able to modify cards
                 async function(lobby_details, game_pos, req_data, action, socket_id, callback) {
                     // Play card
-                    let cb_data = await game_actions.play_card(lobby_details, game_pos, req_data.card_id, req_data.plyr_id, req_data.target, stats_store);
+                    let cb_data = game_actions.play_card(lobby_details, game_pos, req_data.card_id, req_data.plyr_id, req_data.target, stats_store);
                     await lobby_details.save();
                     // Throw err if play_card throws err
                     if (cb_data.err) {
@@ -218,11 +218,11 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 wf_g_validate_lock, // Validate player is able to modify cards
                 async function(lobby_details, game_pos, req_data, action, socket_id, callback) {
                     // Make sure we aren't exploding
-                    if (await player_actions.is_exploding(card_actions.filter_cards(req_data.plyr_id, lobby_details.games[game_pos].cards))) {
+                    if (player_actions.is_exploding(card_actions.filter_cards(req_data.plyr_id, lobby_details.games[game_pos].cards))) {
                         card_lock = false; callback(true, 'Cannot draw while exploding', lobby_details, game_pos, req_data, action, socket_id);
                     } else {
                         // Draw card
-                        let card_details = await game_actions.draw_card(lobby_details, game_pos, req_data.plyr_id);
+                        let card_details = game_actions.draw_card(lobby_details, game_pos, req_data.plyr_id);
                         await lobby_details.save();
                         await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, undefined, game_actions.generate_cb(undefined, card_details, undefined, undefined, false), action, fastify, config_store);
                         // Start explode tick if we are exploding
@@ -287,7 +287,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 wf_l_get, // Get lobby_details
                 wf_l_validate_host, // Validate req player is host
                 async function(lobby_details, req_data, action, socket_id, callback) { // Make host
-                    await player_actions.make_host(lobby_details, req_data.plyr_id, req_data.suc_plyr_id);
+                    player_actions.make_host(lobby_details, req_data.plyr_id, req_data.suc_plyr_id);
                     event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, req_data.suc_plyr_id, undefined, undefined);
                     await lobby_details.save();
                     await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
@@ -323,7 +323,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 },
                 async function(lobby_details, req_data, action, socket_id, callback) { // Import card pack across all games
                     for (let i = 0; i < lobby_details.games.length; i++) {
-                        await game_actions.import_cards(lobby_details, i, req_data.pack_name);
+                        game_actions.import_cards(lobby_details, i, req_data.pack_name);
                     }
                     event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, req_data.pack_name, undefined);
                     await lobby_details.save();
@@ -360,7 +360,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 },
                 async function(lobby_details, req_data, action, socket_id, callback) { // Export card pack across all games
                     for (let i = 0; i < lobby_details.games.length; i++) {
-                        await game_actions.export_cards(lobby_details, i, req_data.pack_name);
+                        game_actions.export_cards(lobby_details, i, req_data.pack_name);
                     }
                     event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, req_data.pack_name, undefined);
                     await lobby_details.save();
@@ -416,7 +416,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.lobby_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_data.plyr_id)} ${chalk.dim.red('lobby-error')} ` + msg));
                 fastify.io.to(req_sock).emit(req_data.lobby_slug + "-lobby-error", {
                     msg: msg,
-                    lobby_details: await lobby_actions.lobby_export(lobby_details, action, req_data.plyr_id)
+                    lobby_details: lobby_actions.lobby_export(lobby_details, action, req_data.plyr_id)
                 });
             } else {
                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.lobby_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_data.plyr_id)} ` + msg));
@@ -431,7 +431,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.game_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_data.plyr_id)} ${chalk.dim.red('game-error')} ` + msg));
                 fastify.io.to(req_sock).emit(req_data.game_slug + "-game-error", {
                     msg: msg,
-                    game_details: await game_actions.game_export(lobby_details, game_pos, undefined, action, req_data.plyr_id)
+                    game_details: game_actions.game_export(lobby_details, game_pos, undefined, action, req_data.plyr_id)
                 });
             } else {
                 console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(req_data.game_slug)} ${chalk.dim.blue(req_sock)} ${chalk.dim.magenta(req_data.plyr_id)} ` + msg));

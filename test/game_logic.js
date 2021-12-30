@@ -163,7 +163,7 @@ describe('Lobbies', function() {
             // Test expected configuration
             assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
             // Reset games
-            await lobby_actions.reset_games(lobby_details);
+            lobby_actions.reset_games(lobby_details);
         });
         it('partition after games have been completed', async function() {
             // Partition 10 players
@@ -181,7 +181,7 @@ describe('Lobbies', function() {
             // Partition 10 players
             await lobby_actions.partition_players(lobby_details);
             // Start games
-            await lobby_actions.start_games(lobby_details);
+            lobby_actions.start_games(lobby_details);
             // Test expected configuration
             assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
             assert.isTrue(lobby_details.games[0].in_progress, 'game should be in progress');
@@ -194,8 +194,8 @@ describe('Lobbies', function() {
         it('basic reset with 2 new games', async function() {
             // Partition 10 players
             await lobby_actions.partition_players(lobby_details);
-            // Start games
-            await lobby_actions.reset_games(lobby_details);
+            // Reset games
+            lobby_actions.reset_games(lobby_details);
             // Test expected configuration
             assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
             assert.isEmpty(lobby_details.games[0].events, 'events array should be empty');
@@ -252,7 +252,7 @@ describe('Lobbies', function() {
             // Partition 10 players
             await lobby_actions.partition_players(lobby_details);
             // Export lobby
-            let lobby_export = await lobby_actions.lobby_export(lobby_details, 'tests', 'spectator');
+            let lobby_export = lobby_actions.lobby_export(lobby_details, 'tests', 'spectator');
             assert.isNotNull(lobby_export);
         });
     })
@@ -892,7 +892,7 @@ function simulate_lobby(id, plyr_ctn, rounds, stats) {
                 await lobby_actions.start_games(lobby_details);
                 await simulate_games(lobby_details, stats);
                 await audit_games(lobby_details);
-                await lobby_actions.reset_games(lobby_details);
+                lobby_actions.reset_games(lobby_details);
             })
         }
         it('Teardown lobby', async function () {
@@ -912,7 +912,7 @@ async function simulate_games(lobby_details, stats) {
         stats.games++;
         let turn_ctn = 0;
         // Loop forever until we get a winner, will time out if a player never wins
-        while (!await game_actions.is_winner(lobby_details, i)) {
+        while (!game_actions.is_winner(lobby_details, i)) {
             // Check which player is playing
             let plyr_id = player_actions.get_turn_plyr_id(lobby_details, i);
             // Simulate turn
@@ -920,21 +920,21 @@ async function simulate_games(lobby_details, stats) {
             // If the turn is still on the current player, draw card
             if (player_actions.get_turn_plyr_id(lobby_details, i) === plyr_id) {
                 // Make sure we aren't exploding before drawing a card
-                if (!await player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                if (!player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                     // Draw card to end turn
-                    let card_details = await game_actions.draw_card(lobby_details, i, plyr_id);
+                    let card_details = game_actions.draw_card(lobby_details, i, plyr_id);
                     assert.exists(card_details, 'ensure drawn card exists');
                     // Log that card was drawn
                     logger.info('Card drawn (' + card_details._id + ')', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                     stats.cards++;
                 }
                 // Check if the player is exploding (drew an EC somehow)
-                if (await player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                if (player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                     logger.info('Player is exploding, attempt to defuse', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                     // Force through all cards to see if player has a defuse card
                     await simulate_turn(lobby_details, i, plyr_id, true, false, stats);
                     // If we are still exploding, kill player
-                    if (await player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                    if (player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                         logger.info('Player still exploding, force play chicken', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                         await simulate_turn(lobby_details, i, plyr_id, true, true, stats);
                     }
@@ -944,7 +944,7 @@ async function simulate_games(lobby_details, stats) {
         }
         // Game has finished, prelim assertions
         assert.isAbove(turn_ctn, 1, 'ensure number of turns is greater than 1');
-        assert.isTrue(await game_actions.is_winner(lobby_details, i), 'ensure we have a winner');
+        assert.isTrue(game_actions.is_winner(lobby_details, i), 'ensure we have a winner');
     }
 }
 
@@ -964,7 +964,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
         if ((Math.random() < 0.5 || play_all) && (player_hand[i].action !== "chicken" || play_chicken)) {
             // Make blind attempt to play card
             let target = { plyr_id: undefined, card_id: undefined, deck_pos: undefined }
-            let callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
+            let callback = game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
             // Ensure err wasn't thrown, if so, do nothing and try to play another card
             // Errors are sent to the client in the callback and appear in a popup when they attempt to play the card
             if (!callback.err) {
@@ -984,18 +984,18 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
                     if (callback.card.action === 'defuse') { // Provide deck pos target
                         target.deck_pos = Math.floor(Math.random() * callback.data.max_pos);
                     } else if (callback.card.action === 'favor') { // Provide plyr_id and card_id target
-                        target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
+                        target.plyr_id = player_actions.next_seat(lobby_details, game_pos, "_id");
                         let target_hand = card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
                         target.card_id = target_hand.length !== 0 ? target_hand[Math.floor(Math.random() * (target_hand.length - 1))]._id : undefined;
                         enforce_incomplete = false;
                     } else if (callback.card.action.includes('randchick') || callback.card.action === 'favorgator') { // Provide plyr_id target
-                        target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
+                        target.plyr_id = player_actions.next_seat(lobby_details, game_pos, "_id");
                         enforce_incomplete = false;
                     } else {
                         assert.fail('callback on ' + callback.card._id + ' should be complete');
                     }
                     // Play card with new target parameters
-                    callback = await game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
+                    callback = game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
                     // Make sure we exited cleanly after making callback complete
                     if (enforce_errors) assert.isUndefined(callback.err, 'callback on ' + callback.card._id + ' should not throw errors (' + callback.err + ')');
                     if (enforce_incomplete) assert.isFalse(callback.incomplete, 'callback on ' + callback.card._id + ' should be complete');

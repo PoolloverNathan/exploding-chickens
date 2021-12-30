@@ -24,7 +24,7 @@ let socket_helpers = require('./socket-helpers.js');
 // Author(s) : RAk3rman
 exports.update_l_ui = async function (lobby_details, req_plyr_id, req_sock, tar_sock, source, fastify, config_store) {
     // Get raw pretty lobby details
-    let pretty_lobby_details = await lobby_actions.lobby_export(lobby_details, source, req_plyr_id);
+    let pretty_lobby_details = lobby_actions.lobby_export(lobby_details, source, req_plyr_id);
     if (pretty_lobby_details !== {}) {
         // Send lobby data
         if (tar_sock === undefined) {
@@ -41,7 +41,7 @@ exports.update_l_ui = async function (lobby_details, req_plyr_id, req_sock, tar_
 // Author(s) : RAk3rman
 exports.update_g_ui = async function (lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, source, fastify, config_store) {
     // Get raw pretty game details
-    let pretty_game_details = await game_actions.game_export(lobby_details, game_pos, cb_data, source, req_plyr_id);
+    let pretty_game_details = game_actions.game_export(lobby_details, game_pos, cb_data, source, req_plyr_id);
     if (pretty_game_details !== {}) {
         // Send game data
         if (tar_sock === undefined) {
@@ -80,9 +80,9 @@ exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock
         ctn--;
         setTimeout(function(){ socket_helpers.explode_tick(lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, fastify, bot, config_store, stats_store) }, 1000);
     } else {
-        await game_actions.play_card(lobby_details, game_pos, chicken_card._id, req_plyr_id, cb_data.target, stats_store);
-        if (await game_actions.is_winner(lobby_details, game_pos)) {
-            await game_actions.complete_game(lobby_details, game_pos);
+        game_actions.play_card(lobby_details, game_pos, chicken_card._id, req_plyr_id, cb_data.target, stats_store);
+        if (game_actions.is_winner(lobby_details, game_pos)) {
+            game_actions.complete_game(lobby_details, game_pos);
             await socket_helpers.bot_summary(lobby_details, game_pos, bot, config_store, stats_store);
             await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "completed-game", fastify, config_store);
         } else {
