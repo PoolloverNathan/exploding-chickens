@@ -155,24 +155,45 @@ module.exports = function (fastify, stats_store, config_store, bot) {
             ], wf_l_final_callback);
         })
 
-        // Name : socket.on.reset-games
+        // Name : socket.on.reset-lobby
         // Desc : runs when the host requests the game to reset back to the lobby
         // Author(s) : RAk3rman
-        socket.on('reset-games', async function (data) {
-            let action = "reset-games     ";
-            if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to reset all games`));
+        socket.on('reset-lobby', async function (data) {
+            let action = "reset-lobby     ";
+            if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.lobby_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to reset all games in lobby`));
             waterfall([
                 async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
                 wf_l_get, // Get lobby_details
                 wf_l_validate_host, // Validate req player is host
                 async function(lobby_details, req_data, action, socket_id, callback) { // Reset all games
-                    lobby_actions.reset_games(lobby_details);
+                    lobby_actions.reset_lobby(lobby_details);
                     event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, undefined, undefined);
                     await lobby_details.save();
                     await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
                     callback(false, `All active lobby games have been ${chalk.dim.yellow('reset')}`, lobby_details, req_data, action, socket_id);
                 }
             ], wf_l_final_callback);
+        })
+
+        // Name : socket.on.reset-game
+        // Desc : runs when the host requests an individual game to be reset
+        // Author(s) : RAk3rman
+        socket.on('reset-game', async function (data) {
+            let action = "reset-game      ";
+            if (config_store.get('verbose_debug')) console.log(wipe(`${chalk.bold.blue('Socket')}:  [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.cyan(action)} ${chalk.dim.yellow(data.game_slug)} ${chalk.dim.blue(socket.id)} ${chalk.dim.magenta(data.plyr_id)} Received request to reset game`));
+            waterfall([
+                async function(callback) {callback(null, data, action, socket.id)}, // Start waterfall
+                wf_g_get, // Get lobby_details
+                wf_g_validate_host, // Validate req player is host
+                async function(lobby_details, game_pos, req_data, action, socket_id, callback) { // Reset game
+                    game_actions.start_game(lobby_details, game_pos);
+                    event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, lobby_details.games[game_pos]._id, undefined);
+                    await lobby_details.save();
+                    await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, undefined, undefined, action, fastify, config_store);
+                    await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
+                    callback(false, `Game has been ${chalk.dim.yellow('reset')}`, lobby_details, req_data, action, socket_id);
+                }
+            ], wf_g_final_callback);
         })
 
         // Name : socket.on.play-card
@@ -197,7 +218,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                     } else {
                         await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, undefined, cb_data, action, fastify, config_store);
                         // Start explode tick if we are exploding
-                        await socket_helpers.explode_tick(lobby_details._id, game_pos, req_data.plyr_id, socket_id, undefined, 10, fastify, bot, config_store, stats_store);
+                        if (!cb_data.incomplete) await socket_helpers.explode_tick(lobby_details._id, game_pos, req_data.plyr_id, socket_id, undefined, 15, fastify, bot, config_store, stats_store);
                         card_lock = false; callback(false, `Played card ` + req_data.card_id, lobby_details, game_pos, req_data, action, socket_id);
                     }
                 }
@@ -226,7 +247,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                         await lobby_details.save();
                         await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, undefined, game_actions.generate_cb(undefined, card_details, undefined, undefined, false), action, fastify, config_store);
                         // Start explode tick if we are exploding
-                        await socket_helpers.explode_tick(lobby_details._id, game_pos, req_data.plyr_id, socket_id, undefined, 10, fastify, bot, config_store, stats_store);
+                        await socket_helpers.explode_tick(lobby_details._id, game_pos, req_data.plyr_id, socket_id, undefined, 15, fastify, bot, config_store, stats_store);
                         card_lock = false; callback(false, `Drew card ` + card_details._id, lobby_details, game_pos, req_data, action, socket_id);
                     }
                 }
@@ -483,6 +504,23 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                         callback(false, lobby_details, req_data, action, req_sock);
                     } else {
                         callback(true, "You are not the host", lobby_details, req_data, action, req_sock);
+                    }
+                }
+            }
+        }
+
+        // Name : wf_g_validate_host(lobby_details, game_pos, req_data, action, req_sock, callback)
+        // Desc : validate req user is host from waterfall
+        // Author(s) : RAk3rman
+        async function wf_g_validate_host(lobby_details, game_pos, req_data, action, req_sock, callback) {
+            // Find player
+            for (let i = 0; i < lobby_details.players.length; i++) {
+                if (lobby_details.players[i]._id === req_data.plyr_id) {
+                    // Check if the user is of type host
+                    if (lobby_details.players[i].is_host) {
+                        callback(false, lobby_details, game_pos, req_data, action, req_sock);
+                    } else {
+                        callback(true, "You are not the host", lobby_details, game_pos, req_data, action, req_sock);
                     }
                 }
             }

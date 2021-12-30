@@ -37,14 +37,11 @@ socket.on("lobby-update", function (payload) {
     console.log(payload);
     // Check browser session
     setup_session_check(payload);
-    // Update events log
-    events_data = payload.events;
-    events_length = payload.events_length;
-    sbr_update_log();
     // Update elements based on update trigger
-    if (payload.trigger === "player-online") { // Existing player connected
+    if (payload.trigger === "player-online" || payload.trigger === "player-offline") { // Existing player connected or disconnected
         sbr_update_pstatus(payload);
         itr_update_pstatus(payload);
+        return;
     } else if (payload.trigger === "make-host") {
         // Update host designation in session_user
         for (let i = 0; i < payload.players.length; i++) {
@@ -58,34 +55,23 @@ socket.on("lobby-update", function (payload) {
                 break;
             }
         }
-        sbr_update_lobby_widgets(payload);
-        sbr_update_options(payload);
-        sbr_update_players(payload);
-        sbr_update_packs(payload);
-        toast_turn.close();
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Host was updated</h1>'
         });
     } else if (payload.trigger === "kick-player") {
-        sbr_update_lobby_widgets(payload);
-        sbr_update_players(payload);
-        itr_update_games(payload);
-        toast_turn.close();
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Player was kicked</h1>'
         });
-    } else if (payload.trigger === "player-offline") { // Existing player disconnected
-        sbr_update_pstatus(payload);
-        itr_update_pstatus(payload);
-    } else { // Update entire ui
-        sbr_update_lobby_widgets(payload);
-        sbr_update_options(payload);
-        sbr_update_players(payload);
-        sbr_update_packs(payload);
-        itr_update_games(payload);
     }
+    // Update entire ui
+    sbr_update_game_widgets(payload);
+    sbr_update_players(payload);
+    sbr_update_packs(payload);
+    itr_update_players(payload);
+    itr_update_discard(payload);
+    itr_update_hand(payload);
 });
 
 // Name : frontend-game.socket.on.game-update
@@ -107,9 +93,15 @@ socket.on("game-update", function (payload) {
             itr_update_pcards(payload);
             if (payload.req_plyr_id === session_user._id && !payload.callback.incomplete) { // Trigger animation if this player played a card
                 anm_play_card(payload);
-            } else if (payload.callback.incomplete) {
-                console.log("INCOMPLETE CALLBACK TO HANDLE");
-                // TODO Handle incomplete callbacks
+            } else if (payload.req_plyr_id === session_user._id && payload.callback.incomplete) {
+                if (payload.callback.card.action === "defuse") {
+                    itr_trigger_chicken_target(payload.callback.data.max_pos, payload.callback.card._id);
+                } else {
+                    toast_alert.fire({
+                        icon: 'error',
+                        html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Invalid card callback</h1>'
+                    });
+                }
             } else {
                 itr_update_discard(payload);
                 itr_update_hand(payload);
@@ -131,13 +123,10 @@ socket.on("game-update", function (payload) {
                 icon: 'info',
                 html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been reset</h1>'
             });
-        } else if (payload.trigger === "game-complete") {
-            toast_alert.fire({
-                icon: 'info',
-                html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been won</h1>'
-            });
+        } else if (payload.trigger === "completed-game") {
+            itr_display_winner(payload.callback.data.winner_name, 0);
         }
-        // Update entire UI
+        // Update entire ui
         sbr_update_game_widgets(payload);
         sbr_update_players(payload);
         sbr_update_packs(payload);

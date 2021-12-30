@@ -83,7 +83,7 @@ exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock
         game_actions.play_card(lobby_details, game_pos, chicken_card._id, req_plyr_id, cb_data.target, stats_store);
         if (game_actions.is_winner(lobby_details, game_pos)) {
             // Mark game as completed
-            let winner_plyr_id = game_actions.complete_game(lobby_details, game_pos);
+            let winner_plyr_id = await game_actions.complete_game(lobby_details, game_pos);
             event_actions.log_event(lobby_details, "game-won", winner_plyr_id, undefined, undefined, undefined);
             event_actions.log_event(lobby_details.games[game_pos], "game-won", winner_plyr_id, undefined, undefined, undefined);
             // Update statistics
@@ -91,6 +91,7 @@ exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock
             stats_store.set("mins_played", stats_store.get("mins_played") + moment().diff(moment(lobby_details.games[game_pos].created), 'minutes'));
             // Send bot summary and update game ui
             await socket_helpers.bot_summary(lobby_details, game_pos, bot, config_store, stats_store);
+            cb_data.data = { winner_name: player_actions.get_player_details(lobby_details, winner_plyr_id).nickname };
             await socket_helpers.update_l_ui(lobby_details, req_plyr_id, req_sock, tar_sock, "completed-game", fastify, config_store);
             await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "completed-game", fastify, config_store);
         } else {

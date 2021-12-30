@@ -212,10 +212,10 @@ function start_games() {
     })
 }
 
-// Name : frontend-game.reset_games()
-// Desc : emits the reset-games event when the host clicks the reset game button
-function reset_games() {
-    socket.emit('reset-games', {
+// Name : frontend-game.reset_lobby()
+// Desc : emits the reset-lobby event when the host clicks the reset game button
+function reset_lobby() {
+    socket.emit('reset-lobby', {
         lobby_slug: window.location.pathname.split('/')[2],
         plyr_id: session_user._id
     })

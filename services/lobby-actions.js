@@ -150,38 +150,24 @@ exports.start_games = function (lobby_details) {
     for (let i = 0; i < lobby_details.games.length; i++) {
         // Game isn't in progress (not started) and not completed
         if (!lobby_details.games[i].in_progress && !lobby_details.games[i].is_completed) {
-            // Reset game and update in_progress
-            game_actions.reset_game(lobby_details, i);
-            lobby_details.games[i].in_progress = true;
-            // Create hands and randomize seats
-            player_actions.create_hand(lobby_details, i);
-            player_actions.randomize_seats(lobby_details, i);
-            // Add prelim events to game
-            let host_id = "";
-            for (let j = 0; j < lobby_details.players.length; j++) {
-                if (lobby_details.players[j].game_assign?.equals(lobby_details.games[i]._id)) {
-                    event_actions.log_event(lobby_details.games[i], "include-player", lobby_details.players[j]._id, "", "", "");
-                }
-                if (lobby_details.players[j].is_host) host_id = lobby_details.players[j]._id;
-            }
-            event_actions.log_event(lobby_details.games[i], "start-game", host_id, "", "", "");
+            // Start game
+            game_actions.start_game(lobby_details, i);
         }
     }
     // Update lobby settings
     lobby_details.in_progress = true;
 }
 
-// Name : lobby_actions.reset_games(lobby_details)
+// Name : lobby_actions.reset_lobby(lobby_details)
 // Desc : resets all games in lobby
 // Author(s) : RAk3rman
-exports.reset_games = function (lobby_details) {
+exports.reset_lobby = function (lobby_details) {
     // Loop through each game
     for (let i = 0; i < lobby_details.games.length; i++) {
         // Game is not completed
         if (!lobby_details.games[i].is_completed) {
             // Reset game
             game_actions.reset_game(lobby_details, i);
-            lobby_details.games[i].events = [];
         }
     }
     // Update lobby settings

@@ -163,7 +163,7 @@ describe('Lobbies', function() {
             // Test expected configuration
             assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
             // Reset games
-            lobby_actions.reset_games(lobby_details);
+            lobby_actions.reset_lobby(lobby_details);
         });
         it('partition after games have been completed', async function() {
             // Partition 10 players
@@ -188,14 +188,14 @@ describe('Lobbies', function() {
             assert.isTrue(lobby_details.in_progress, 'lobby should be in progress');
         });
     })
-    describe('#lobby_actions.reset_games()', function() {
+    describe('#lobby_actions.reset_lobby()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic reset with 2 new games', async function() {
             // Partition 10 players
             await lobby_actions.partition_players(lobby_details);
             // Reset games
-            lobby_actions.reset_games(lobby_details);
+            lobby_actions.reset_lobby(lobby_details);
             // Test expected configuration
             assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
             assert.isEmpty(lobby_details.games[0].events, 'events array should be empty');
@@ -783,25 +783,26 @@ describe('Events', function() {
             event_actions.log_event(lobby_details, 'include-player', lobby_details.players[0]._id, undefined, undefined, undefined);
             event_actions.log_event(lobby_details, 'start-games', lobby_details.players[0]._id, undefined, undefined, undefined);
             event_actions.log_event(lobby_details, 'start-game', lobby_details.players[0]._id, undefined, undefined, undefined);
-            event_actions.log_event(lobby_details, 'reset-games', lobby_details.players[0]._id, undefined, undefined, undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'attack', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'chicken', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'defuse', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'favor', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-1', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-2', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-3', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-4', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'reverse', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'seethefuture', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'shuffle', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'skip', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'hotpotato', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'scrambledeggs', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'superskip', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'safetydraw', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'drawbottom', undefined);
-            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'favorgator', undefined);
+            event_actions.log_event(lobby_details, 'reset-lobby', lobby_details.players[0]._id, undefined, undefined, undefined);
+            event_actions.log_event(lobby_details, 'reset-game', lobby_details.players[0]._id, undefined, lobby_details.games[0]._id, undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'attack-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'chicken-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'defuse-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'favor-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-1-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-2-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-3-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'randchick-4-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'reverse-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'seethefuture-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'shuffle-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'skip-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'hotpotato-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'scrambledeggs-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'superskip-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'safetydraw-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, undefined, 'drawbottom-1', undefined);
+            event_actions.log_event(lobby_details, 'play-card', lobby_details.players[0]._id, lobby_details.players[1]._id, 'favorgator-1', undefined);
             event_actions.log_event(lobby_details, 'draw-card', lobby_details.players[0]._id, undefined, lobby_details.games[0].cards[0]._id, undefined);
             event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'grp_method', 'random');
             event_actions.log_event(lobby_details, 'update-option', lobby_details.players[0]._id, undefined, 'grp_method', 'wins');
@@ -834,7 +835,7 @@ describe('Events', function() {
         });
     })
     describe('#event_actions.parse_event()', function() {
-        let splice_pos = 52;
+        let splice_pos = 53;
         it('check valid events', function() {
             for (let i = 0; i < splice_pos; i++) {
                 assert.notEqual(event_actions.parse_event(lobby_details, lobby_details.events[i]).desc, 'Invalid event action', 'event action should be valid');
@@ -909,7 +910,7 @@ function simulate_lobby(id, plyr_ctn, rounds, stats) {
                 await lobby_actions.start_games(lobby_details);
                 await simulate_games(lobby_details, stats);
                 await audit_games(lobby_details);
-                lobby_actions.reset_games(lobby_details);
+                lobby_actions.reset_lobby(lobby_details);
             })
         }
         it('Teardown lobby', async function () {
@@ -980,7 +981,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
         // Then, make sure the card we are about to play is not a chicken unless play_chicken is true
         if ((Math.random() < 0.5 || play_all) && (player_hand[i].action !== "chicken" || play_chicken)) {
             // Make blind attempt to play card
-            let target = { plyr_id: undefined, card_id: undefined, deck_pos: undefined }
+            let target = { plyr_id: undefined, card_id: undefined, deck_pos: undefined };
             let callback = game_actions.play_card(lobby_details, game_pos, player_hand[i]._id, plyr_id, target, stats_store);
             // Ensure err wasn't thrown, if so, do nothing and try to play another card
             // Errors are sent to the client in the callback and appear in a popup when they attempt to play the card

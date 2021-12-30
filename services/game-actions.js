@@ -250,7 +250,7 @@ exports.complete_game = async function (lobby_details, game_pos) {
     lobby_details.games[game_pos].turn_remain = 1;
     // Increment win count for winner
     let winner_plyr_id;
-    let players = await game_actions.get_players(lobby_details, game_pos);
+    let players = game_actions.get_players(lobby_details, game_pos);
     for (let i = 0; i < players.length; i++) {
         players[i].is_dead = false;
         if (!players[i].is_dead) {
@@ -261,6 +261,27 @@ exports.complete_game = async function (lobby_details, game_pos) {
     // Check for lobby completion
     await lobby_actions.check_completion(lobby_details);
     return winner_plyr_id;
+}
+
+// Name : game_actions.start_game(lobby_details, game_pos)
+// Desc : starts a game from defaults
+// Author(s) : RAk3rman
+exports.start_game = function (lobby_details, game_pos) {
+    // Reset game and update in_progress
+    game_actions.reset_game(lobby_details, game_pos);
+    lobby_details.games[game_pos].in_progress = true;
+    // Create hands and randomize seats
+    player_actions.create_hand(lobby_details, game_pos);
+    player_actions.randomize_seats(lobby_details, game_pos);
+    // Add prelim events to game
+    let host_id = "";
+    for (let j = 0; j < lobby_details.players.length; j++) {
+        if (lobby_details.players[j].game_assign?.equals(lobby_details.games[game_pos]._id)) {
+            event_actions.log_event(lobby_details.games[game_pos], "include-player", lobby_details.players[j]._id, "", "", "");
+        }
+        if (lobby_details.players[j].is_host) host_id = lobby_details.players[j]._id;
+    }
+    event_actions.log_event(lobby_details.games[game_pos], "start-game", host_id, "", "", "");
 }
 
 // Name : game_actions.reset_game(lobby_details, game_pos)
@@ -285,6 +306,7 @@ exports.reset_game = function (lobby_details, game_pos) {
     lobby_details.games[game_pos].turn_dir = "forward";
     lobby_details.games[game_pos].turn_remain = 1;
     lobby_details.games[game_pos].created = Date.now();
+    lobby_details.games[game_pos].events = [];
 }
 
 // Name : player_actions.get_players(lobby_details, game_pos)
