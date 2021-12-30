@@ -34,7 +34,7 @@ exports.attack = async function (lobby_details, game_pos, card_id, callback) {
 // Author(s) : RAk3rman
 exports.defuse = async function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
     // Verify target is valid
-    let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
     if (target.deck_pos < 0 || draw_deck.length < target.deck_pos || target.deck_pos === undefined) {
         callback.incomplete = true;
         callback.data = { max_pos: draw_deck.length };
@@ -81,7 +81,7 @@ exports.favor_targeted = async function (lobby_details, game_pos, card_id, plyr_
         return;
     }
     // Get cards in current players hand
-    let current_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let current_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Update card details
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === target.card_id) {
@@ -112,8 +112,8 @@ exports.favor_random = async function (lobby_details, game_pos, card_id, plyr_id
         return;
     }
     // Get cards in current players hand
-    let current_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
-    let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
+    let current_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let target_hand = card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
     // Determine random card
     let rand_pos = Math.floor(Math.random() * (target_hand.length - 1));
     // Update card details
@@ -220,7 +220,7 @@ exports.reverse = async function (lobby_details, game_pos, card_id, callback) {
 // Author(s) : RAk3rman
 exports.seethefuture = async function (lobby_details, game_pos, card_id, callback) {
     // Get the top three cards and add to callback.data
-    let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
     callback.data = draw_deck.slice(Math.max(draw_deck.length - 3, 0));
     // Discard card
     await game_actions.discard_card(lobby_details, game_pos, card_id);
@@ -231,7 +231,7 @@ exports.seethefuture = async function (lobby_details, game_pos, card_id, callbac
 // Author(s) : RAk3rman
 exports.shuffle = async function (lobby_details, game_pos, card_id, callback) {
     // Call helper function
-    await card_actions.shuffle_draw_deck(lobby_details, game_pos);
+    card_actions.shuffle_draw_deck(lobby_details, game_pos);
     // Discard card
     await game_actions.discard_card(lobby_details, game_pos, card_id);
 }
@@ -239,7 +239,7 @@ exports.shuffle = async function (lobby_details, game_pos, card_id, callback) {
 // Name : card_actions.shuffle_draw_deck(lobby_details, game_pos)
 // Desc : shuffles the positions of all cards in the draw deck
 // Author(s) : RAk3rman
-exports.shuffle_draw_deck = async function (lobby_details, game_pos) {
+exports.shuffle_draw_deck = function (lobby_details, game_pos) {
     // Loop through each card to create array
     let bucket = [];
     let cards_in_deck = 0;
@@ -300,11 +300,11 @@ exports.scrambled_eggs = async function (lobby_details, game_pos, card_id, callb
         }
     }
     // Get array of players
-    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
+    let plyr_array = game_actions.get_players(lobby_details, game_pos);
     // Loop though each player and get # of cards
     let player_card_ctn = [];
     for (let i = 0; i < plyr_array.length; i++) {
-        player_card_ctn[i] = (await card_actions.filter_cards(plyr_array[i]._id, lobby_details.games[game_pos].cards)).length;
+        player_card_ctn[i] = (card_actions.filter_cards(plyr_array[i]._id, lobby_details.games[game_pos].cards)).length;
     }
     // Loop though each player again and re-assign cards
     for (let i = 0; i < plyr_array.length; i++) {
@@ -343,9 +343,9 @@ exports.super_skip = async function (lobby_details, game_pos, card_id, callback)
 // Author(s) : RAk3rman
 exports.safety_draw = async function (lobby_details, game_pos, card_id, plyr_id, callback) {
     // Filter draw deck
-    let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
     // Filter player hand
-    let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let player_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Loop through draw_deck and find first card that is not a chicken
     for (let i = draw_deck.length - 1; i >= 0; i--) {
         if (draw_deck[i].action !== "chicken") {
@@ -370,9 +370,9 @@ exports.safety_draw = async function (lobby_details, game_pos, card_id, plyr_id,
 // Author(s) : RAk3rman
 exports.draw_bottom = async function (lobby_details, game_pos, card_id, plyr_id, callback) {
     // Filter draw deck
-    let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
     // Filter player hand
-    let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let player_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Determine position of drawn card
     let pos = 0;
     // Update card
@@ -412,7 +412,7 @@ exports.kill_player = async function (lobby_details, game_pos, plyr_id) {
 // Name : card_actions.filter_cards(assign, card_array)
 // Desc : filters and sorts cards based on assign and position
 // Author(s) : RAk3rman
-exports.filter_cards = async function (assign, card_array) {
+exports.filter_cards = function (assign, card_array) {
     // Get cards based on assign
     let temp_deck = [];
     for (let i = 0; i < card_array.length; i++) {

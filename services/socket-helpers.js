@@ -60,7 +60,7 @@ exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock
     // Get lobby_details
     let lobby_details = await Lobby.findOne({_id: lobby_id});
     // Get player hand
-    let plyr_hand = await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards);
+    let plyr_hand = card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards);
     // Get details of exploding chicken in player's hand
     let chicken_card = undefined;
     plyr_hand.every(card => {
@@ -111,7 +111,7 @@ exports.bot_summary = async function (lobby_details, game_pos, bot, config_store
             print_packs += "'" + ele + "' ";
         })
         // Get draw deck length
-        let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+        let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
         let embed = bot.createEmbed(config_store.get('discord_bot_channel'));
         embed.title("**:chicken: Exploding Chickens: Game Completed**");
         embed.url("https://chickens.rakerman.com/lobby/" + lobby_details.slug + "/game/" + lobby_details.games[game_pos].slug);

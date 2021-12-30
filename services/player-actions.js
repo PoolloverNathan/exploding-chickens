@@ -93,7 +93,7 @@ exports.update_sockets_open = function (lobby_details, plyr_id, method) {
 // Name : player_actions.create_hand(lobby_details, game_pos)
 // Desc : gives each player a defuse card and 4 random cards from the draw_deck, rations ec
 // Author(s) : RAk3rman
-exports.create_hand = async function (lobby_details, game_pos) {
+exports.create_hand = function (lobby_details, game_pos) {
     // Create array containing the position of each defuse card and regular card
     let defuse_bucket = [];
     let exploding_bucket = [];
@@ -109,10 +109,11 @@ exports.create_hand = async function (lobby_details, game_pos) {
         }
     }
     // Get array of players
-    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
+    let plyr_array = game_actions.get_players(lobby_details, game_pos);
     // Add extra defuse cards to card bucket
     for (let i = 0; i < defuse_bucket.length - plyr_array.length; i++) {
         card_bucket.push(defuse_bucket[i]);
+        defuse_bucket.splice(i, 1);
     }
     // Assign 5 cards to each player
     for (let i = 0; i < plyr_array.length; i++) {
@@ -134,7 +135,7 @@ exports.create_hand = async function (lobby_details, game_pos) {
         lobby_details.games[game_pos].cards[rand_card_pos].assign = "draw_deck";
     }
     // Shuffle draw deck once we are done
-    await card_actions.shuffle_draw_deck(lobby_details, game_pos);
+    card_actions.shuffle_draw_deck(lobby_details, game_pos);
 }
 
 
@@ -143,7 +144,7 @@ exports.create_hand = async function (lobby_details, game_pos) {
 // Author(s) : SengdowJones, RAk3rman
 exports.randomize_seats = async function (lobby_details, game_pos) {
     // Get array of players
-    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
+    let plyr_array = game_actions.get_players(lobby_details, game_pos);
     // Create array containing each available seat
     let bucket = [];
     for (let i = 0; i < plyr_array.length; i++) {
@@ -161,7 +162,7 @@ exports.randomize_seats = async function (lobby_details, game_pos) {
 exports.next_seat = async function (lobby_details, game_pos, return_type) {
     let pos = lobby_details.games[game_pos].turn_seat_pos;
     // Get array of players
-    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
+    let plyr_array = game_actions.get_players(lobby_details, game_pos);
     // Traverse until we find next open seat
     while (true) {
         // Increment or decrement pos based on direction
@@ -340,7 +341,7 @@ exports.player_export = async function (lobby_details, player_pos) {
             return true;
         });
         // Filter card hand
-        card_array = await card_actions.filter_cards(lobby_details.players[player_pos]._id, game_details.cards);
+        card_array = card_actions.filter_cards(lobby_details.players[player_pos]._id, game_details.cards);
         // Sort card hand in reverse order
         card_array.sort(function(a, b) {
             return b.pos - a.pos;

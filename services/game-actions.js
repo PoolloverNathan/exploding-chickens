@@ -30,7 +30,7 @@ exports.create_game = async function (lobby_details) {
 // Name : game_actions.get_game_details(lobby_details, game_id)
 // Desc : return the details for a target game
 // Author(s) : RAk3rman
-exports.get_game_details = async function (lobby_details, game_id) {
+exports.get_game_details = function (lobby_details, game_id) {
     // Find game and return details
     for (let i = 0; i < lobby_details.games.length; i++) {
         if (lobby_details.games[i]._id.equals(game_id)) {
@@ -113,11 +113,11 @@ exports.generate_cb = function (err, card, data, target, incomplete) {
 // Author(s) : Vincent Do, RAk3rman
 exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
     // Filter draw deck
-    let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
     // If there are no cards in draw deck, return undefined
     if (draw_deck.length < 1) return undefined;
     // Filter player hand
-    let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let player_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Determine position of drawn card
     let pos = draw_deck.length - 1;
     // Update card
@@ -149,9 +149,9 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
     let callback = game_actions.generate_cb(undefined, card_details, undefined, target, false);
     // Ensure that the card is allowed to be played now
     let exp_only = ['defuse', 'hotpotato', 'chicken'];
-    if (await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && !exp_only.includes(callback.card.action)) {
+    if (await player_actions.is_exploding(card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && !exp_only.includes(callback.card.action)) {
         callback.err = "Cannot be used while exploding"; return callback; // Player is exploding and player attempted to use a card that cannot stop a chicken
-    } else if (!await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && exp_only.includes(callback.card.action)) {
+    } else if (!await player_actions.is_exploding(card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && exp_only.includes(callback.card.action)) {
         callback.err = "Can only be used when exploding"; return callback; // Player is not exploding but player tried to use a card that can stop a chicken
     }
     // BASE DECK
@@ -187,7 +187,7 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
 // Author(s) : RAk3rman
 exports.discard_card = async function (lobby_details, game_pos, card_id) {
     // Find the greatest position in discard deck
-    let discard_deck = await card_actions.filter_cards("discard_deck", lobby_details.games[game_pos].cards);
+    let discard_deck = card_actions.filter_cards("discard_deck", lobby_details.games[game_pos].cards);
     // Update card details
     let plyr_id;
     for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
@@ -260,7 +260,7 @@ exports.reset_game = async function (lobby_details, game_pos) {
         lobby_details.games[game_pos].cards[i].placed_by_plyr_id = "";
     }
     // Reset players
-    let players = await game_actions.get_players(lobby_details, game_pos);
+    let players = game_actions.get_players(lobby_details, game_pos);
     for (let i = 0; i < players.length; i++) {
         players[i].is_dead = false;
     }
@@ -276,7 +276,7 @@ exports.reset_game = async function (lobby_details, game_pos) {
 // Name : player_actions.get_players(lobby_details, game_pos)
 // Desc : returns an array of players within the specified game
 // Author(s) : RAk3rman
-exports.get_players = async function (lobby_details, game_pos) {
+exports.get_players = function (lobby_details, game_pos) {
     let players = [];
     // Loop through each player and see if it matches game assignment
     for (let i = 0; i < lobby_details.players.length; i++) {
@@ -319,9 +319,9 @@ exports.game_export = async function (lobby_details, game_pos, cb_data, source, 
         }
     }
     // Prepare draw deck
-    let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
+    let draw_deck = card_actions.filter_cards("draw_deck", game_details.cards);
     // Prepare discard deck
-    let discard_deck = await card_actions.filter_cards("discard_deck", game_details.cards);
+    let discard_deck = card_actions.filter_cards("discard_deck", game_details.cards);
     // Return pretty game details
     return {
         game_slug: game_details.slug,

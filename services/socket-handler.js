@@ -218,7 +218,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 wf_g_validate_lock, // Validate player is able to modify cards
                 async function(lobby_details, game_pos, req_data, action, socket_id, callback) {
                     // Make sure we aren't exploding
-                    if (await player_actions.is_exploding(await card_actions.filter_cards(req_data.plyr_id, lobby_details.games[game_pos].cards))) {
+                    if (await player_actions.is_exploding(card_actions.filter_cards(req_data.plyr_id, lobby_details.games[game_pos].cards))) {
                         card_lock = false; callback(true, 'Cannot draw while exploding', lobby_details, game_pos, req_data, action, socket_id);
                     } else {
                         // Draw card

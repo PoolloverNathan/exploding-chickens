@@ -473,11 +473,8 @@ describe('Players', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('player sockets exists', function() {
-            for (let i = 0; i < 10; i++)
-            {
-               assert.isNotNull(player_actions.update_sockets_open(lobby_details, lobby_details.players[i]._id, "inc"), 'should not be null');
-               assert.isNotNull(player_actions.update_sockets_open(lobby_details, lobby_details.players[i]._id, "dec"), 'should not be null');
-            }
+            assert.isNotNull(player_actions.update_sockets_open(lobby_details, lobby_details.players[0]._id, "inc"), 'should not be null');
+            assert.isNotNull(player_actions.update_sockets_open(lobby_details, lobby_details.players[0]._id, "dec"), 'should not be null');
         });
         it('check for non-existent player sockets', function() {
             assert.isNull(player_actions.update_sockets_open(lobby_details, 'PLAYER-DNE', "inc"), 'should be null');
@@ -487,8 +484,36 @@ describe('Players', function() {
     describe('#player_actions.create_hand()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('create hand for existing players',  async function() {
+            // Create sample games with 5 players in 2 games
+            await lobby_actions.partition_players(lobby_details);
+            // Create hand for first player
+            player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 1);
+            // Test cards assigned to player
+            lobby_details.players.forEach(plyr => {
+                let plyr_hand = card_actions.filter_cards(plyr._id, game_actions.get_game_details(lobby_details, plyr.game_assign).cards);
+                // Ensure players have 5 cards in hand
+                assert.equal(plyr_hand.length, 5, "player " + plyr._id + " should have 5 cards");
+                // Ensure players have at least one defuse and no chickens
+                let plyr_card_actions = new Set();
+                plyr_hand.forEach(card => {
+                    plyr_card_actions.add(card.action);
+                })
+                assert.isTrue(plyr_card_actions.has("defuse"));
+                assert.isFalse(plyr_card_actions.has("chicken"));
+            })
+            // Make sure the correct number of ec's are in the deck
+            for (let i = 0; i < lobby_details.games.length; i++) {
+                let ec_remain = 0;
+                for (let j = 0; j < lobby_details.games[i].cards.length; j++) {
+                    // If the card is assigned to deck, add to count
+                    if (lobby_details.games[i].cards[j].action === "chicken" && lobby_details.games[i].cards[j].assign === "draw_deck") {
+                        ec_remain += 1;
+                    }
+                }
+                assert.equal(ec_remain, game_actions.get_players(lobby_details, i).length - 1);
+            }
         });
     })
     describe('#player_actions.randomize_seats()', function() {
@@ -882,7 +907,7 @@ function simulate_lobby(id, plyr_ctn, rounds, stats) {
 // Author(s) : RAk3rman
 async function simulate_games(lobby_details, stats) {
     for (let i = 0; i < lobby_details.games.length; i++) {
-        logger.info('Game simulation starting', { 'in': 'simulate_game', 'l_slug': lobby_details.slug, 'g_slug': lobby_details.games[i].slug, 'plyr_ctn': (await game_actions.get_players(lobby_details, i)).length });
+        logger.info('Game simulation starting', { 'in': 'simulate_game', 'l_slug': lobby_details.slug, 'g_slug': lobby_details.games[i].slug, 'plyr_ctn': (game_actions.get_players(lobby_details, i)).length });
         stats_store.set('games_played', stats_store.get('games_played') + 1);
         stats.games++;
         let turn_ctn = 0;
@@ -895,7 +920,7 @@ async function simulate_games(lobby_details, stats) {
             // If the turn is still on the current player, draw card
             if (player_actions.get_turn_plyr_id(lobby_details, i) === plyr_id) {
                 // Make sure we aren't exploding before drawing a card
-                if (!await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                if (!await player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                     // Draw card to end turn
                     let card_details = await game_actions.draw_card(lobby_details, i, plyr_id);
                     assert.exists(card_details, 'ensure drawn card exists');
@@ -904,12 +929,12 @@ async function simulate_games(lobby_details, stats) {
                     stats.cards++;
                 }
                 // Check if the player is exploding (drew an EC somehow)
-                if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                if (await player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                     logger.info('Player is exploding, attempt to defuse', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                     // Force through all cards to see if player has a defuse card
                     await simulate_turn(lobby_details, i, plyr_id, true, false, stats);
                     // If we are still exploding, kill player
-                    if (await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
+                    if (await player_actions.is_exploding(card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                         logger.info('Player still exploding, force play chicken', { 'in': 'simulate_game', 'g_slug': lobby_details.games[i].slug, 'plyr_id': plyr_id });
                         await simulate_turn(lobby_details, i, plyr_id, true, true, stats);
                     }
@@ -929,7 +954,7 @@ async function simulate_games(lobby_details, stats) {
 async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_chicken, stats) {
     logger.info('Turn simulation starting', { 'in': 'simulate_turn', 'g_slug': lobby_details.games[game_pos].slug, 'plyr_id': plyr_id });
     // Get player's hand
-    let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let player_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Loop over each card in the players hand
     // Break out of loop if we use a card that advances the turn order
     for (let i = 0; i < player_hand.length && ((player_actions.get_turn_plyr_id(lobby_details, game_pos)) === plyr_id); i++) {
@@ -960,7 +985,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
                         target.deck_pos = Math.floor(Math.random() * callback.data.max_pos);
                     } else if (callback.card.action === 'favor') { // Provide plyr_id and card_id target
                         target.plyr_id = await player_actions.next_seat(lobby_details, game_pos, "_id");
-                        let target_hand = await card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
+                        let target_hand = card_actions.filter_cards(target.plyr_id, lobby_details.games[game_pos].cards);
                         target.card_id = target_hand.length !== 0 ? target_hand[Math.floor(Math.random() * (target_hand.length - 1))]._id : undefined;
                         enforce_incomplete = false;
                     } else if (callback.card.action.includes('randchick') || callback.card.action === 'favorgator') { // Provide plyr_id target
@@ -992,7 +1017,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i].action === 'chicken' && lobby_details.games[game_pos].cards[i].assign !== 'out_of_play') active_chickens++;
     }
-    let players = await game_actions.get_players(lobby_details, game_pos);
+    let players = game_actions.get_players(lobby_details, game_pos);
     for (let i = 0; i < players.length; i++) {
         if (!players[i].is_dead) active_players++;
     }

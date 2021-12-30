@@ -120,7 +120,7 @@ exports.start_games = async function (lobby_details) {
             await game_actions.reset_game(lobby_details, i);
             lobby_details.games[i].in_progress = true;
             // Create hands and randomize seats
-            await player_actions.create_hand(lobby_details, i);
+            player_actions.create_hand(lobby_details, i);
             await player_actions.randomize_seats(lobby_details, i);
             // Add prelim events to game
             let host_id = "";
