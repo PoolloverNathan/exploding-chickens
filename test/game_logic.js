@@ -294,8 +294,9 @@ describe('Games', function() {
     describe('#game_actions.create_game()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('creating game',  async function() {
+            let game_pos = await game_actions.create_game(lobby_details);
+            assert.equal(game_pos,0,'testing actual length of lobby');
         });
     })
     describe('#game_actions.get_game_details()', function() {
