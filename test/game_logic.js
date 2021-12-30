@@ -18,6 +18,7 @@ const dataStore = require('data-store');
 const config_store = new dataStore({path: '../config/config.json'});
 const stats_store = new dataStore({path: './test/logs/stats.json'});
 const winston = require('winston');
+const {uniqueNamesGenerator, adjectives, animals} = require("unique-names-generator");
 
 // Services
 let setup = require('../config/setup.js');
@@ -25,10 +26,7 @@ let lobby_actions = require('../services/lobby-actions.js');
 let card_actions = require('../services/card-actions.js');
 let game_actions = require('../services/game-actions.js');
 let player_actions = require('../services/player-actions.js');
-let rel_ids = require('../services/card-actions.js');
 let event_actions = require('../services/event-actions.js');
-const {uniqueNamesGenerator, adjectives, animals} = require("unique-names-generator");
-const {get_turn_plyr_id} = require("../services/player-actions");
 
 // Setup event logger
 const logger = winston.createLogger({
@@ -882,11 +880,11 @@ async function simulate_games(lobby_details, stats) {
         // Loop forever until we get a winner, will time out if a player never wins
         while (!await game_actions.is_winner(lobby_details, i)) {
             // Check which player is playing
-            let plyr_id = await player_actions.get_turn_plyr_id(lobby_details, i);
+            let plyr_id = player_actions.get_turn_plyr_id(lobby_details, i);
             // Simulate turn
             await simulate_turn(lobby_details, i, plyr_id, false, false, stats);
             // If the turn is still on the current player, draw card
-            if (await player_actions.get_turn_plyr_id(lobby_details, i) === plyr_id) {
+            if (player_actions.get_turn_plyr_id(lobby_details, i) === plyr_id) {
                 // Make sure we aren't exploding before drawing a card
                 if (!await player_actions.is_exploding(await card_actions.filter_cards(plyr_id, lobby_details.games[i].cards))) {
                     // Draw card to end turn
@@ -925,7 +923,7 @@ async function simulate_turn(lobby_details, game_pos, plyr_id, play_all, play_ch
     let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Loop over each card in the players hand
     // Break out of loop if we use a card that advances the turn order
-    for (let i = 0; i < player_hand.length && ((await player_actions.get_turn_plyr_id(lobby_details, game_pos)) === plyr_id); i++) {
+    for (let i = 0; i < player_hand.length && ((player_actions.get_turn_plyr_id(lobby_details, game_pos)) === plyr_id); i++) {
         // For this card, give the user a 30% chance of playing it
         // If play_all is true, try to play every card in the hand
         // Then, make sure the card we are about to play is not a chicken unless play_chicken is true

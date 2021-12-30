@@ -278,7 +278,7 @@ exports.hot_potato = async function (lobby_details, game_pos, card_id, plyr_id, 
     // Assign chicken to next player
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i].assign === plyr_id && lobby_details.games[game_pos].cards[i].action === "chicken") {
-            lobby_details.games[game_pos].cards[i].assign = await player_actions.get_turn_plyr_id(lobby_details, game_pos);
+            lobby_details.games[game_pos].cards[i].assign = player_actions.get_turn_plyr_id(lobby_details, game_pos);
             break;
         }
     }

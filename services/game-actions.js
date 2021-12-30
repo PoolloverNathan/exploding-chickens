@@ -337,11 +337,11 @@ exports.game_export = async function (lobby_details, game_pos, cb_data, source, 
         players: players_payload,
         events: events_payload,
         events_length: game_details.events.length,
-        auth_token: req_plyr_id !== "spectator" ? lobby_details.auth_token : "undefined",
         discard_deck: discard_deck,
         packs: lobby_details.packs,
         play_timeout: lobby_details.play_timeout,
         callback: cb_data,
+        auth_token: req_plyr_id !== "spectator" ? lobby_details.auth_token : "undefined",
         req_plyr_id: req_plyr_id,
         trigger: source.trim()
     }

@@ -74,7 +74,7 @@ exports.get_turn_plyr_id = function (lobby_details, game_pos) {
 // Name : player_actions.update_sockets_open(lobby_details, plyr_id, method)
 // Desc : updates the connection for a target player
 // Author(s) : RAk3rman
-exports.update_sockets_open = async function (lobby_details, plyr_id, method) {
+exports.update_sockets_open = function (lobby_details, plyr_id, method) {
     // Find player and return new socket total
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.players[i]._id === plyr_id) {

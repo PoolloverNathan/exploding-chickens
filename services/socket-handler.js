@@ -48,7 +48,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                 wf_l_get, // Get lobby_details
                 async function(lobby_details, req_data, action, socket_id, callback) { // Send game data
                     player_data = req_data;
-                    await player_actions.update_sockets_open(lobby_details, req_data.plyr_id, "inc");
+                    player_actions.update_sockets_open(lobby_details, req_data.plyr_id, "inc");
                     await lobby_details.save();
                     await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
                     callback(false, `Player now ${chalk.dim.green('connected')}`, lobby_details, req_data, action, socket_id);
@@ -399,7 +399,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                     async function(callback) {callback(null, player_data, action, socket.id)}, // Start waterfall
                     wf_l_get, // Get lobby_details
                     async function(lobby_details, req_data, action, socket_id, callback) { // Update sockets open
-                        await player_actions.update_sockets_open(lobby_details, req_data.plyr_id, "dec");
+                        player_actions.update_sockets_open(lobby_details, req_data.plyr_id, "dec");
                         await lobby_details.save();
                         await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
                         callback(false, `Player now ${chalk.dim.red('disconnected')}`, lobby_details, req_data, action, socket_id);
@@ -541,7 +541,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
         // Author(s) : RAk3rman
         async function wf_g_validate_turn(lobby_details, game_pos, req_data, action, req_sock, callback) {
             // Find player
-            if (await player_actions.get_turn_plyr_id(lobby_details, game_pos) === req_data.plyr_id) {
+            if (player_actions.get_turn_plyr_id(lobby_details, game_pos) === req_data.plyr_id) {
                 callback(false, lobby_details, game_pos, req_data, action, req_sock);
             } else {
                 callback(true, "It is not your turn", lobby_details, game_pos, req_data, action, req_sock);
