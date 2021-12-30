@@ -174,7 +174,6 @@ describe('Lobbies', function() {
             assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
             // Start games
             await lobby_actions.start_games(lobby_details);
-            //
         });
     })
     describe('#lobby_actions.start_games()', function() {
@@ -290,17 +289,133 @@ describe('Lobbies', function() {
     })
 });
 
+// Name : test.games
+// Desc : tests all functions in game-actions.js
+// Author(s) : RAk3rman
+describe('Games', function() {
+    describe('#game_actions.create_game()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.get_game_details()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.get_game_pos()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.import_cards()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.export_cards()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.generate_cb()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.draw_card()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.play_card()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.discard_card()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.advance_turn()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.is_winner()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.complete_game()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.reset_game()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.get_players()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.game_export()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#game_actions.delete_game()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+});
+
 // Name : test.players
 // Desc : adds players to a sample lobby and tests interaction
 // Author(s) : RAk3rman
 describe('Players', function() {
-    let lobby_details;
-    it('create new sample lobby', async function() {
-        lobby_details = await lobby_actions.create_lobby();
-        await lobby_details.save();
-    });
     describe('#player_actions.create_player()', function() {
-        it('add 10 players to lobby', function() {
+        let lobby_details;
+        it('add 10 players to lobby', async function() {
+            lobby_details = await lobby_actions.create_lobby();
+            await lobby_details.save();
             for (let i = 0; i < 10; i++) {
                 player_actions.create_player(lobby_details, 'P' + i, 'default.png');
             }
@@ -313,6 +428,8 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.get_player_details()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('player details exist', function() {
             for (let i = 0; i < 10; i++) {
                 assert.isNotNull(player_actions.get_player_details(lobby_details, lobby_details.players[i]._id), 'should not be null');
@@ -324,6 +441,8 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.get_player_pos()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('player position exist', function() {
             for (let i = 0; i < 10; i++) {
                 assert.isNotNull(player_actions.get_player_pos(lobby_details, lobby_details.players[i]._id), 'should not be null');
@@ -335,10 +454,13 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.get_turn_plyr_id()', function() {
-        it('player id exist', function() {
-            assert.isNotNull(player_actions.get_turn_plyr_id(lobby_details, 0), 'should not be null');
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('partition players', async function() {
+            await lobby_actions.partition_players(lobby_details);
         });
         it('player id exist', function() {
+            assert.isNotNull(player_actions.get_turn_plyr_id(lobby_details, 0), 'should not be null');
             assert.isNotNull(player_actions.get_turn_plyr_id(lobby_details, 1), 'should not be null');
         });
         it('check non-existent player id', function() {
@@ -346,48 +468,246 @@ describe('Players', function() {
             lobby_details.games[1].turn_seat_pos = -1;
             assert.isNull(player_actions.get_turn_plyr_id(lobby_details, 0), 'should be null');
             assert.isNull(player_actions.get_turn_plyr_id(lobby_details, 1), 'should be null');
-            lobby_details.games[0].turn_seat_pos = 0;
-            lobby_details.games[1].turn_seat_pos = 0;
         });
     })
     describe('#player_actions.update_sockets_open()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.create_hand()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.randomize_seats()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.next_seat()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.disable_player()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.kick_player()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.make_host()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.sort_hand()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.is_exploding()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
     describe('#player_actions.player_export()', function() {
-        // TODO Implement test
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
     })
 });
 
 // Name : test.cards
-// Desc : adds cards to a sample lobby and tests interaction
+// Desc : tests all functions in card-actions.js
 // Author(s) : RAk3rman
-// describe('Cards', function() {
-//
-// });
+describe('Cards', function() {
+    describe('#card_actions.attack()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.defuse()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.chicken()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.favor_targeted()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.favor_random()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.favor_gator()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.verify_favor_target_plyr()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.verify_favor_target_card()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.verify_double()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.reverse()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.seethefuture()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.shuffle()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.shuffle_draw_deck()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.skip()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.hot_potato()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.scrambled_eggs()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.scrambled_eggs()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.super_skip()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.safety_draw()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.draw_bottom()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.kill_player()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.filter_cards()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+    describe('#card_actions.find_card()', function() {
+        let lobby_details;
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('basic test',  function() {
+            // TODO Implement test
+        });
+    })
+});
 
 // Name : test.events
 // Desc : adds events to a sample lobby and tests parse-ability

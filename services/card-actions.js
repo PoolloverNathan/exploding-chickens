@@ -12,7 +12,7 @@ let player_actions = require('./player-actions.js');
 let card_actions = require('./card-actions.js');
 let event_actions = require('./event-actions.js');
 
-// Name : card_actions.attack(lobby_details.games[game_pos])
+// Name : card_actions.attack(lobby_details, game_pos, card_id, callback)
 // Desc : forces the next player in turn order to take 2 consecutive turns
 // Author(s) : RAk3rman
 exports.attack = async function (lobby_details, game_pos, card_id, callback) {
