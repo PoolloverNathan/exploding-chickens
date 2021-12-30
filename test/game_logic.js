@@ -246,14 +246,17 @@ describe('Lobbies', function() {
         });
     })
     describe('#lobby_actions.check_completion()', function() {
+        let lobby_details;
+        it('create new lobby env with 5 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('check completion of an unfinished game', async function() {
-            await lobby_actions.start_games(lobby_details);
+            await lobby_actions.partition_players(lobby_details);
+            lobby_actions.start_games(lobby_details);
             await lobby_actions.check_completion(lobby_details);
         });
         it('check completion of a finished game', async function() {
             lobby_details.games[0].in_progress = true;
             lobby_details.games[0].is_completed = true;
-            for (let i = 6; i < 10; i++) {
+            for (let i = 1; i < 5; i++) {
                 lobby_details.players[i].is_dead = true;
             }
             await lobby_actions.check_completion(lobby_details);
