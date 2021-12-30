@@ -468,11 +468,19 @@ describe('Players', function() {
             assert.isNull(player_actions.get_turn_plyr_id(lobby_details, 1), 'should be null');
         });
     })
-    describe('#player_actions.update_sockets_open()', function() {
+    describe('#player_actions.update_sockets_open()',  function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('player sockets exists', function() {
+            for (let i = 0; i < 10; i++)
+            {
+               assert.isNotNull(player_actions.update_sockets_open(lobby_details, lobby_details.players[i]._id, "inc"), 'should not be null');
+               assert.isNotNull(player_actions.update_sockets_open(lobby_details, lobby_details.players[i]._id, "dec"), 'should not be null');
+            }
+        });
+        it('check for non-existent player sockets', function() {
+            assert.isNull(player_actions.update_sockets_open(lobby_details, 'PLAYER-DNE', "inc"), 'should be null');
+            assert.isNull(player_actions.update_sockets_open(lobby_details, 'PLAYER-DNE', "dec"), 'should be null');
         });
     })
     describe('#player_actions.create_hand()', function() {
