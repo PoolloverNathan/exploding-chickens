@@ -165,14 +165,12 @@ describe('Lobbies', function() {
             // Reset games
             lobby_actions.reset_lobby(lobby_details);
         });
-        it('partition after games have been completed', async function() {
-            // Partition 10 players
-            await lobby_actions.partition_players(lobby_details);
-            // Test expected configuration
-            assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
-            // Start games
-            await lobby_actions.start_games(lobby_details);
-        });
+        // it('partition after games have been completed', async function() {
+        //     // Complete first game
+        //     game_actions.complete_game(lobby_actions, 0);
+        //     // Test expected configuration
+        //     assert.equal(lobby_details.games.length, 3, 'should have 2 games of 5, 1 completed');
+        // });
     })
     describe('#lobby_actions.start_games()', function() {
         let lobby_details;
@@ -187,6 +185,17 @@ describe('Lobbies', function() {
             assert.isTrue(lobby_details.games[0].in_progress, 'game should be in progress');
             assert.isTrue(lobby_details.in_progress, 'lobby should be in progress');
         });
+        // it('start 2 new games after 2 completed games', async function() {
+        //     // Complete first two games
+        //     game_actions.complete_game(lobby_actions, 0);
+        //     game_actions.complete_game(lobby_actions, 1)
+        //     // Start games
+        //     lobby_actions.start_games(lobby_details);
+        //     // Test expected configuration
+        //     assert.equal(lobby_details.games.length, 4, 'should have 4 games of 5');
+        //     assert.isTrue(lobby_details.games[0].in_progress, 'game should be in progress');
+        //     assert.isTrue(lobby_details.in_progress, 'lobby should be in progress');
+        // });
     })
     describe('#lobby_actions.reset_lobby()', function() {
         let lobby_details;
