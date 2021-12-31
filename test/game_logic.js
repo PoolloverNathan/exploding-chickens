@@ -309,15 +309,19 @@ describe('Games', function() {
     describe('#game_actions.get_game_details()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('returning lobby details',  async function() {
+            // TODO ask rakerman if NULL
+            let game_pos = await game_actions.get_game_details(lobby_details, lobby_details.games._id);
+            assert.isNull(game_pos);
         });
     })
     describe('#game_actions.get_game_pos()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('getting game position',  async function() {
+            // TODO ask rakerman if NULL
+            let game_pos = await game_actions.get_game_pos(lobby_details, lobby_details.games._id);
+            assert.isNull(game_pos);
         });
     })
     describe('#game_actions.import_cards()', function() {
