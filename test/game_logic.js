@@ -530,9 +530,17 @@ describe('Players', function() {
     describe('#player_actions.randomize_seats()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('partition players seats',  async function() {
+            await lobby_actions.partition_players(lobby_details);
+            let player_count = new Set();
+            player_actions.randomize_seats(lobby_details, 0);
+            let players = game_actions.get_players(lobby_details, 0);
+            players.forEach(player => {
+                player_count.add(player.seat_pos);
+            })
+            assert.equal(player_count.size, 5);
         });
+
     })
     describe('#player_actions.next_seat()', function() {
         let lobby_details;
