@@ -330,25 +330,33 @@ describe('Games', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('returning lobby details',  async function() {
-            // TODO ask rakerman if NULL
-            let game_pos = await game_actions.get_game_details(lobby_details, lobby_details.games._id);
-            assert.isNull(game_pos);
+            // TODO check in with radison
+            await lobby_actions.partition_players(lobby_details);
+            let game_pos = await game_actions.get_game_details(lobby_details, lobby_details.games[0]._id);
+            assert.equal(lobby_details.games[0],game_pos);
         });
     })
     describe('#game_actions.get_game_pos()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('getting game position',  async function() {
-            // TODO ask rakerman if NULL
-            let game_pos = await game_actions.get_game_pos(lobby_details, lobby_details.games._id);
-            assert.isNull(game_pos);
+            // TODO check in with radison
+            await lobby_actions.partition_players(lobby_details);
+            let game_pos = await game_actions.get_game_pos(lobby_details, lobby_details.games[0]._id);
+            assert.equal(0,game_pos);
         });
     })
     describe('#game_actions.import_cards()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('testing for importing cards',  async function() {
+            // TODO function does not have return value?
+            /*
+            await lobby_actions.partition_players(lobby_details);
+            game_actions.import_cards(lobby_details, 0, "yolking_around");
+            assert.isNotNull(lobby_details.games[0].cards);
+             */
+
         });
     })
     describe('#game_actions.export_cards()', function() {
