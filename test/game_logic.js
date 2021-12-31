@@ -286,12 +286,13 @@ describe('Lobbies', function() {
         });
     })
     describe('#lobby_actions.lobby_purge()', function() {
-        let lobby_details;
+        let lobby_id;
         it('create purgeable lobby', async function () {
-            lobby_details = await Lobby.create({
+            let lobby_details = await Lobby.create({
                 slug: uniqueNamesGenerator({dictionaries: [adjectives, animals], separator: '-', length: 2}),
                 created: moment().subtract(config_store.get('purge_age_hrs'), "hours")
             });
+            lobby_id = lobby_details._id;
         });
         it('purging lobby', function(done) {
             lobby_actions.lobby_purge(true).then(result => {
@@ -299,7 +300,7 @@ describe('Lobbies', function() {
             })
         });
         it('verifying purge', async function() {
-            assert.isNotOk(await Lobby.exists({ _id: lobby_details._id }));
+            assert.isNotOk(await Lobby.exists({ _id: lobby_id }));
         });
     })
 });
