@@ -305,17 +305,20 @@ function game_start_prompt(lobby_details) {
                         "        " + moment(lobby_details.games[i].created).calendar() +
                         "    </h1>\n" + (session_user.is_host ? "<h1 class=\"text-base-content text-sm pt-2\"><strong>Host:</strong> Joining the game will open a new tab for you to play in. The lobby dashboard (this tab) will remain open for you to check up on the progress of all active games.</h1>" : ""),
                     background: "hsla(var(--b1) / var(--tw-bg-opacity))",
-                    confirmButtonColor: '#fbbf24',
-                    confirmButtonText: 'Join Game',
-                    showCancelButton: false,
+                    confirmButtonColor: 'hsla(var(--p) / var(--tw-border-opacity))', // Primary color
+                    cancelButtonColor: 'hsla(var(--n) / var(--tw-border-opacity))', // Neutral color
+                    confirmButtonText: 'Join in New Tab',
+                    cancelButtonText: 'Join in This Tab',
+                    showCancelButton: session_user.is_host,
                     allowOutsideClick: false,
-                    timer: session_user.is_host ? undefined : 3000,
+                    timer: session_user.is_host ? 10000 : 3000,
                     timerProgressBar: true,
                     didOpen: () => {
                         if (!session_user.is_host) Swal.showLoading();
                     }
                 }).then((result) => {
-                    if (session_user.is_host) {
+                    console.log(result);
+                    if (session_user.is_host && result.isConfirmed) {
                         window.open("/lobby/" + lobby_details.slug + "/game/" + lobby_details.games[i].players[j].game_assign, '_blank');
                     } else {
                         window.location.href = "/lobby/" + lobby_details.slug + "/game/" + lobby_details.games[i].players[j].game_assign;
