@@ -41,13 +41,13 @@ exports.defuse = function (lobby_details, game_pos, card_id, plyr_id, target, ca
         return;
     }
     // Update each card and insert EC back into card array
-    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         // Find chicken that is assigned to req player
         if (lobby_details.games[game_pos].cards[i].assign === plyr_id && lobby_details.games[game_pos].cards[i].action === "chicken") {
             lobby_details.games[game_pos].cards[i].assign = "draw_deck";
-            lobby_details.games[game_pos].cards[i].pos = draw_deck.length - target.deck_pos;
+            lobby_details.games[game_pos].cards[i].pos = target.deck_pos;
             lobby_details.games[game_pos].cards[i].placed_by_plyr_id = plyr_id;
-        } else if (lobby_details.games[game_pos].cards[i].assign === "draw_deck" && lobby_details.games[game_pos].cards[i].pos >= draw_deck.length - target.deck_pos) { // Increment the rest of the cards
+        } else if (lobby_details.games[game_pos].cards[i].assign === "draw_deck" && lobby_details.games[game_pos].cards[i].pos >= target.deck_pos) { // Increment the rest of the cards
             lobby_details.games[game_pos].cards[i].pos++;
         }
     }
@@ -91,7 +91,7 @@ exports.favor_targeted = function (lobby_details, game_pos, card_id, plyr_id, ta
         }
     }
     // Resort target players hand
-    player_actions.sort_hand(lobby_details, game_pos, target.plyr_id);
+    card_actions.sort_card_assign(lobby_details, game_pos, target.plyr_id);
     // Discard card
     game_actions.discard_card(lobby_details, game_pos, card_id);
 }
@@ -125,7 +125,7 @@ exports.favor_random = function (lobby_details, game_pos, card_id, plyr_id, targ
         }
     }
     // Resort target players hand
-    player_actions.sort_hand(lobby_details, game_pos, target.plyr_id);
+    card_actions.sort_card_assign(lobby_details, game_pos, target.plyr_id);
     // Discard card
     game_actions.discard_card(lobby_details, game_pos, card_id);
     if (double_result) game_actions.discard_card(lobby_details, game_pos, double_result);
@@ -374,7 +374,7 @@ exports.draw_bottom = function (lobby_details, game_pos, card_id, plyr_id, callb
     // Filter player hand
     let player_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Determine position of drawn card
-    let pos = 0;
+    let pos = draw_deck.length - 1;
     // Update card
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === draw_deck[pos]._id) {
@@ -442,6 +442,31 @@ exports.find_card = function (card_id, card_array) {
         }
     }
     return temp_card;
+}
+
+// Name : card_actions.sort_card_assign(lobby_details, game_pos, assign)
+// Desc : sort cards related to a card assignment
+// Author(s) : RAk3rman
+exports.sort_card_assign = function (lobby_details, game_pos, assign) {
+    // Get cards in player's hand
+    let cards = [];
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
+        // If the card is assigned to this player, add to hand
+        if (lobby_details.games[game_pos].cards[i].assign === assign) {
+            cards.push({
+                loc_pos: lobby_details.games[game_pos].cards[i].pos,
+                gbl_pos: i
+            });
+        }
+    }
+    // Sort card hand by local position
+    cards.sort(function(a, b) {
+        return a.loc_pos - b.loc_pos;
+    });
+    // Overlay positions properly
+    for (let i = 0; i <= cards.length - 1; i++) {
+        lobby_details.games[game_pos].cards[cards[i].gbl_pos].pos = i;
+    }
 }
 
 //PRIVATE FUNCTIONS

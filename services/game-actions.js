@@ -114,12 +114,16 @@ exports.generate_cb = function (err, card, data, target, incomplete) {
 exports.draw_card = function (lobby_details, game_pos, plyr_id) {
     // Filter draw deck
     let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    // Sort deck by position
+    draw_deck.sort(function(a, b) {
+        return a.pos - b.pos;
+    });
     // If there are no cards in draw deck, return undefined
     if (draw_deck.length < 1) return undefined;
     // Filter player hand
     let player_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Determine position of drawn card
-    let pos = draw_deck.length - 1;
+    let pos = 0;
     // Update card
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === draw_deck[pos]._id) {
@@ -128,6 +132,8 @@ exports.draw_card = function (lobby_details, game_pos, plyr_id) {
             break;
         }
     }
+    // Resort draw_deck
+    card_actions.sort_card_assign(lobby_details, game_pos, "draw_deck");
     // Advance turn if card drawn is not a chicken, then return card_details
     let halt_cards = ["chicken"];
     if (!halt_cards.includes(draw_deck[pos].action)) {
@@ -199,7 +205,7 @@ exports.discard_card = function (lobby_details, game_pos, card_id) {
         }
     }
     // Resort player hand
-    player_actions.sort_hand(lobby_details, game_pos, plyr_id);
+    card_actions.sort_card_assign(lobby_details, game_pos, plyr_id);
 }
 
 // Name : game_actions.advance_turn(lobby_details, game_pos)

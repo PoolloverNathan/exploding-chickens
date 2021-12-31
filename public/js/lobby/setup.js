@@ -76,12 +76,12 @@ function setup_user_prompt(lobby_details, err, nickname) {
             "<h1 class=\"text-sm text-base-content\">Lobby Code: " + lobby_details.slug + " | Created: " + moment(lobby_details.created).calendar() + "</a><br><br><a class=\"text-error\">" + err + "</a></h1>\n" +
             "<div class=\"my-3 flex w-full max-w-sm mx-auto space-x-3 shadow-md\">\n" +
             "    <input\n" +
-            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-base-100 text-base-content placeholder-base-content rounded-sm text-base border-base-200 focus:outline-none\"\n" +
+            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-base-100 text-base-content placeholder-neutral rounded-sm text-base border-base-200 focus:outline-none\"\n" +
             "        type=\"text\" id=\"nickname_swal\" maxlength=\"12\" value=\"" + nickname + "\" placeholder=\"What's your name?\">\n" +
             "</div>" +
             (auth_token === null ? ("<div class=\"my-3 flex w-full max-w-sm mx-auto space-x-3 shadow-md\">\n" +
             "    <input\n" +
-            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-base-100 text-base-content placeholder-base-content rounded-sm text-base border-base-200 focus:outline-none\"\n" +
+            "        class=\"text-center flex-1 appearance-none border border-transparent w-full py-2 px-10 bg-base-100 text-base-content placeholder-neutral rounded-sm text-base border-base-200 focus:outline-none\"\n" +
             "        type=\"text\" id=\"auth_token_swal\" maxlength=\"6\" placeholder=\"What's the password?\">\n" +
             "</div>") : "") +
             "<div class=\"flex flex-wrap justify-center items-center py-2\" id=\"avatar_options_swal\">\n" +
@@ -129,7 +129,7 @@ function setup_update_options() {
         // Append to payload
         if (selected_avatar === options[i]) { // Current selection, green halo
             options_payload += "<div class=\"flex-none block text-center m-2\" onclick=\"setup_select_option('" + options[i] + "')\">\n" +
-                "    <img class=\"h-16 w-16 rounded-full ring-2 ring-offset-2 ring-green-500\" src=\"/public/avatars/" + options[i] + "\" id=\"" + options[i] + "\" alt=\"\">\n" +
+                "    <img class=\"h-16 w-16 rounded-full ring-2 ring-offset-2 ring-success\" src=\"/public/avatars/" + options[i] + "\" id=\"" + options[i] + "\" alt=\"\">\n" +
                 "</div>\n";
         } else { // Available for selection
             options_payload += "<div class=\"flex-none block text-center m-2\" onclick=\"setup_select_option('" + options[i] + "')\">\n" +

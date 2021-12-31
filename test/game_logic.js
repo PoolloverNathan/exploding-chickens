@@ -568,13 +568,6 @@ describe('Players', function() {
             // TODO Implement test
         });
     })
-    describe('#player_actions.sort_hand()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
-        });
-    })
     describe('#player_actions.is_exploding()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});

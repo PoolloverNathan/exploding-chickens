@@ -281,31 +281,6 @@ exports.make_host = function (lobby_details, curr_plyr_id, suc_plyr_id) {
     }
 }
 
-// Name : player_actions.sort_hand(lobby_details, game_pos, plyr_id)
-// Desc : sort players hand, typically after a card is removed
-// Author(s) : RAk3rman
-exports.sort_hand = function (lobby_details, game_pos, plyr_id) {
-    // Get cards in player's hand
-    let player_hand = [];
-    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
-        // If the card is assigned to this player, add to hand
-        if (lobby_details.games[game_pos].cards[i].assign === plyr_id) {
-            player_hand.push({
-                loc_pos: lobby_details.games[game_pos].cards[i].pos,
-                gbl_pos: i
-            });
-        }
-    }
-    // Sort card hand by local position
-    player_hand.sort(function(a, b) {
-        return a.loc_pos - b.loc_pos;
-    });
-    // Overlay positions properly
-    for (let i = 0; i <= player_hand.length - 1; i++) {
-        lobby_details.games[game_pos].cards[player_hand[i].gbl_pos].pos = i;
-    }
-}
-
 // Name : player_actions.is_exploding(plyr_card_array)
 // Desc : returns if a player is exploding
 // Author(s) : RAk3rman
