@@ -314,7 +314,11 @@ function place_chicken(card_id, source, max_pos) {
             position = parseInt(cur.substr(6,2));
         }
     }
-    play_card(card_id, position);
+    play_card(card_id, {
+        plyr_id: undefined,
+        card_id: undefined,
+        deck_pos: position
+    });
 }
 
 // Name : frontend-game.itr_trigger_pselect(game_details, card_id)
@@ -350,51 +354,33 @@ function itr_trigger_pselect(game_details, card_id) {
     })
 }
 
-// Name : frontend-game.itr_display_winner(game_details, name, count)
+// Name : frontend-game.itr_display_winner(name)
 // Desc : displays the winner graphic
-function itr_display_winner(game_details, name, count) {
-    // Fire swal once and repeat
-    if (count === 0) {
-        if (!allow_user_prompt && session_user._id === undefined) {
-            Swal.fire({
-                html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-primary\">CHICKEN</a> DINNER</h1>\n" +
-                    "<h1 class=\"text-xl text-gray-700 mt-1 font-bold\">" + name + "</h1>\n" +
-                    "<h1 class=\"text-md text-gray-700 mt-2\">After the smoke has cleared, it appears that " + name + " was the last one standing. Give them a challenge by joining the lobby.</h1>\n",
-                backdrop: "transparent",
-                background: "#F8F8F8",
-                showCancelButton: true,
-                confirmButtonColor: '#fbbf24',
-                cancelButtonColor: '#374151',
-                cancelButtonText: 'Return to Lobby',
-                confirmButtonText: 'Join Game',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    setup_user_prompt(game_details, "", "");
-                    allow_user_prompt = false;
-                }
-            })
-        } else {
-            Swal.fire({
-                html: "<h1 class=\"text-4xl text-gray-700 mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-primary\">CHICKEN</a> DINNER</h1>\n" +
-                    "<h1 class=\"text-xl text-gray-700 mt-1 font-bold\">" + name + "</h1>\n" +
-                    "<h1 class=\"text-md text-gray-700 mt-2\">After the smoke has cleared, it appears that " + name + " was the last one standing. Test your odds again by staying in the lobby.</h1>\n",
-                showConfirmButton: false,
-                showCancelButton: true,
-                backdrop: "transparent",
-                background: "#F8F8F8",
-                cancelButtonColor: '#374151',
-                cancelButtonText: 'Return to Lobby'
-            })
-        }
+function itr_display_winner(name) {
+    // Fire swal
+    Swal.fire({
+        html: "<h1 class=\"text-4xl text-base-content mt-3\" style=\"font-family: Bebas Neue\">WINNER WINNER <a class=\"text-primary\">CHICKEN</a> DINNER</h1>\n" +
+            "<h1 class=\"text-xl text-base-content mt-1 font-bold\">" + name + "</h1>\n" +
+            "<h1 class=\"text-md text-base-content mt-2\">After the smoke has cleared, it appears that " + name + " was the last one standing. Return to the lobby to play again.</h1>\n",
+        background: "hsla(var(--b1) / var(--tw-bg-opacity))",
+        confirmButtonColor: '#fbbf24',
+        confirmButtonText: 'Return to Lobby',
+        showCancelButton: false,
+        allowOutsideClick: false,
+        timer: 15000,
+        timerProgressBar: true,
+    }).then((result) => {
+        window.location.href = "/lobby/" + window.location.pathname.split('/')[2];
+    })
+    // Spread confetti 7 times
+    for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+            confetti({
+                angle: Math.random() * (125 - 55) + 55,
+                spread: Math.random() * (70 - 50) + 50,
+                particleCount: Math.random() * (100 - 50) + 50,
+                origin: { y: 0.6 }
+            });
+        }, 500 * i);
     }
-    if (count < 7) {
-        setTimeout(() => {  itr_display_winner(game_details, name, count + 1); }, 500);
-    }
-    // Call confetti function
-    confetti({
-        angle: Math.random() * (125 - 55) + 55,
-        spread: Math.random() * (70 - 50) + 50,
-        particleCount: Math.random() * (100 - 50) + 50,
-        origin: { y: 0.6 }
-    });
 }

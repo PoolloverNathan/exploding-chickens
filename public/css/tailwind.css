@@ -3474,19 +3474,19 @@ html {
   text-decoration: none;
 }
 
-.placeholder-base-content::-moz-placeholder {
+.placeholder-neutral::-moz-placeholder {
   --tw-placeholder-opacity: 1;
-  color: hsla(var(--bc) / var(--tw-placeholder-opacity));
+  color: hsla(var(--n) / var(--tw-placeholder-opacity));
 }
 
-.placeholder-base-content:-ms-input-placeholder {
+.placeholder-neutral:-ms-input-placeholder {
   --tw-placeholder-opacity: 1;
-  color: hsla(var(--bc) / var(--tw-placeholder-opacity));
+  color: hsla(var(--n) / var(--tw-placeholder-opacity));
 }
 
-.placeholder-base-content::placeholder {
+.placeholder-neutral::placeholder {
   --tw-placeholder-opacity: 1;
-  color: hsla(var(--bc) / var(--tw-placeholder-opacity));
+  color: hsla(var(--n) / var(--tw-placeholder-opacity));
 }
 
 .opacity-0 {
@@ -3586,6 +3586,11 @@ html {
 .ring-green-500 {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgba(16, 185, 129, var(--tw-ring-opacity));
+}
+
+.ring-success {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: hsla(var(--su) / var(--tw-ring-opacity));
 }
 
 .focus\:ring-white:focus {

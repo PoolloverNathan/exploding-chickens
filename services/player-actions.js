@@ -61,7 +61,7 @@ exports.get_player_pos = function (lobby_details, plyr_id) {
 // Name : player_actions.get_turn_plyr_id(lobby_details, game_pos)
 // Desc : return the plyr_id of the player who is currently playing
 // Author(s) : RAk3rman
-exports.get_turn_plyr_id = async function (lobby_details, game_pos) {
+exports.get_turn_plyr_id = function (lobby_details, game_pos) {
     // Find player and return details
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign) && lobby_details.games[game_pos].turn_seat_pos === lobby_details.players[i].seat_pos) {
@@ -74,7 +74,7 @@ exports.get_turn_plyr_id = async function (lobby_details, game_pos) {
 // Name : player_actions.update_sockets_open(lobby_details, plyr_id, method)
 // Desc : updates the connection for a target player
 // Author(s) : RAk3rman
-exports.update_sockets_open = async function (lobby_details, plyr_id, method) {
+exports.update_sockets_open = function (lobby_details, plyr_id, method) {
     // Find player and return new socket total
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.players[i]._id === plyr_id) {
@@ -93,7 +93,7 @@ exports.update_sockets_open = async function (lobby_details, plyr_id, method) {
 // Name : player_actions.create_hand(lobby_details, game_pos)
 // Desc : gives each player a defuse card and 4 random cards from the draw_deck, rations ec
 // Author(s) : RAk3rman
-exports.create_hand = async function (lobby_details, game_pos) {
+exports.create_hand = function (lobby_details, game_pos) {
     // Create array containing the position of each defuse card and regular card
     let defuse_bucket = [];
     let exploding_bucket = [];
@@ -109,10 +109,11 @@ exports.create_hand = async function (lobby_details, game_pos) {
         }
     }
     // Get array of players
-    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
+    let plyr_array = game_actions.get_players(lobby_details, game_pos);
     // Add extra defuse cards to card bucket
     for (let i = 0; i < defuse_bucket.length - plyr_array.length; i++) {
         card_bucket.push(defuse_bucket[i]);
+        defuse_bucket.splice(i, 1);
     }
     // Assign 5 cards to each player
     for (let i = 0; i < plyr_array.length; i++) {
@@ -134,16 +135,16 @@ exports.create_hand = async function (lobby_details, game_pos) {
         lobby_details.games[game_pos].cards[rand_card_pos].assign = "draw_deck";
     }
     // Shuffle draw deck once we are done
-    await card_actions.shuffle_draw_deck(lobby_details, game_pos);
+    card_actions.shuffle_draw_deck(lobby_details, game_pos);
 }
 
 
 // Name : player_actions.randomize_seats(lobby_details, game_pos)
 // Desc : given a game_slug, gives each player a random seat position (without replacement)
 // Author(s) : SengdowJones, RAk3rman
-exports.randomize_seats = async function (lobby_details, game_pos) {
+exports.randomize_seats = function (lobby_details, game_pos) {
     // Get array of players
-    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
+    let plyr_array = game_actions.get_players(lobby_details, game_pos);
     // Create array containing each available seat
     let bucket = [];
     for (let i = 0; i < plyr_array.length; i++) {
@@ -158,10 +159,10 @@ exports.randomize_seats = async function (lobby_details, game_pos) {
 // Name : player_actions.next_seat(lobby_details, game_pos, return_type)
 // Desc : determine next seat position
 // Author(s) : RAk3rman
-exports.next_seat = async function (lobby_details, game_pos, return_type) {
+exports.next_seat = function (lobby_details, game_pos, return_type) {
     let pos = lobby_details.games[game_pos].turn_seat_pos;
     // Get array of players
-    let plyr_array = await game_actions.get_players(lobby_details, game_pos);
+    let plyr_array = game_actions.get_players(lobby_details, game_pos);
     // Traverse until we find next open seat
     while (true) {
         // Increment or decrement pos based on direction
@@ -196,7 +197,7 @@ exports.next_seat = async function (lobby_details, game_pos, return_type) {
 // Name : player_actions.disable_player(lobby_details, player_pos)
 // Desc : mark a player as disabled and clear details
 // Author(s) : RAk3rman
-exports.disable_player = async function (lobby_details, player_pos) {
+exports.disable_player = function (lobby_details, player_pos) {
     lobby_details.players[player_pos].game_assign = undefined;
     lobby_details.players[player_pos].seat_pos = -1;
     lobby_details.players[player_pos].is_host = false;
@@ -217,21 +218,20 @@ exports.kick_player = async function (lobby_details, host_plyr_id, kick_plyr_id)
     // Check if lobby is in progress (we can do this the easy way or the hard way)
     if (!lobby_details.in_progress) {
         // Disable and partition players
-        await player_actions.disable_player(lobby_details, kick_player_pos);
+        player_actions.disable_player(lobby_details, kick_player_pos);
         await lobby_actions.partition_players(lobby_details);
     } else {
         // We have to do this the hard way, find the game
-        let game_pos = await game_actions.get_game_pos(lobby_details, lobby_details.players[kick_player_pos].game_assign);
+        let game_pos = game_actions.get_game_pos(lobby_details, lobby_details.players[kick_player_pos].game_assign);
         // Disable player
-        await player_actions.disable_player(lobby_details, kick_player_pos);
-        console.log(game_pos);
+        player_actions.disable_player(lobby_details, kick_player_pos);
         // Check the status of the game they are in
         if (!lobby_details.games[game_pos].is_completed) {
             // Kill player and release cards
-            await card_actions.kill_player(lobby_details, game_pos, kick_plyr_id);
+            card_actions.kill_player(lobby_details, game_pos, kick_plyr_id);
             // Advance turn if it was their turn
             if (lobby_details.players[kick_player_pos].seat_pos === lobby_details.games[game_pos].turn_seat_pos) {
-                await game_actions.advance_turn(lobby_details, game_pos);
+                game_actions.advance_turn(lobby_details, game_pos);
             }
             // Determine number of active players in game
             let active_ctn = 0;
@@ -242,7 +242,7 @@ exports.kick_player = async function (lobby_details, host_plyr_id, kick_plyr_id)
             }
             // Complete game or reallocate EC depending on players remaining
             if (active_ctn < 2) {
-                await game_actions.reset_game(lobby_details, game_pos);
+                game_actions.reset_game(lobby_details, game_pos);
                 lobby_details.games[game_pos].is_completed = true;
             } else {
                 // Loop through players and see how many EC are active, remove if over active count
@@ -256,7 +256,7 @@ exports.kick_player = async function (lobby_details, host_plyr_id, kick_plyr_id)
                     }
                 }
                 // Reset seat positions
-                await player_actions.randomize_seats(lobby_details, game_pos);
+                player_actions.randomize_seats(lobby_details, game_pos);
             }
         }
     }
@@ -265,7 +265,7 @@ exports.kick_player = async function (lobby_details, host_plyr_id, kick_plyr_id)
 // Name : player_actions.make_host(lobby_details, curr_plyr_id, suc_plyr_id)
 // Desc : make a new player the host
 // Author(s) : RAk3rman
-exports.make_host = async function (lobby_details, curr_plyr_id, suc_plyr_id) {
+exports.make_host = function (lobby_details, curr_plyr_id, suc_plyr_id) {
     // Make sure they aren't making themselves a host
     if (curr_plyr_id === suc_plyr_id) {
         return;
@@ -281,35 +281,10 @@ exports.make_host = async function (lobby_details, curr_plyr_id, suc_plyr_id) {
     }
 }
 
-// Name : player_actions.sort_hand(lobby_details, game_pos, plyr_id)
-// Desc : sort players hand, typically after a card is removed
-// Author(s) : RAk3rman
-exports.sort_hand = async function (lobby_details, game_pos, plyr_id) {
-    // Get cards in player's hand
-    let player_hand = [];
-    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
-        // If the card is assigned to this player, add to hand
-        if (lobby_details.games[game_pos].cards[i].assign === plyr_id) {
-            player_hand.push({
-                loc_pos: lobby_details.games[game_pos].cards[i].pos,
-                gbl_pos: i
-            });
-        }
-    }
-    // Sort card hand by local position
-    player_hand.sort(function(a, b) {
-        return a.loc_pos - b.loc_pos;
-    });
-    // Overlay positions properly
-    for (let i = 0; i <= player_hand.length - 1; i++) {
-        lobby_details.games[game_pos].cards[player_hand[i].gbl_pos].pos = i;
-    }
-}
-
 // Name : player_actions.is_exploding(plyr_card_array)
 // Desc : returns if a player is exploding
 // Author(s) : RAk3rman
-exports.is_exploding = async function (plyr_card_array) {
+exports.is_exploding = function (plyr_card_array) {
     let is_exploding = false;
     // Check if the player is exploding
     plyr_card_array.every(card => {
@@ -325,7 +300,7 @@ exports.is_exploding = async function (plyr_card_array) {
 // Name : player_actions.player_export(lobby_details, player_pos)
 // Desc : prepares player data for export to client
 // Author(s) : RAk3rman
-exports.player_export = async function (lobby_details, player_pos) {
+exports.player_export = function (lobby_details, player_pos) {
     let game_details = [];
     let card_array = [];
     let is_exploding = false;
@@ -340,13 +315,13 @@ exports.player_export = async function (lobby_details, player_pos) {
             return true;
         });
         // Filter card hand
-        card_array = await card_actions.filter_cards(lobby_details.players[player_pos]._id, game_details.cards);
+        card_array = card_actions.filter_cards(lobby_details.players[player_pos]._id, game_details.cards);
         // Sort card hand in reverse order
         card_array.sort(function(a, b) {
             return b.pos - a.pos;
         });
         // Check if the player is exploding
-        is_exploding = await player_actions.is_exploding(card_array);
+        is_exploding = player_actions.is_exploding(card_array);
     }
     // Return pretty player details
     return {

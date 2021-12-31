@@ -30,7 +30,7 @@ exports.create_game = async function (lobby_details) {
 // Name : game_actions.get_game_details(lobby_details, game_id)
 // Desc : return the details for a target game
 // Author(s) : RAk3rman
-exports.get_game_details = async function (lobby_details, game_id) {
+exports.get_game_details = function (lobby_details, game_id) {
     // Find game and return details
     for (let i = 0; i < lobby_details.games.length; i++) {
         if (lobby_details.games[i]._id.equals(game_id)) {
@@ -43,7 +43,7 @@ exports.get_game_details = async function (lobby_details, game_id) {
 // Name : game_actions.get_game_pos(lobby_details, game_id)
 // Desc : return the details for a target game
 // Author(s) : RAk3rman
-exports.get_game_pos = async function (lobby_details, game_id) {
+exports.get_game_pos = function (lobby_details, game_id) {
     // Find game and return details
     for (let i = 0; i < lobby_details.games.length; i++) {
         if (lobby_details.games[i]._id.equals(game_id)) {
@@ -56,7 +56,7 @@ exports.get_game_pos = async function (lobby_details, game_id) {
 // Name : game_actions.import_cards(lobby_details, game_pos, pack_name)
 // Desc : bulk import cards via json file
 // Author(s) : RAk3rman
-exports.import_cards = async function (lobby_details, game_pos, pack_name) {
+exports.import_cards = function (lobby_details, game_pos, pack_name) {
     // Get json array of cards
     let pack_array = require('../packs/' + pack_name + '.json');
     let card_length = lobby_details.games[game_pos].cards.length;
@@ -78,7 +78,7 @@ exports.import_cards = async function (lobby_details, game_pos, pack_name) {
 // Name : game_actions.export_cards(lobby_details, game_pos, pack_name)
 // Desc : bulk export cards
 // Author(s) : RAk3rman
-exports.export_cards = async function (lobby_details, game_pos, pack_name) {
+exports.export_cards = function (lobby_details, game_pos, pack_name) {
     // Loop through all cards and remove if a part of pack
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i].pack === pack_name) {
@@ -111,15 +111,19 @@ exports.generate_cb = function (err, card, data, target, incomplete) {
 // Name : game_actions.draw_card(lobby_details, game_pos, plyr_id)
 // Desc : draw a card from the draw deck and place at the end of a players hand
 // Author(s) : Vincent Do, RAk3rman
-exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
+exports.draw_card = function (lobby_details, game_pos, plyr_id) {
     // Filter draw deck
-    let draw_deck = await card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    // Sort deck by position
+    draw_deck.sort(function(a, b) {
+        return a.pos - b.pos;
+    });
     // If there are no cards in draw deck, return undefined
     if (draw_deck.length < 1) return undefined;
     // Filter player hand
-    let player_hand = await card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
+    let player_hand = card_actions.filter_cards(plyr_id, lobby_details.games[game_pos].cards);
     // Determine position of drawn card
-    let pos = draw_deck.length - 1;
+    let pos = 0;
     // Update card
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === draw_deck[pos]._id) {
@@ -128,10 +132,12 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
             break;
         }
     }
+    // Resort draw_deck
+    card_actions.sort_card_assign(lobby_details, game_pos, "draw_deck");
     // Advance turn if card drawn is not a chicken, then return card_details
     let halt_cards = ["chicken"];
     if (!halt_cards.includes(draw_deck[pos].action)) {
-        await game_actions.advance_turn(lobby_details, game_pos);
+        game_actions.advance_turn(lobby_details, game_pos);
     }
     // Update event log and return card details
     event_actions.log_event(lobby_details.games[game_pos], "draw-card", plyr_id, undefined, draw_deck[pos], undefined);
@@ -142,35 +148,35 @@ exports.draw_card = async function (lobby_details, game_pos, plyr_id) {
 // Desc : calls the appropriate card function based on card action, returns structured callback to be sent to client
 // Target data structure : { plyr_id, card_id, deck_pos }
 // Author(s) : RAk3rman
-exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_id, target, stats_store) {
+exports.play_card = function (lobby_details, game_pos, card_id, req_plyr_id, target, stats_store) {
     // Find card details based on card_id
-    let card_details = await card_actions.find_card(card_id, lobby_details.games[game_pos].cards);
+    let card_details = card_actions.find_card(card_id, lobby_details.games[game_pos].cards);
     // Generate callback from data struct
     let callback = game_actions.generate_cb(undefined, card_details, undefined, target, false);
     // Ensure that the card is allowed to be played now
     let exp_only = ['defuse', 'hotpotato', 'chicken'];
-    if (await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && !exp_only.includes(callback.card.action)) {
+    if (player_actions.is_exploding(card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && !exp_only.includes(callback.card.action)) {
         callback.err = "Cannot be used while exploding"; return callback; // Player is exploding and player attempted to use a card that cannot stop a chicken
-    } else if (!await player_actions.is_exploding(await card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && exp_only.includes(callback.card.action)) {
+    } else if (!player_actions.is_exploding(card_actions.filter_cards(req_plyr_id, lobby_details.games[game_pos].cards)) && exp_only.includes(callback.card.action)) {
         callback.err = "Can only be used when exploding"; return callback; // Player is not exploding but player tried to use a card that can stop a chicken
     }
     // BASE DECK
-    if (card_details.action === "attack")               { await card_actions.attack(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action === "defuse")          { await card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
-    else if (card_details.action === "chicken")         { await card_actions.chicken(lobby_details, game_pos, req_plyr_id, callback); }
-    else if (card_details.action === "favor")           { await card_actions.favor_targeted(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
-    else if (card_details.action.includes("randchick")) { await card_actions.favor_random(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
-    else if (card_details.action === "reverse")         { await card_actions.reverse(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action === "seethefuture")    { await card_actions.seethefuture(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action === "shuffle")         { await card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action === "skip")            { await card_actions.skip(lobby_details, game_pos, card_id, callback); }
+    if (card_details.action === "attack")               { card_actions.attack(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "defuse")          { card_actions.defuse(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
+    else if (card_details.action === "chicken")         { card_actions.chicken(lobby_details, game_pos, req_plyr_id, callback); }
+    else if (card_details.action === "favor")           { card_actions.favor_targeted(lobby_details, game_pos, card_id, req_plyr_id, target, callback) }
+    else if (card_details.action.includes("randchick")) { card_actions.favor_random(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
+    else if (card_details.action === "reverse")         { card_actions.reverse(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "seethefuture")    { card_actions.seethefuture(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "shuffle")         { card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "skip")            { card_actions.skip(lobby_details, game_pos, card_id, callback); }
     // YOLKING AROUND EXPANSION PACK
-    else if (card_details.action === "hotpotato")       { await card_actions.hot_potato(lobby_details, game_pos, card_id, req_plyr_id, callback); }
-    else if (card_details.action === "favorgator")      { await card_actions.favor_gator(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
-    else if (card_details.action === "scrambledeggs")   { await card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action === "superskip")       { await card_actions.super_skip(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action === "safetydraw")      { await card_actions.safety_draw(lobby_details, game_pos, card_id, req_plyr_id, callback) }
-    else if (card_details.action === "drawbottom")      { await card_actions.draw_bottom(lobby_details, game_pos, card_id, req_plyr_id, callback) }
+    else if (card_details.action === "hotpotato")       { card_actions.hot_potato(lobby_details, game_pos, card_id, req_plyr_id, callback); }
+    else if (card_details.action === "favorgator")      { card_actions.favor_gator(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
+    else if (card_details.action === "scrambledeggs")   { card_actions.scrambled_eggs(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "superskip")       { card_actions.super_skip(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "safetydraw")      { card_actions.safety_draw(lobby_details, game_pos, card_id, req_plyr_id, callback) }
+    else if (card_details.action === "drawbottom")      { card_actions.draw_bottom(lobby_details, game_pos, card_id, req_plyr_id, callback) }
     else { callback.err = "Invalid card action"; }
     // Check if callback was successful (complete request and no errors)
     if (!callback.incomplete && !callback.err) {
@@ -185,12 +191,12 @@ exports.play_card = async function (lobby_details, game_pos, card_id, req_plyr_i
 // Name : game_actions.discard_card(lobby_details, game_pos, card_id)
 // Desc : put a card in discard deck
 // Author(s) : RAk3rman
-exports.discard_card = async function (lobby_details, game_pos, card_id) {
+exports.discard_card = function (lobby_details, game_pos, card_id) {
     // Find the greatest position in discard deck
-    let discard_deck = await card_actions.filter_cards("discard_deck", lobby_details.games[game_pos].cards);
+    let discard_deck = card_actions.filter_cards("discard_deck", lobby_details.games[game_pos].cards);
     // Update card details
     let plyr_id;
-    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === card_id) {
             plyr_id = lobby_details.games[game_pos].cards[i].assign;
             lobby_details.games[game_pos].cards[i].assign = "discard_deck";
@@ -199,17 +205,17 @@ exports.discard_card = async function (lobby_details, game_pos, card_id) {
         }
     }
     // Resort player hand
-    await player_actions.sort_hand(lobby_details, game_pos, plyr_id);
+    card_actions.sort_card_assign(lobby_details, game_pos, plyr_id);
 }
 
 // Name : game_actions.advance_turn(lobby_details, game_pos)
 // Desc : advance to the next turn
 // Author(s) : RAk3rman
-exports.advance_turn = async function (lobby_details, game_pos) {
+exports.advance_turn = function (lobby_details, game_pos) {
     // Check how many turns we have left
     if (lobby_details.games[game_pos].turns_remain <= 1) { // Only one turn left, player seat advances
         // Advance to the next seat
-        lobby_details.games[game_pos].turn_seat_pos = await player_actions.next_seat(lobby_details, game_pos, "seat_pos");
+        lobby_details.games[game_pos].turn_seat_pos = player_actions.next_seat(lobby_details, game_pos, "seat_pos");
         // Make sure the number of turns remaining is not 0
         lobby_details.games[game_pos].turns_remain = 1;
     } else { // Multiple turns left, player seat remains the same and turns_remaining decreases by one
@@ -220,10 +226,10 @@ exports.advance_turn = async function (lobby_details, game_pos) {
 // Name : game_actions.is_winner(lobby_details, game_pos)
 // Desc : return if there is a winner
 // Author(s) : RAk3rman
-exports.is_winner = async function (lobby_details, game_pos) {
+exports.is_winner = function (lobby_details, game_pos) {
     // Count the number of active players
     let ctn = 0;
-    for (let i = 0; i <= lobby_details.players.length - 1; i++) {
+    for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.games[game_pos]._id.equals(lobby_details.players[i].game_assign) && !lobby_details.players[i].is_dead) {
             ctn++;
         }
@@ -236,23 +242,58 @@ exports.is_winner = async function (lobby_details, game_pos) {
 // Desc : assuming the game has completed, update player details and clean game data
 // Author(s) : RAk3rman
 exports.complete_game = async function (lobby_details, game_pos) {
-    // Dump cards and reset variables
+    // Dump cards
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         lobby_details.games[game_pos].cards[i].assign = "out_of_play";
         lobby_details.games[game_pos].cards[i].pos = i;
         lobby_details.games[game_pos].cards[i].placed_by_plyr_id = "";
     }
-    lobby_details.games[game_pos].in_progress = false;
+    // Reset variables
+    lobby_details.games[game_pos].in_progress = true;
     lobby_details.games[game_pos].is_completed = true;
-    lobby_details.games[game_pos].turns_seat_pos = 0;
+    lobby_details.games[game_pos].turn_seat_pos = 0;
     lobby_details.games[game_pos].turn_dir = "forward";
     lobby_details.games[game_pos].turn_remain = 1;
+    // Increment win count for winner
+    let winner_plyr_id;
+    let players = game_actions.get_players(lobby_details, game_pos);
+    for (let i = 0; i < players.length; i++) {
+        players[i].is_dead = false;
+        if (!players[i].is_dead) {
+            lobby_details.players[i].wins++;
+            winner_plyr_id = lobby_details.players[i]._id;
+        }
+    }
+    // Check for lobby completion
+    await lobby_actions.check_completion(lobby_details);
+    return winner_plyr_id;
+}
+
+// Name : game_actions.start_game(lobby_details, game_pos)
+// Desc : starts a game from defaults
+// Author(s) : RAk3rman
+exports.start_game = function (lobby_details, game_pos) {
+    // Reset game and update in_progress
+    game_actions.reset_game(lobby_details, game_pos);
+    lobby_details.games[game_pos].in_progress = true;
+    // Create hands and randomize seats
+    player_actions.create_hand(lobby_details, game_pos);
+    player_actions.randomize_seats(lobby_details, game_pos);
+    // Add prelim events to game
+    let host_id = "";
+    for (let j = 0; j < lobby_details.players.length; j++) {
+        if (lobby_details.players[j].game_assign?.equals(lobby_details.games[game_pos]._id)) {
+            event_actions.log_event(lobby_details.games[game_pos], "include-player", lobby_details.players[j]._id, "", "", "");
+        }
+        if (lobby_details.players[j].is_host) host_id = lobby_details.players[j]._id;
+    }
+    event_actions.log_event(lobby_details.games[game_pos], "start-game", host_id, "", "", "");
 }
 
 // Name : game_actions.reset_game(lobby_details, game_pos)
 // Desc : resets the game to default
 // Author(s) : RAk3rman
-exports.reset_game = async function (lobby_details, game_pos) {
+exports.reset_game = function (lobby_details, game_pos) {
     // Reset cards
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         lobby_details.games[game_pos].cards[i].assign = "draw_deck";
@@ -260,23 +301,24 @@ exports.reset_game = async function (lobby_details, game_pos) {
         lobby_details.games[game_pos].cards[i].placed_by_plyr_id = "";
     }
     // Reset players
-    let players = await game_actions.get_players(lobby_details, game_pos);
+    let players = game_actions.get_players(lobby_details, game_pos);
     for (let i = 0; i < players.length; i++) {
         players[i].is_dead = false;
     }
     // Reset game variables
     lobby_details.games[game_pos].in_progress = false;
     lobby_details.games[game_pos].is_completed = false;
-    lobby_details.games[game_pos].turns_seat_pos = 0;
+    lobby_details.games[game_pos].turn_seat_pos = 0;
     lobby_details.games[game_pos].turn_dir = "forward";
     lobby_details.games[game_pos].turn_remain = 1;
     lobby_details.games[game_pos].created = Date.now();
+    lobby_details.games[game_pos].events = [];
 }
 
 // Name : player_actions.get_players(lobby_details, game_pos)
 // Desc : returns an array of players within the specified game
 // Author(s) : RAk3rman
-exports.get_players = async function (lobby_details, game_pos) {
+exports.get_players = function (lobby_details, game_pos) {
     let players = [];
     // Loop through each player and see if it matches game assignment
     for (let i = 0; i < lobby_details.players.length; i++) {
@@ -290,7 +332,7 @@ exports.get_players = async function (lobby_details, game_pos) {
 // Name : game_actions.game_export(lobby_details, game_pos, cb_data, source, req_plyr_id)
 // Desc : prepares game data for export to client
 // Author(s) : RAk3rman
-exports.game_export = async function (lobby_details, game_pos, cb_data, source, req_plyr_id) {
+exports.game_export = function (lobby_details, game_pos, cb_data, source, req_plyr_id) {
     if (!lobby_details) return;
     // Reference to game details
     let game_details = lobby_details.games[game_pos];
@@ -303,7 +345,7 @@ exports.game_export = async function (lobby_details, game_pos, cb_data, source, 
     let players_payload = [];
     for (let i = 0; i < lobby_details.players.length; i++) {
         if (lobby_details.players[i].game_assign?.equals(game_details._id)) {
-            players_payload.push(await player_actions.player_export(lobby_details, i));
+            players_payload.push(player_actions.player_export(lobby_details, i));
         }
     }
     // Sort players by seat
@@ -319,14 +361,19 @@ exports.game_export = async function (lobby_details, game_pos, cb_data, source, 
         }
     }
     // Prepare draw deck
-    let draw_deck = await card_actions.filter_cards("draw_deck", game_details.cards);
+    let draw_deck = card_actions.filter_cards("draw_deck", game_details.cards);
     // Prepare discard deck
-    let discard_deck = await card_actions.filter_cards("discard_deck", game_details.cards);
+    let discard_deck = card_actions.filter_cards("discard_deck", game_details.cards);
+    // Sort deck by position
+    discard_deck.sort(function(a, b) {
+        return a.pos - b.pos;
+    });
     // Return pretty game details
     return {
         game_slug: game_details.slug,
         lobby_slug: lobby_details.slug,
         in_progress: game_details.in_progress,
+        is_completed: game_details.is_completed,
         turn_seat_pos: game_details.turn_seat_pos,
         turn_dir: game_details.turn_dir,
         turns_remain: game_details.turns_remain,
@@ -337,11 +384,12 @@ exports.game_export = async function (lobby_details, game_pos, cb_data, source, 
         players: players_payload,
         events: events_payload,
         events_length: game_details.events.length,
-        auth_token: req_plyr_id !== "spectator" ? lobby_details.auth_token : "undefined",
         discard_deck: discard_deck,
         packs: lobby_details.packs,
         play_timeout: lobby_details.play_timeout,
+        room_size: lobby_details.room_size,
         callback: cb_data,
+        auth_token: req_plyr_id !== "spectator" ? lobby_details.auth_token : "undefined",
         req_plyr_id: req_plyr_id,
         trigger: source.trim()
     }
@@ -350,7 +398,7 @@ exports.game_export = async function (lobby_details, game_pos, cb_data, source, 
 // Name : game_actions.delete_game(game_id)
 // Desc : deletes an existing game in mongodb, returns game_id
 // Author(s) : RAk3rman
-exports.delete_game = async function (lobby_details, game_id) {
+exports.delete_game = function (lobby_details, game_id) {
     for (let i = 0; i < lobby_details.games.length; i++) {
         if (lobby_details.games[i]._id.equals(game_id)) {
             lobby_details.games.splice(i, 1);

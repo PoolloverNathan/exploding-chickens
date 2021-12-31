@@ -30,9 +30,9 @@ let session_user = {
  SOCKET.IO EVENTS
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
-// Name : frontend-game.socket.on.{slug}-lobby-update
+// Name : frontend-game.socket.on.lobby-update
 // Desc : whenever an event occurs containing a lobby update
-socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (data) {
+socket.on("lobby-update", function (data) {
     console.log("Lobby Trigger: " + data.trigger);
     console.log(data);
     // Check browser session
@@ -50,12 +50,12 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
-        itr_update_games(data);
+        itr_create_games(data);
     } else if (data.trigger === "start-games") { // Game started
         sbr_update_lobby_widgets(data);
         sbr_update_options(data);
         sbr_update_pstatus(data);
-        itr_update_games(data);
+        itr_create_games(data);
         game_start_prompt(data);
     } else if (data.trigger === "make-host") {
         // Update host designation in session_user
@@ -82,7 +82,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
     } else if (data.trigger === "kick-player") {
         sbr_update_lobby_widgets(data);
         sbr_update_players(data);
-        itr_update_games(data);
+        itr_create_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
@@ -91,7 +91,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
     } else if (data.trigger === "import-pack") {
         sbr_update_lobby_widgets(data);
         sbr_update_packs(data);
-        itr_update_games(data);
+        itr_create_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'success',
@@ -100,7 +100,7 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
     } else if (data.trigger === "export-pack") {
         sbr_update_lobby_widgets(data);
         sbr_update_packs(data);
-        itr_update_games(data);
+        itr_create_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'success',
@@ -114,8 +114,17 @@ socket.on(window.location.pathname.split('/')[2] + "-lobby-update", function (da
         sbr_update_options(data);
         sbr_update_players(data);
         sbr_update_packs(data);
-        itr_update_games(data);
+        itr_create_games(data);
     }
+});
+
+// Name : frontend-game.socket.on.game-update
+// Desc : whenever an event occurs containing a game update
+socket.on("game-update", function (payload) {
+    console.log("Game Trigger: " + payload.trigger);
+    console.log(payload);
+    // Update game room on ui
+    itr_update_game(payload);
 });
 
 // Name : frontend-game.socket.on.player-created
@@ -203,10 +212,10 @@ function start_games() {
     })
 }
 
-// Name : frontend-game.reset_games()
-// Desc : emits the reset-games event when the host clicks the reset game button
-function reset_games() {
-    socket.emit('reset-games', {
+// Name : frontend-game.reset_lobby()
+// Desc : emits the reset-lobby event when the host clicks the reset game button
+function reset_lobby() {
+    socket.emit('reset-lobby', {
         lobby_slug: window.location.pathname.split('/')[2],
         plyr_id: session_user._id
     })
@@ -295,18 +304,21 @@ function game_start_prompt(lobby_details) {
                         "        </svg>\n" +
                         "        " + moment(lobby_details.games[i].created).calendar() +
                         "    </h1>\n" + (session_user.is_host ? "<h1 class=\"text-base-content text-sm pt-2\"><strong>Host:</strong> Joining the game will open a new tab for you to play in. The lobby dashboard (this tab) will remain open for you to check up on the progress of all active games.</h1>" : ""),
-                    showCancelButton: false,
-                    confirmButtonColor: '#fbbf24',
-                    confirmButtonText: 'Join Game',
-                    allowOutsideClick: false,
-                    timer: session_user.is_host ? undefined : 3000,
-                    timerProgressBar: true,
                     background: "hsla(var(--b1) / var(--tw-bg-opacity))",
+                    confirmButtonColor: 'hsla(var(--p) / var(--tw-border-opacity))', // Primary color
+                    cancelButtonColor: 'hsla(var(--n) / var(--tw-border-opacity))', // Neutral color
+                    confirmButtonText: 'Join in New Tab',
+                    cancelButtonText: 'Join in This Tab',
+                    showCancelButton: session_user.is_host,
+                    allowOutsideClick: false,
+                    timer: session_user.is_host ? 10000 : 3000,
+                    timerProgressBar: true,
                     didOpen: () => {
                         if (!session_user.is_host) Swal.showLoading();
                     }
                 }).then((result) => {
-                    if (session_user.is_host) {
+                    console.log(result);
+                    if (session_user.is_host && result.isConfirmed) {
                         window.open("/lobby/" + lobby_details.slug + "/game/" + lobby_details.games[i].players[j].game_assign, '_blank');
                     } else {
                         window.location.href = "/lobby/" + lobby_details.slug + "/game/" + lobby_details.games[i].players[j].game_assign;

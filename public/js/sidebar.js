@@ -18,7 +18,7 @@ function sbr_update_lobby_widgets(lobby_details) {
     // Construct status widget
     if (session_user.is_host) {
         if (lobby_details.in_progress) {
-            stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg border border-base-200 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_games()\">\n";
+            stat_header = "<button type=\"button\" class=\"widget w-full p-2.5 rounded-lg border border-base-200 bg-gradient-to-r from-yellow-500 to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500\"  onclick=\"reset_lobby()\">\n";
             stat_icon = "<svg class=\"stroke-current text-white\" height=\"24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
                 "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\" />\n" +
                 "</svg>";
@@ -281,7 +281,7 @@ moment.updateLocale('en', {
     }
 });
 
-// Name : frontend-game.sbr_update_log(details)
+// Name : frontend-game.sbr_update_log()
 // Desc : updates the game log list
 setInterval(sbr_update_log, 1000);
 function sbr_update_log() {

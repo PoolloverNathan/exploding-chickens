@@ -61,11 +61,11 @@ exports.partition_players = async function (lobby_details) {
         // Generate group
         let grp = [];
         for (let i = 0; i < room_size && player_bucket.length > 0; i++) {
-            if (lobby_details.grp_method === "random") {
+            if (lobby_details.grp_method === "wins") {
+                grp.push(player_bucket.splice(0, 1)[0]._id);
+            } else {
                 let rand_index = Math.floor(Math.random() * player_bucket.length);
                 grp.push(player_bucket.splice(rand_index, 1)[0]._id);
-            } else if (lobby_details.grp_method === "wins") {
-                grp.push(player_bucket.splice(0, 1)[0]._id);
             }
         }
         groups.push(grp);
@@ -84,13 +84,13 @@ exports.partition_players = async function (lobby_details) {
         for (let i = 0; i < diff; i++) {
             let game_pos = await game_actions.create_game(lobby_details);
             for (let j = 0; j < lobby_details.packs.length; j++) {
-                await game_actions.import_cards(lobby_details, game_pos, lobby_details.packs[j]);
+                game_actions.import_cards(lobby_details, game_pos, lobby_details.packs[j]);
             }
             game_candidates.push(lobby_details.games[game_pos]._id);
         }
     } else if (groups.length < game_candidates.length) { // Check if we have too many candidates, delete if so
         for (let i = groups.length; i < game_candidates.length; i++) {
-            await game_actions.delete_game(lobby_details, game_candidates[i]);
+            game_actions.delete_game(lobby_details, game_candidates[i]);
         }
     }
     // Map game candidates to player groupings
@@ -106,52 +106,6 @@ exports.partition_players = async function (lobby_details) {
             }
         }
     }
-}
-
-// Name : lobby_actions.start_games(lobby_details)
-// Desc : starts all games in lobby that aren't completed
-// Author(s) : RAk3rman
-exports.start_games = async function (lobby_details) {
-    // Loop through each game
-    for (let i = 0; i < lobby_details.games.length; i++) {
-        // Game isn't in progress (not started) and not completed
-        if (!lobby_details.games[i].in_progress && !lobby_details.games[i].is_completed) {
-            // Reset game and update in_progress
-            await game_actions.reset_game(lobby_details, i);
-            lobby_details.games[i].in_progress = true;
-            // Create hands and randomize seats
-            await player_actions.create_hand(lobby_details, i);
-            await player_actions.randomize_seats(lobby_details, i);
-            // Add prelim events to game
-            let host_id = "";
-            for (let j = 0; j < lobby_details.players.length; j++) {
-                if (lobby_details.players[j].game_assign?.equals(lobby_details.games[i]._id)) {
-                    event_actions.log_event(lobby_details.games[i], "include-player", lobby_details.players[j]._id, "", "", "");
-                }
-                if (lobby_details.players[j].is_host) host_id = lobby_details.players[j]._id;
-            }
-            event_actions.log_event(lobby_details.games[i], "start-game", host_id, "", "", "");
-        }
-    }
-    // Update lobby settings
-    lobby_details.in_progress = true;
-}
-
-// Name : lobby_actions.reset_games(lobby_details)
-// Desc : resets all games in lobby
-// Author(s) : RAk3rman
-exports.reset_games = async function (lobby_details) {
-    // Loop through each game
-    for (let i = 0; i < lobby_details.games.length; i++) {
-        // Game is not completed
-        if (!lobby_details.games[i].is_completed) {
-            // Reset game
-            await game_actions.reset_game(lobby_details, i);
-            lobby_details.games[i].events = [];
-        }
-    }
-    // Update lobby settings
-    lobby_details.in_progress = false;
 }
 
 // Name : lobby_actions.update_option(lobby_details, option, value)
@@ -188,10 +142,66 @@ exports.update_option = async function (lobby_details, option, value) {
     return false;
 }
 
+// Name : lobby_actions.start_games(lobby_details)
+// Desc : starts all games in lobby that aren't completed
+// Author(s) : RAk3rman
+exports.start_games = function (lobby_details) {
+    // Loop through each game
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Game isn't in progress (not started) and not completed
+        if (!lobby_details.games[i].in_progress && !lobby_details.games[i].is_completed) {
+            // Start game
+            game_actions.start_game(lobby_details, i);
+        }
+    }
+    // Update lobby settings
+    lobby_details.in_progress = true;
+}
+
+// Name : lobby_actions.reset_lobby(lobby_details)
+// Desc : resets all games in lobby
+// Author(s) : RAk3rman
+exports.reset_lobby = function (lobby_details) {
+    // Loop through each game
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Game is not completed
+        if (!lobby_details.games[i].is_completed) {
+            // Reset game
+            game_actions.reset_game(lobby_details, i);
+        }
+    }
+    // Update lobby settings
+    lobby_details.in_progress = false;
+}
+
+// Name : lobby_actions.check_completion(lobby_details)
+// Desc : checks if all games in progress are completed, if so return to lobby
+// Author(s) : RAk3rman
+exports.check_completion = async function (lobby_details) {
+    // Loop through each game
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Break if we find a game that is in progress and not completed
+        if (lobby_details.games[i].in_progress && !lobby_details.games[i].is_completed) {
+            return;
+        }
+    }
+    // Update lobby settings
+    lobby_details.in_progress = false;
+    // Loop through each game
+    for (let i = 0; i < lobby_details.games.length; i++) {
+        // Modify all games that were just completed
+        if (lobby_details.games[i].in_progress && lobby_details.games[i].is_completed) {
+            lobby_details.games[i].in_progress = false
+        }
+    }
+    // Partition players again to create new game rooms
+    await lobby_actions.partition_players(lobby_details);
+}
+
 // Name : lobby_actions.lobby_export(lobby_details, source, req_plyr_id)
 // Desc : prepares lobby data for export to client
 // Author(s) : RAk3rman
-exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
+exports.lobby_export = function (lobby_details, source, req_plyr_id) {
     if (!lobby_details) return;
     // Prepare events payload
     let events_payload = [];
@@ -202,8 +212,8 @@ exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
     let games_payload = [];
     let games_completed = 0;
     for (let i = 0; i < lobby_details.games.length; i++) {
-        if (!lobby_details.games[i].is_completed) {
-            games_payload.push(await game_actions.game_export(lobby_details, i, undefined, source, req_plyr_id));
+        if (!lobby_details.games[i].is_completed || (lobby_details.games[i].is_completed && lobby_details.games[i].in_progress)) {
+            games_payload.push(game_actions.game_export(lobby_details, i, undefined, source, req_plyr_id));
         }
         if (lobby_details.games[i].is_completed) games_completed++;
     }
@@ -212,7 +222,7 @@ exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
     for (let i = 0; i < lobby_details.players.length; i++) {
         // Make sure player isn't disabled
         if (!lobby_details.players[i].is_disabled) {
-            players_payload.push(await player_actions.player_export(lobby_details, i));
+            players_payload.push(player_actions.player_export(lobby_details, i));
         }
     }
     // Return pretty lobby details
@@ -239,9 +249,9 @@ exports.lobby_export = async function (lobby_details, source, req_plyr_id) {
 // Name : game_actions.delete_lobby(_id)
 // Desc : deletes an existing lobby in mongodb
 // Author(s) : RAk3rman
-exports.delete_lobby = async function (_id) {
+exports.delete_lobby = function (_id) {
     // Delete lobby and return
-    return Lobby.deleteOne({ _id: _id });
+    return Lobby.deleteOne({_id: _id});
 }
 
 // Name : lobby_actions.lobby_purge(suppress_debug)
