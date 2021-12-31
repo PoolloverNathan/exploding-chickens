@@ -124,7 +124,7 @@ socket.on("game-update", function (payload) {
                 html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been reset</h1>'
             });
         } else if (payload.trigger === "completed-game") {
-            itr_display_winner(payload.callback.data.winner_name, 0);
+            itr_display_winner(payload.callback.data.winner_name);
         }
         // Update entire ui
         sbr_update_game_widgets(payload);

@@ -74,7 +74,7 @@ exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock
     if (!chicken_card) return;
     // Generate callback from data struct
     let cb_data = game_actions.generate_cb(undefined, chicken_card, { count: ctn, placed_by_name: (player_actions.get_player_details(lobby_details, chicken_card.placed_by_plyr_id))?.nickname }, { plyr_id: undefined, card_id: undefined, deck_pos: undefined }, false);
-    await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "explode-tick", fastify, config_store);
+    await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "explode-tick    ", fastify, config_store);
     // Decrement count or force play chicken
     if (ctn > -1) {
         ctn--;

@@ -190,7 +190,7 @@ exports.discard_card = function (lobby_details, game_pos, card_id) {
     let discard_deck = card_actions.filter_cards("discard_deck", lobby_details.games[game_pos].cards);
     // Update card details
     let plyr_id;
-    for (let i = 0; i <= lobby_details.games[game_pos].cards.length - 1; i++) {
+    for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === card_id) {
             plyr_id = lobby_details.games[game_pos].cards[i].assign;
             lobby_details.games[game_pos].cards[i].assign = "discard_deck";
@@ -358,6 +358,10 @@ exports.game_export = function (lobby_details, game_pos, cb_data, source, req_pl
     let draw_deck = card_actions.filter_cards("draw_deck", game_details.cards);
     // Prepare discard deck
     let discard_deck = card_actions.filter_cards("discard_deck", game_details.cards);
+    // Sort deck by position
+    discard_deck.sort(function(a, b) {
+        return a.pos - b.pos;
+    });
     // Return pretty game details
     return {
         game_slug: game_details.slug,

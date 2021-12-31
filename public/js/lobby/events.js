@@ -304,13 +304,13 @@ function game_start_prompt(lobby_details) {
                         "        </svg>\n" +
                         "        " + moment(lobby_details.games[i].created).calendar() +
                         "    </h1>\n" + (session_user.is_host ? "<h1 class=\"text-base-content text-sm pt-2\"><strong>Host:</strong> Joining the game will open a new tab for you to play in. The lobby dashboard (this tab) will remain open for you to check up on the progress of all active games.</h1>" : ""),
-                    showCancelButton: false,
+                    background: "hsla(var(--b1) / var(--tw-bg-opacity))",
                     confirmButtonColor: '#fbbf24',
                     confirmButtonText: 'Join Game',
+                    showCancelButton: false,
                     allowOutsideClick: false,
                     timer: session_user.is_host ? undefined : 3000,
                     timerProgressBar: true,
-                    background: "hsla(var(--b1) / var(--tw-bg-opacity))",
                     didOpen: () => {
                         if (!session_user.is_host) Swal.showLoading();
                     }
