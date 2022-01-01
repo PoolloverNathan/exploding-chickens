@@ -13,12 +13,12 @@ Desc     : css file for game assets
     height: 14.4rem;
     border-radius: 1.6rem;
 }
-.tooltip {
-    width: 10.2rem;
-    background: #333;
+.tooltip-card {
+    /*width: 10.2rem;*/
+    background: hsla(var(--n) / var(--tw-border-opacity));
     color: #ffffff;
     text-align: center;
-    padding: 9px 20px 10px 20px;
+    padding: 4px 10px 5px 10px;
     border-radius: 10px;
     top: calc(100% + 11px);
     left: 50%;
@@ -31,12 +31,12 @@ Desc     : css file for game assets
         height: 18rem;
         border-radius: 2rem;
     }
-    .tooltip {
-        width: 12.75rem;
-        background: #333;
+    .tooltip-card {
+        /*width: 12.75rem;*/
+        background: hsla(var(--n) / var(--tw-border-opacity));
         color: #ffffff;
         text-align: center;
-        padding: 9px 20px 10px 20px;
+        padding: 4px 10px 5px 10px;
         border-radius: 10px;
         top: calc(100% + 11px);
         left: 50%;
@@ -59,7 +59,7 @@ Desc     : css file for game assets
 .triangle {
     border-width: 0 6px 6px;
     border-color: transparent;
-    border-bottom-color: #333;
+    border-bottom-color: hsla(var(--n) / var(--tw-border-opacity));
     position: absolute;
     top: 0;
     left: 48%;

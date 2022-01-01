@@ -73,8 +73,8 @@
         <div class="flex flex-wrap justify-center items-center p-2" id="itr_ele_players_center">
             {{! Host player when no one has joined }}
             <div class="block text-center">
-                <h1 class="text-gray-600 font-medium text-sm">
-                    Host <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-gray-500"></span>
+                <h1 class="text-base-content font-medium text-sm">
+                    Host <span class="animate-pulse inline-flex rounded-full h-1.5 w-1.5 mb-0.5 align-middle bg-base-content"></span>
                 </h1>
                 <div class="flex flex-col items-center -space-y-3">
                     <img class="h-12 w-12 rounded-full" src="/public/avatars/default.png" alt="">
@@ -89,10 +89,10 @@
     </div>
     <div class="flex align-bottom">
         <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 z-0" id="anim_draw" style="position:absolute;background-image: url('/public/cards/card_back.png');"></div>
-        <button class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 z-10 focus:outline-none active:outline-none active:ring-2 active:ring-offset-2 active:ring-gray-700" onclick="draw_card()" style="background-image: url('/public/cards/card_back.png');"></button>
+        <button class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 z-10 focus:outline-none active:outline-none active:ring-2 active:ring-offset-2 active:ring-offset-base-100 active:ring-base-content" onclick="draw_card()" style="background-image: url('/public/cards/card_back.png');"></button>
         <div id="itr_ele_discard_deck">
-            <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 border-dashed border-4 border-base-200">
-                <h1 class="text-gray-400 font-bold flex items-center justify-center center-card-text">Discard Pile</h1>
+            <div class="rounded-xl shadow-lg center-card bg-center bg-contain mx-1 border-dashed border-4 border-neutral">
+                <h1 class="text-neutral font-bold flex items-center justify-center center-card-text">Discard Pile</h1>
             </div>
         </div>
     </div>

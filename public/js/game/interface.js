@@ -88,8 +88,8 @@ function itr_update_discard(game_details) {
     if (game_details.discard_deck.length !== 0) {
         document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-sm center-card bg-center bg-contain\" id=\"anim_discard\" style=\"background-image: url('" + card_url(game_details.discard_deck[game_details.discard_deck.length - 1]) + "')\"></div>";
     } else {
-        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1 border-dashed border-4 border-gray-400\" id=\"anim_discard\">\n" +
-            "    <h1 class=\"text-gray-400 font-bold flex items-center justify-center center-card-text\">Discard Pile</h1>\n" +
+        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1 border-dashed border-4 border-neutral\" id=\"anim_discard\">\n" +
+            "    <h1 class=\"text-neutral font-bold flex items-center justify-center center-card-text\">Discard Pile</h1>\n" +
             "</div>";
     }
 }
@@ -149,14 +149,14 @@ function itr_trigger_exp(count, card_details, placed_by_name) {
     let placed_by_txt = "";
     if (placed_by_name !== undefined) {
         placed_by_txt = "<div class=\"flex items-center justify-center tooltip-box\">\n" +
-            "    <div class=\"tooltip\">\n" +
+            "    <div class=\"tooltip-card\">\n" +
             "        <span class=\"triangle\"></span>\n" +
             "        " + placed_by_name + " placed this card\n" +
             "    </div>\n" +
             "</div>";
     }
     if (count === 15 || document.getElementById("itr_val_defuse_counter") === null) {
-        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('/" + card_url(card_details) + "');\">\n" +
+        document.getElementById("itr_ele_discard_deck").innerHTML = "<div class=\"rounded-xl shadow-lg center-card bg-center bg-contain mx-1\" id=\"anim_discard\" style=\"background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url('" + card_url(card_details) + "');\">\n" +
             "    <div class=\"rounded-xl shadow-lg center-card bg-center bg-contain border-dashed border-4 border-green-500 h-full\" style=\"border-color: rgb(178, 234, 55); color: rgb(178, 234, 55);\">\n" +
             "        <div class=\"flex flex-wrap content-center justify-center h-full w-full\">\n" +
             "            <div class=\"block text-center space-y-2\">\n" +

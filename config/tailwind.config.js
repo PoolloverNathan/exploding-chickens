@@ -15,13 +15,13 @@ module.exports = {
     },
     variants: {
         extend: {
-            ringColor: ['responsive', 'dark', 'focus-within', 'focus', 'active'],
-            ringOffsetColor: ['responsive', 'dark', 'focus-within', 'focus', 'active'],
-            ringOffsetWidth: ['responsive', 'focus-within', 'focus', 'active'],
-            ringOpacity: ['responsive', 'dark', 'focus-within', 'focus', 'active'],
-            ringWidth: ['responsive', 'focus-within', 'focus', 'active'],
-            outline: ['responsive', 'focus-within', 'focus', 'active'],
-            zIndex: ['hover', 'active']
+            ringColor: ['responsive', 'hover', 'focus', 'active'],
+            ringOffsetColor: ['responsive', 'hover', 'focus', 'active'],
+            ringOffsetWidth: ['responsive', 'hover', 'focus', 'active'],
+            ringOpacity: ['responsive', 'hover', 'focus', 'active'],
+            ringWidth: ['responsive', 'hover', 'focus', 'active'],
+            outline: ['responsive', 'hover', 'focus', 'active'],
+            zIndex: ['responsive', 'hover', 'focus', 'active']
         },
     },
     plugins: [
