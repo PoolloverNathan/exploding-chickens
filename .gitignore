@@ -14,3 +14,7 @@ config/config\.json
 config/stats\.json
 
 test/logs/
+
+test/temp_config.json
+
+test/temp_stats.json

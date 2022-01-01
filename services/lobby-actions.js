@@ -246,24 +246,20 @@ exports.lobby_export = function (lobby_details, source, req_plyr_id) {
     }
 }
 
-// Name : game_actions.delete_lobby(_id)
-// Desc : deletes an existing lobby in mongodb
-// Author(s) : RAk3rman
-exports.delete_lobby = function (_id) {
-    // Delete lobby and return
-    return Lobby.deleteOne({_id: _id});
-}
-
-// Name : lobby_actions.lobby_purge(suppress_debug)
+// Name : lobby_actions.lobby_purge(purge_age_hrs)
 // Desc : deletes all lobbies that are older than the purge age
 // Author(s) : RAk3rman
-exports.lobby_purge = async function (suppress_debug) {
+exports.lobby_purge = async function (purge_age_hrs) {
     // Filter which objects to purge
-    let to_purge = await Lobby.find({ created: { $lte: moment().subtract(config_store.get('purge_age_hrs'), "hours").toISOString() } });
-    to_purge.forEach(ele => {
-        // Delete lobby
-        lobby_actions.delete_lobby(ele._id).then(() => {
-            if (!suppress_debug) console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted lobby created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));
+    let to_purge = await Lobby.find({ created: { $lte: moment().subtract(purge_age_hrs, "hours").toISOString() } });
+    let deleted = [];
+    for (let i = 0; i < to_purge.length; i++) {
+        deleted.push({
+            slug: to_purge[i].slug,
+            created: to_purge[i].created
         });
-    });
+        // Delete lobby
+        await Lobby.deleteOne({_id: to_purge[i]._id});
+    }
+    return deleted;
 }
