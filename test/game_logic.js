@@ -162,8 +162,6 @@ describe('Lobbies', function() {
             await lobby_actions.partition_players(lobby_details);
             // Test expected configuration
             assert.equal(lobby_details.games.length, 2, 'should have 2 games of 5');
-            // Reset games
-            lobby_actions.reset_lobby(lobby_details);
         });
         // it('partition after games have been completed', async function() {
         //     // Complete first game
