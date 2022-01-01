@@ -183,10 +183,14 @@ function mongoose_connected() {
     // Start purge game cycle
     if (config_store.get('purge_age_hrs') !== -1) {
         console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies older than ` + config_store.get('purge_age_hrs') + ` hours`));
-        lobby_actions.lobby_purge().then(function () {});
+        lobby_actions.lobby_purge(config_store.get('purge_age_hrs')).then(function (result) {
+            result.forEach(ele => {console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted lobby created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));})
+        });
         setInterval(e => {
             console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Purging all lobbies older than ` + config_store.get('purge_age_hrs') + ` hours`));
-            lobby_actions.lobby_purge().then(function () {});
+            lobby_actions.lobby_purge(config_store.get('purge_age_hrs')).then(function (result) {
+                result.forEach(ele => {console.log(wipe(`${chalk.bold.red('Purge')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.yellow(ele.slug)} Deleted lobby created on ` + moment(ele.created).format('MM/DD/YY-HH:mm:ss')));})
+            });
         }, 3600000*2);
     }
     // Start webserver using config values
