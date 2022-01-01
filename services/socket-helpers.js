@@ -92,8 +92,8 @@ exports.explode_tick = async function (lobby_id, game_pos, req_plyr_id, req_sock
             // Send bot summary and update game ui
             await socket_helpers.bot_summary(lobby_details, game_pos, bot, config_store, stats_store);
             cb_data.data = { winner_name: player_actions.get_player_details(lobby_details, winner_plyr_id).nickname };
-            await socket_helpers.update_l_ui(lobby_details, req_plyr_id, req_sock, tar_sock, "completed-game", fastify, config_store);
             await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "completed-game", fastify, config_store);
+            await socket_helpers.update_l_ui(lobby_details, req_plyr_id, req_sock, tar_sock, "completed-game", fastify, config_store);
         } else {
             await socket_helpers.update_g_ui(lobby_details, game_pos, req_plyr_id, req_sock, tar_sock, cb_data, "play-chicken", fastify, config_store);
         }

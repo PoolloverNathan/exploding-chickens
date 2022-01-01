@@ -55,23 +55,26 @@ socket.on("lobby-update", function (payload) {
                 break;
             }
         }
+        toast_turn.close();
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Host was updated</h1>'
         });
     } else if (payload.trigger === "kick-player") {
+        toast_turn.close();
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Player was kicked</h1>'
         });
+    } else if (payload.trigger === "completed-game") {
+        return;
     }
     // Update entire ui
-    sbr_update_game_widgets(payload);
-    sbr_update_players(payload);
-    sbr_update_packs(payload);
-    itr_update_players(payload);
-    itr_update_discard(payload);
-    itr_update_hand(payload);
+    socket.emit('retrieve-game', {
+        lobby_slug: window.location.pathname.split('/')[2],
+        game_slug: window.location.pathname.split('/')[4],
+        plyr_id: session_user._id
+    })
 });
 
 // Name : frontend-game.socket.on.game-update
@@ -97,6 +100,7 @@ socket.on("game-update", function (payload) {
                 if (payload.callback.card.action === "defuse") {
                     itr_trigger_chicken_target(payload.callback.data.max_pos, payload.callback.card._id);
                 } else {
+                    toast_turn.close();
                     toast_alert.fire({
                         icon: 'error',
                         html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Invalid card callback</h1>'
@@ -119,12 +123,14 @@ socket.on("game-update", function (payload) {
             itr_trigger_exp(payload.callback.data.count, payload.callback.card, payload.callback.data.placed_by_name);
             return;
         } else if (payload.trigger === "reset-game") {
+            toast_turn.close();
             toast_alert.fire({
                 icon: 'info',
                 html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Game has been reset</h1>'
             });
         } else if (payload.trigger === "completed-game") {
             itr_display_winner(payload.callback.data.winner_name);
+            return;
         }
         // Update entire ui
         sbr_update_game_widgets(payload);
@@ -167,10 +173,6 @@ socket.on(window.location.pathname.split('/')[4] + "-game-error", function (payl
     console.log(payload);
     if (payload.msg === "GAME-DNE") {
         window.location.href = "/";
-    } else if (payload.msg === "PLYR-NAME") {
-        setup_user_prompt(payload.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please enter a valid nickname (letters only)", "");
-    } else if (payload.msg === "PLYR-AVTR") {
-        setup_user_prompt(payload.game_details, "<i class=\"fas fa-exclamation-triangle\"></i> Please select an avatar", "");
     } else {
         toast_alert.fire({
             icon: 'error',
@@ -228,6 +230,26 @@ function reset_game() {
         lobby_slug: window.location.pathname.split('/')[2],
         game_slug: window.location.pathname.split('/')[4],
         plyr_id: session_user._id
+    })
+}
+
+// Name : frontend-game.kick_player(target_plyr_id)
+// Desc : emits the kick-player event to kick a target player
+function kick_player(target_plyr_id) {
+    socket.emit('kick-player', {
+        lobby_slug: window.location.pathname.split('/')[2],
+        plyr_id: session_user._id,
+        kick_plyr_id: target_plyr_id
+    })
+}
+
+// Name : frontend-game.make_host(target_plyr_id)
+// Desc : emits the make-host event to update the host
+function make_host(target_plyr_id) {
+    socket.emit('make-host', {
+        lobby_slug: window.location.pathname.split('/')[2],
+        plyr_id: session_user._id,
+        suc_plyr_id: target_plyr_id
     })
 }
 

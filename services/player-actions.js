@@ -244,6 +244,7 @@ exports.kick_player = async function (lobby_details, host_plyr_id, kick_plyr_id)
             if (active_ctn < 2) {
                 game_actions.reset_game(lobby_details, game_pos);
                 lobby_details.games[game_pos].is_completed = true;
+                await lobby_actions.check_completion(lobby_details);
             } else {
                 // Loop through players and see how many EC are active, remove if over active count
                 let ec_ctn = 0;

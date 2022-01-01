@@ -1510,6 +1510,11 @@ html {
   background-color: hsla(var(--su)/var(--tw-bg-opacity,1));
 }
 
+.progress-error::-moz-progress-bar {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--er)/var(--tw-bg-opacity,1));
+}
+
 .progress::-webkit-progress-bar {
   --tw-bg-opacity: 1;
   --tw-bg-opacity: 0.2;
@@ -1531,6 +1536,11 @@ html {
 .progress-success::-webkit-progress-value {
   --tw-bg-opacity: 1;
   background-color: hsla(var(--su)/var(--tw-bg-opacity,1));
+}
+
+.progress-error::-webkit-progress-value {
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--er)/var(--tw-bg-opacity,1));
 }
 
 @-webkit-keyframes radiomark {
@@ -3611,6 +3621,16 @@ html {
 .focus\:ring-green-500:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgba(16, 185, 129, var(--tw-ring-opacity));
+}
+
+.focus\:ring-success:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: hsla(var(--su) / var(--tw-ring-opacity));
+}
+
+.focus\:ring-error:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: hsla(var(--er) / var(--tw-ring-opacity));
 }
 
 .active\:ring-gray-700:active {

@@ -27,7 +27,7 @@ function itr_update_players(game_details) {
         let filter = game_details.players[i].is_dead ? "filter grayscale" : "";
         center_payload += "<div class=\"block text-center mb-1\">\n" +
             "    <h1 class=\"text-base-content font-medium text-sm\">\n" +
-            "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].sockets_open, "", "itr_stat_player_dot_" + game_details.players[i]._id) + "\n" +
+            "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].sockets_open, "", "itr_player_dot_" + game_details.players[i]._id) + "\n" +
             "    </h1>\n" +
             "    <div class=\"flex flex-col items-center -space-y-3 px-3\" id=\"itr_stat_player_halo_" + game_details.players[i]._id + "\">\n" +
             "        <img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
@@ -58,12 +58,12 @@ function itr_update_players(game_details) {
     }
 }
 
-// Name : frontend-game.itr_update_pstatus(game_details)
+// Name : frontend-game.itr_update_pstatus(details)
 // Desc : updates only the status symbol of players
-function itr_update_pstatus(game_details) {
+function itr_update_pstatus(details) {
     // Loop through each player and update status
-    for (let i = 0; i < game_details.players.length; i++) {
-        document.getElementById("itr_stat_player_dot_" + game_details.players[i]._id).className = stat_dot_class(game_details.players[i].sockets_open, "mx-0.5");
+    for (let i = 0; i < details.players.length; i++) {
+        document.getElementById("itr_player_dot_" + details.players[i]._id).className = stat_dot_class(details.players[i].sockets_open, "mx-0.5");
     }
 }
 

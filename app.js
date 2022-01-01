@@ -153,7 +153,7 @@ fastify.get('/lobby/:lobby_slug/game/:game_slug', {
     }
 }, async function (req, reply) {
     // Make sure lobby exists
-    if (await Lobby.exists({ slug: req.params.lobby_slug, games: { $elemMatch: { slug: req.params.game_slug }}, created: { $gte: moment().subtract(12, "hours").toISOString() } })) {
+    if (await Lobby.exists({ slug: req.params.lobby_slug, games: { $elemMatch: { slug: req.params.game_slug, in_progress: true }}, created: { $gte: moment().subtract(12, "hours").toISOString() } })) {
         reply.view('/templates/game.hbs', { slug_1: req.params.lobby_slug, slug_2: req.params.lobby_slug, slug_3: req.params.lobby_slug, slug_4: req.params.lobby_slug, version: pkg.version, bnr_short_desc: bnr_config.short_desc, bnr_long_desc: bnr_config.long_desc, bnr_tag: bnr_config.tag })
         console.log(wipe(`${chalk.bold.magenta('Fastify')}: [` + moment().format('MM/DD/YY-HH:mm:ss') + `] ${chalk.dim.magenta('web-request     ')} ${chalk.bold.magenta('GET ' + req.url + '')} ${chalk.bold.green('200')} Game exists, rendering game page`));
     } else {

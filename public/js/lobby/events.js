@@ -42,21 +42,22 @@ socket.on("lobby-update", function (data) {
     events_length = data.events_length;
     sbr_update_log();
     // Update elements based on update trigger
-    if (data.trigger === "player-online") { // Existing player connected
+    if (data.trigger === "player-online" || data.trigger === "player-offline") { // Existing player connected
         sbr_update_pstatus(data);
         itr_update_pstatus(data);
+        return;
     } else if (data.trigger === "create-player") { // New player was created
         sbr_update_lobby_widgets(data);
-        sbr_update_options(data);
         sbr_update_players(data);
-        sbr_update_packs(data);
         itr_create_games(data);
+        return;
     } else if (data.trigger === "start-games") { // Game started
         sbr_update_lobby_widgets(data);
         sbr_update_options(data);
         sbr_update_pstatus(data);
         itr_create_games(data);
         game_start_prompt(data);
+        return;
     } else if (data.trigger === "make-host") {
         // Update host designation in session_user
         for (let i = 0; i < data.players.length; i++) {
@@ -70,19 +71,12 @@ socket.on("lobby-update", function (data) {
                 break;
             }
         }
-        sbr_update_lobby_widgets(data);
-        sbr_update_options(data);
-        sbr_update_players(data);
-        sbr_update_packs(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Host was updated</h1>'
         });
     } else if (data.trigger === "kick-player") {
-        sbr_update_lobby_widgets(data);
-        sbr_update_players(data);
-        itr_create_games(data);
         toast_turn.close();
         toast_alert.fire({
             icon: 'info',
@@ -97,6 +91,7 @@ socket.on("lobby-update", function (data) {
             icon: 'success',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Pack was imported</h1>'
         });
+        return;
     } else if (data.trigger === "export-pack") {
         sbr_update_lobby_widgets(data);
         sbr_update_packs(data);
@@ -106,16 +101,14 @@ socket.on("lobby-update", function (data) {
             icon: 'success',
             html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Pack was removed</h1>'
         });
-    } else if (data.trigger === "player-offline") { // Existing player disconnected
-        sbr_update_pstatus(data);
-        itr_update_pstatus(data);
-    } else { // Update entire ui
-        sbr_update_lobby_widgets(data);
-        sbr_update_options(data);
-        sbr_update_players(data);
-        sbr_update_packs(data);
-        itr_create_games(data);
+        return;
     }
+    // Update entire UI
+    sbr_update_lobby_widgets(data);
+    sbr_update_options(data);
+    sbr_update_players(data);
+    sbr_update_packs(data);
+    itr_create_games(data);
 });
 
 // Name : frontend-game.socket.on.game-update
