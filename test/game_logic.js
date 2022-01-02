@@ -156,10 +156,12 @@ describe('Lobbies', function() {
             assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
         });
         it('partition while games are in progress', async function() {
+            // Partition 10 players
+            await lobby_actions.partition_players(lobby_details);
             // Start games
             await lobby_actions.start_games(lobby_details);
             // Add 5 players to lobby
-            for (let i = 1; i < 6; i++) {
+            for (let i = 10; i < 15; i++) {
                 player_actions.create_player(lobby_details, 'P' + i, 'default.png');
                 event_actions.log_event(lobby_details, 'create-player', lobby_details.players[i]._id, undefined, undefined, undefined);
             }
@@ -430,11 +432,7 @@ describe('Games', function() {
             let cap_string = name.toUpperCase();
             let game_pos_null = game_actions.get_game_pos(lobby_details, cap_string);
             assert.equal(0,game_pos);
-            //comment out failing test case
-            /*
             assert.isNull(game_pos_null);
-
-             */
         });
     })
     describe('#game_actions.import_cards()', function() {
@@ -473,7 +471,6 @@ describe('Games', function() {
         let lobby_details;
         it('create new lobby env with 5 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('drawing cards',  async function() {
-            // TODO Implement test
             await lobby_actions.partition_players(lobby_details);
             await player_actions.create_hand(lobby_details, 0);
             let drawn_card = true;
@@ -504,8 +501,18 @@ describe('Games', function() {
     describe('#game_actions.discard_card()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
+        it('basic test',  async function() {
             // TODO Implement test
+            await lobby_actions.partition_players(lobby_details);
+            await player_actions.create_hand(lobby_details, 0);
+            for (let j = 0; j < lobby_details.players.length; j++) {
+                for (let i = 0; i < lobby_details.games[0].cards.length; i++) {
+                    if (lobby_details.games[0].cards[i].assign === lobby_details.players[j]) {
+                        game_actions.discard_card(lobby_details, 0, lobby_details.games[0].cards[i]._id)
+                        assert.equal("discard_deck", lobby_details.games[0].cards[i].assign);
+                    }
+                }
+            }
         });
     })
     describe('#game_actions.advance_turn()', function() {
