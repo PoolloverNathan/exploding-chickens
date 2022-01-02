@@ -156,10 +156,12 @@ describe('Lobbies', function() {
             assert.equal(lobby_details.games.length, 1, 'should have 1 game of 5');
         });
         it('partition while games are in progress', async function() {
+            // Partition 10 players
+            await lobby_actions.partition_players(lobby_details);
             // Start games
             await lobby_actions.start_games(lobby_details);
             // Add 5 players to lobby
-            for (let i = 1; i < 6; i++) {
+            for (let i = 10; i < 15; i++) {
                 player_actions.create_player(lobby_details, 'P' + i, 'default.png');
                 event_actions.log_event(lobby_details, 'create-player', lobby_details.players[i]._id, undefined, undefined, undefined);
             }
