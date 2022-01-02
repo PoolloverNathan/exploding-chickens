@@ -430,7 +430,7 @@ describe('Games', function() {
             let game_pos = game_actions.get_game_pos(lobby_details, lobby_details.games[0]._id);
             let name = String(lobby_details.games[0]._id);
             let cap_string = name.toUpperCase();
-            let game_pos_null = game_actions.get_game_pos(lobby_details, cap_string);
+            let game_pos_null = game_actions.get_game_pos(lobby_details, "cap_string");
             assert.equal(0,game_pos);
             assert.isNull(game_pos_null);
         });
@@ -693,9 +693,15 @@ describe('Players', function() {
     })
     describe('#player_actions.next_seat()', function() {
         let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('create new lobby env with 5 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
+        it('partition players next seat',  async function() {
+            await lobby_actions.partition_players(lobby_details);
+            let game_pos = 0;
+            let players = game_actions.get_players(lobby_details, 0);
+            assert.equal(player_actions.next_seat(lobby_details, 0, "seat_pos"), 1);
+            lobby_details.games[game_pos].turn_dir = "backward";
+            assert.equal(player_actions.next_seat(lobby_details, 0, "seat_pos"), 4);
+
         });
     })
     describe('#player_actions.disable_player()', function() {
