@@ -722,8 +722,15 @@ describe('Players', function() {
     describe('#player_actions.player_export()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
+        it('export player data of non-playing host',  function() {
             // TODO Implement test
+            let player_pos = 0;
+            lobby_details.players[player_pos].is_host = true;
+            lobby_details.include_host = false;
+            let export_details = player_actions.player_export(lobby_details, player_pos);
+            assert.equal(export_details.game_assign, undefined);
+            assert.equal(export_details.cards.length, 0);
+            assert.equal(export_details.is_exploding, false);
         });
     })
 });
