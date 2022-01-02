@@ -181,6 +181,35 @@ socket.on(window.location.pathname.split('/')[4] + "-game-error", function (payl
     }
 });
 
+// Name : frontend-game.socket.on.play-timeout
+// Desc : whenever an event occurs related to an error
+let play_timout_active = false;
+socket.on("play-timeout", function (payload) {
+    console.log(payload);
+    if (payload.plyr_id === session_user._id) {
+        if (play_timout_active) {
+            document.getElementById("play_timeout_ctndwn").innerHTML = '<strong>' + payload.secs_remain + ' secs</strong> until force draw'
+        } else {
+            play_timout_active = true;
+            Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: payload.secs_remain * 1000,
+                padding: '0.4rem',
+                timerProgressBar: true,
+                background: "hsla(var(--b1) / var(--tw-bg-opacity))",
+                didClose: (toast) => {
+                    play_timout_active = false;
+                }
+            }).fire({
+                icon: 'error',
+                html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1" id="play_timeout_ctndwn"><strong>' + payload.secs_remain + ' secs</strong> until force draw</h1>'
+            });
+        }
+    }
+});
+
 // Name : frontend-game.socket.on.connect
 // Desc : whenever we connect to the backend
 socket.on("connect", function (payload) {

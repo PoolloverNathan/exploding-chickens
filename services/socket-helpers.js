@@ -53,6 +53,42 @@ exports.update_g_ui = async function (lobby_details, game_pos, req_plyr_id, req_
     }
 }
 
+// Name : socket_helpers.validate_timeout(lobby_id, fastify, bot, config_store, stats_store)
+// Desc : given a lobby with play_timeout enabled, force play if a player hasn't played past the timeout
+// Author(s) : RAk3rman
+exports.validate_timeout = async function (lobby_id, fastify, bot, config_store, stats_store) {
+    // Get lobby_details
+    let lobby_details = await Lobby.findOne({_id: lobby_id});
+    // Return if lobby is not in progress anymore
+    if (!lobby_details.in_progress || lobby_details.play_timeout === -1) return;
+    // Loop through all players
+    for (let i = 0; i < lobby_details.players.length; i++) {
+        // Parse game data
+        let game_pos = game_actions.get_game_pos(lobby_details, lobby_details.players[i].game_assign);
+        let last_event = lobby_details.games[game_pos].events[lobby_details.games[game_pos].events.length - 1];
+        let sec_diff = moment().diff(moment(last_event.created), "seconds");
+        // Check if we are on the target players turn and the game hasn't completed
+        if (player_actions.get_turn_plyr_id(lobby_details, game_pos) === lobby_details.players[i]._id && !lobby_details.games[game_pos].is_completed) {
+            if (sec_diff >= lobby_details.play_timeout) {
+                // Draw card
+                let card_details = game_actions.draw_card(lobby_details, game_pos, lobby_details.players[i]._id);
+                await lobby_details.save();
+                await socket_helpers.update_g_ui(lobby_details, game_pos, lobby_details.players[i]._id, undefined, undefined, game_actions.generate_cb(undefined, card_details, undefined, undefined, false), "draw-card       ", fastify, config_store);
+                // Start explode tick if we are exploding
+                await socket_helpers.explode_tick(lobby_id, game_pos, lobby_details.players[i]._id, undefined, undefined, 15, fastify, bot, config_store, stats_store);
+            } else if (sec_diff >= (lobby_details.play_timeout - 5)) {
+                // Notify client we are about to force draw
+                fastify.io.to(lobby_details.slug).emit("play-timeout", {
+                    plyr_id: lobby_details.players[i]._id,
+                    secs_remain: lobby_details.play_timeout - sec_diff
+                });
+            }
+        }
+    }
+    // Check up on players again in 1 second
+    setTimeout(function () {socket_helpers.validate_timeout(lobby_id, fastify, bot, config_store, stats_store)}, 1000);
+}
+
 // Name : socket_helpers.explode_tick(lobby_id, game_pos, req_plyr_id, req_sock, tar_sock, ctn, fastify, bot, config_store, stats_store)
 // Desc : recursively count down when a player has an EC in their hand
 // Author(s) : RAk3rman

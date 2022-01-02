@@ -148,6 +148,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                         lobby_actions.start_games(lobby_details);
                         event_actions.log_event(lobby_details, action.trim(), req_data.plyr_id, undefined, undefined, undefined);
                         await lobby_details.save();
+                        await socket_helpers.validate_timeout(lobby_details._id, fastify, bot, config_store, stats_store);
                         await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
                         callback(false, `All active lobby games have been ${chalk.dim.green('started')}`, lobby_details, req_data, action, socket_id);
                     }
