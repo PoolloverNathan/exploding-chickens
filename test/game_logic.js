@@ -471,47 +471,27 @@ describe('Games', function() {
     })
     describe('#game_actions.draw_card()', function() {
         let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        it('create new lobby env with 5 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('drawing cards',  async function() {
             // TODO Implement test
             await lobby_actions.partition_players(lobby_details);
             await player_actions.create_hand(lobby_details, 0);
-            let drawn_card;
+            let drawn_card = true;
             //drawing until draw_deck empty
             while (drawn_card !== undefined) {
-                let i = 1;
-                while (i !== 11) {
+                for (let i = 0; i < lobby_details.players.length; i++) {
                     drawn_card = await game_actions.draw_card(lobby_details, 0, lobby_details.players[i]._id);
                 }
-                i++;
             }
             //asserting all cards dont belong in draw and discard deck
-            let bool_assign = true;
+            let num_cards = 0;
             for (let i = 0; i < lobby_details.games[0].cards.length; i++) {
                 if (lobby_details.games[0].cards[i].assign === "draw_deck" || lobby_details.games[0].cards[i].assign === "discard_deck") {
-                    bool_assign = false;
+                    assert.fail("card is in " + lobby_details.games[0].cards[i].assign);
                 }
+                num_cards++; // increment num cards
             }
-            assert.isTrue(bool_assign);
-            //new game
-            await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 1);
-
-            let drawn_card2;
-            while (drawn_card2 !== undefined) {
-                let i = 1;
-                while (i !== 11) {
-                    drawn_card2 = await game_actions.draw_card(lobby_details, 1, lobby_details.players[i]._id);
-                }
-                i++;
-            }
-            let num_cards = 0;
-            for (let i = 0; i < lobby_details.games[1].cards.length; i++) {
-                if (lobby_details.games[1].cards[i].assign !== "draw_deck" || lobby_details.games[1].cards[i].assign !== "discard_deck") {
-                    num_cards++;
-                }
-            }
-            assert.equal(lobby_details.games[1].cards.length, num_cards);
+            assert.equal(lobby_details.games[0].cards.length, num_cards);
         });
     })
     describe('#game_actions.play_card()', function() {
