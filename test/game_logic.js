@@ -432,11 +432,7 @@ describe('Games', function() {
             let cap_string = name.toUpperCase();
             let game_pos_null = game_actions.get_game_pos(lobby_details, cap_string);
             assert.equal(0,game_pos);
-            //comment out failing test case
-            /*
             assert.isNull(game_pos_null);
-
-             */
         });
     })
     describe('#game_actions.import_cards()', function() {
@@ -475,7 +471,6 @@ describe('Games', function() {
         let lobby_details;
         it('create new lobby env with 5 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('drawing cards',  async function() {
-            // TODO Implement test
             await lobby_actions.partition_players(lobby_details);
             await player_actions.create_hand(lobby_details, 0);
             let drawn_card = true;
@@ -506,8 +501,18 @@ describe('Games', function() {
     describe('#game_actions.discard_card()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
+        it('basic test',  async function() {
             // TODO Implement test
+            await lobby_actions.partition_players(lobby_details);
+            await player_actions.create_hand(lobby_details, 0);
+            for (let j = 0; j < lobby_details.players.length; j++) {
+                for (let i = 0; i < lobby_details.games[0].cards.length; i++) {
+                    if (lobby_details.games[0].cards[i].assign === lobby_details.players[j]) {
+                        game_actions.discard_card(lobby_details, 0, lobby_details.games[0].cards[i]._id)
+                        assert.equal("discard_deck", lobby_details.games[0].cards[i].assign);
+                    }
+                }
+            }
         });
     })
     describe('#game_actions.advance_turn()', function() {
