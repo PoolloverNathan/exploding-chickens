@@ -221,6 +221,10 @@ exports.reverse = function (lobby_details, game_pos, card_id, callback) {
 exports.seethefuture = function (lobby_details, game_pos, card_id, callback) {
     // Get the top three cards and add to callback.data
     let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
+    // Sort deck by position
+    draw_deck.sort(function(a, b) {
+        return b.pos - a.pos;
+    });
     callback.data = draw_deck.slice(Math.max(draw_deck.length - 3, 0));
     // Discard card
     game_actions.discard_card(lobby_details, game_pos, card_id);

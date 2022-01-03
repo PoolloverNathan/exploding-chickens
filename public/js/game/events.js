@@ -19,6 +19,7 @@ const toast_alert = Swal.mixin({
 lscache.setExpiryMilliseconds(3600000);
 // Global variables
 let allow_connect_msg = false;
+let pending_plyr_select = false;
 let events_data = {};
 let events_length = 0;
 let session_user = {
@@ -89,16 +90,35 @@ socket.on("game-update", function (payload) {
         events_data = payload.events;
         events_length = payload.events_length;
         sbr_update_log();
+        // Update if we are pending player selection
+        if (pending_plyr_select) itr_update_players(payload); pending_plyr_select = false;
         // Update elements based on update trigger
         if (payload.trigger === "play-card") { // A card was played by a player
             sbr_update_game_widgets(payload);
             itr_update_players(payload);
             itr_update_pcards(payload);
             if (payload.req_plyr_id === session_user._id && !payload.callback.incomplete) { // Trigger animation if this player played a card
-                anm_play_card(payload);
+                // Display see the future element
+                if (payload.callback.card.action === "seethefuture") {
+                    sbr_update_game_widgets(payload);
+                    itr_update_pcards(payload);
+                    itr_update_discard(payload);
+                    itr_update_hand(payload);
+                    itr_trigger_stf(payload.callback.data);
+                    return;
+                } else {
+                    anm_play_card(payload);
+                }
             } else if (payload.req_plyr_id === session_user._id && payload.callback.incomplete) {
                 if (payload.callback.card.action === "defuse") {
                     itr_trigger_chicken_target(payload.callback.data.max_pos, payload.callback.card._id);
+                } else if (payload.callback.card.action === "favor" || payload.callback.card.action === "randchick-1" || payload.callback.card.action === "randchick-2" || payload.callback.card.action === "randchick-3" || payload.callback.card.action === "randchick-4") {
+                    toast_turn.fire({
+                        icon: 'info',
+                        html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Select a player to target</h1>'
+                    });
+                    itr_update_players(payload, payload.callback.card._id, payload.req_plyr_id);
+                    pending_plyr_select = true;
                 } else {
                     toast_turn.close();
                     toast_alert.fire({
@@ -141,31 +161,6 @@ socket.on("game-update", function (payload) {
         itr_update_hand(payload);
     }
 });
-
-// // Name : frontend-game.socket.on.{slug}-callback
-// // Desc : whenever an event occurs related to an error
-// socket.on(window.location.pathname.split('/')[4] + "-callback", function (data) {
-//     // See the future callback
-//     if (data.trigger === "seethefuture") {
-//         itr_trigger_stf(data.payload);
-//     } else if (data.trigger === "favor_target") {
-//         itr_trigger_pselect(data.payload.game_details, data.payload.card_id);
-//     } else if (data.trigger === "chicken_target") {
-//         itr_trigger_chicken_target(parseInt(data.payload.max_pos), data.payload.card_id);
-//     } else if (data.trigger === "favor_taken") {
-//         sbr_update_game_widgets(data.payload.game_details);
-//         itr_update_players(data.payload.game_details);
-//         itr_update_pcards(data.payload.game_details);
-//         itr_update_discard(data.payload.game_details);
-//         itr_update_hand(data.payload.game_details);
-//         events_data = data.payload.game_details.events;
-//         events_length = data.payload.game_details.events_length;
-//         sbr_update_log();
-//         if (session_user._id === data.payload.target_plyr_id) {
-//             itr_trigger_taken(data.payload.favor_player_name, data.payload.card_image_loc, data.payload.used_gator);
-//         }
-//     }
-// });
 
 // Name : frontend-game.socket.on.{slug}-game-error
 // Desc : whenever an event occurs related to an error
@@ -282,15 +277,19 @@ function make_host(target_plyr_id) {
     })
 }
 
-// Name : frontend-game.play_card(card_id, target)
+// Name : frontend-game.play_card(card_id, t_plyr_id, t_card_id, t_deck_pos)
 // Desc : emits the play-card event when a card in the players hand is clicked
-function play_card(card_id, target) {
+function play_card(card_id, t_plyr_id, t_card_id, t_deck_pos) {
     socket.emit('play-card', {
         lobby_slug: window.location.pathname.split('/')[2],
         game_slug: window.location.pathname.split('/')[4],
         plyr_id: session_user._id,
         card_id: card_id,
-        target: target
+        target: {
+            plyr_id: t_plyr_id,
+            card_id: t_card_id,
+            deck_pos: t_deck_pos
+        }
     })
 }
 

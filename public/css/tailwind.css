@@ -2439,6 +2439,11 @@ html {
           animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+.animate-bounce {
+  -webkit-animation: bounce 1s infinite;
+          animation: bounce 1s infinite;
+}
+
 .list-disc {
   list-style-type: disc;
 }
@@ -2960,10 +2965,6 @@ html {
   padding: 0.5rem;
 }
 
-.p-3 {
-  padding: 0.75rem;
-}
-
 .p-4 {
   padding: 1rem;
 }
@@ -3385,6 +3386,11 @@ html {
 .text-neutral {
   --tw-text-opacity: 1;
   color: hsla(var(--n) / var(--tw-text-opacity));
+}
+
+.text-base-100 {
+  --tw-text-opacity: 1;
+  color: hsla(var(--b1) / var(--tw-text-opacity));
 }
 
 .text-base-content {

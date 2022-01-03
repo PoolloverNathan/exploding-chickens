@@ -14,20 +14,24 @@ const toast_turn = Swal.mixin({
 
 // Name : frontend-game.itr_update_players(game_details)
 // Desc : updates players
-function itr_update_players(game_details) {
+function itr_update_players(game_details, target_card_id, req_plyr_id) {
     let top_payload = "";
     let center_payload = "";
     // Loop through each player and append to payload
     for (let i = 0; i < game_details.players.length; i++) {
         // Construct top player payload
         top_payload += "<img class=\"inline-block h-6 w-6 rounded-full\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">";
-        // Construct center player payload
+        // Get the number of turns
         let turns = game_details.turn_seat_pos === game_details.players[i].seat_pos ? game_details.turns_remain : 0;
         // Check for dead filter
         let filter = game_details.players[i].is_dead ? "filter grayscale" : "";
-        center_payload += "<div class=\"block text-center mb-1\">\n" +
+        // Construct center player payload
+        center_payload += "<div class=\"block text-center mb-1\" onclick=\"" + (target_card_id && req_plyr_id && !game_details.players[i].is_dead && game_details.players[i]._id !== req_plyr_id ? "play_card('" + target_card_id + "', '" + game_details.players[i]._id + "', '', '')" : "") + "\">\n" +
+            "    <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 mx-auto" + (target_card_id && req_plyr_id && !game_details.players[i].is_dead && game_details.players[i]._id !== req_plyr_id ? " animate-bounce text-base-content" : " text-base-100") + "\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n" +
+            "        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M17 13l-5 5m0 0l-5-5m5 5V6\" />\n" +
+            "    </svg>\n" +
             "    <h1 class=\"text-base-content font-medium text-sm\">\n" +
-            "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].sockets_open, "", "itr_player_dot_" + game_details.players[i]._id) + "\n" +
+            "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].sockets_open, "ml-0.5", "itr_player_dot_" + game_details.players[i]._id) + "\n" +
             "    </h1>\n" +
             "    <div class=\"flex flex-col items-center -space-y-3 px-3\" id=\"itr_stat_player_halo_" + game_details.players[i]._id + "\">\n" +
             "        <img class=\"h-12 w-12 rounded-full " + filter + "\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
@@ -118,7 +122,7 @@ function itr_update_hand(game_details) {
                 // Allow to play if seat is playing AND if the card is a defuse or hotpotato allow play while exploding, else don't allow
                 if (game_details.turn_seat_pos === game_details.players[i].seat_pos &&
                     (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato" || !game_details.players[i].is_exploding)) {
-                    play_card_funct = "play_card('" + game_details.players[i].cards[j]._id + "', '')";
+                    play_card_funct = "play_card('" + game_details.players[i].cards[j]._id + "', '', '', '')";
                 }
                 if (chicken_active && (game_details.players[i].cards[j].action === "defuse" || game_details.players[i].cards[j].action === "hotpotato")) {
                     payload = "<div class=\"rounded-xl shadow-sm bottom-card bg-center bg-contain transition duration-500 ease-in-out transform hover:-translate-y-2 hover:scale-105 hover:z-10\" id=\"" + game_details.players[i].cards[j]._id + "\" onclick=\"" + play_card_funct + "\" style=\"background-image: url('" + card_url(game_details.players[i].cards[j]) + "');\"></div>" + payload;
@@ -314,44 +318,7 @@ function place_chicken(card_id, source, max_pos) {
             position = parseInt(cur.substr(6,2));
         }
     }
-    play_card(card_id, {
-        plyr_id: undefined,
-        card_id: undefined,
-        deck_pos: position
-    });
-}
-
-// Name : frontend-game.itr_trigger_pselect(game_details, card_id)
-// Desc : triggers the player selection ui to appear
-function itr_trigger_pselect(game_details, card_id) {
-    let payload = "";
-    // Check number of cards left in deck, prepare payload
-    for (let i = 0; i < game_details.players.length; i++) {
-        if (!game_details.players[i].is_dead && session_user._id !== game_details.players[i]._id) {
-            payload += "<div class=\"block text-center p-3\" onclick=\"play_card('" + card_id + "', '" + game_details.players[i]._id + "');swal.close();\">\n" +
-                "    <h1 class=\"text-white font-medium text-sm\">\n" +
-                "        " + game_details.players[i].nickname + " " + create_stat_dot(game_details.players[i].sockets_open, "", "") +
-                "    </h1>\n" +
-                "    <div class=\"flex flex-col items-center -space-y-3\">\n" +
-                "        <img class=\"h-12 w-12 rounded-full\" src=\"/public/avatars/" + game_details.players[i].avatar + "\" alt=\"\">\n" +
-                card_icon(game_details, i, 0) +
-                "    </div>\n" +
-                "</div>";
-        }
-    }
-    // Fire swal
-    Swal.fire({
-        html:
-            "<div class=\"inline-block\">" +
-            "    <h1 class=\"text-3xl font-semibold pb-1 text-white\">Ask a Favor</h1>" +
-            "    <h1 class=\"text-xl font-semibold pb-3 text-white\">Select a player below</h1>" +
-            "    <div class=\"inline-flex items-center p-2\">" +
-            payload +
-            "    </div>" +
-            "</div>\n",
-        background: "transparent",
-        showConfirmButton: false
-    })
+    play_card(card_id,'', '', position);
 }
 
 // Name : frontend-game.itr_display_winner(name)

@@ -192,7 +192,7 @@ module.exports = function (fastify, stats_store, config_store, bot) {
                     await lobby_details.save();
                     await socket_helpers.update_g_ui(lobby_details, game_pos, req_data.plyr_id, socket_id, undefined, undefined, action, fastify, config_store);
                     await socket_helpers.update_l_ui(lobby_details, req_data.plyr_id, socket_id, undefined, action, fastify, config_store);
-                    callback(false, `Game has been ${chalk.dim.yellow('reset')}`, lobby_details, req_data, action, socket_id);
+                    callback(false, `Game has been ${chalk.dim.yellow('reset')}`, lobby_details, game_pos, req_data, action, socket_id);
                 }
             ], wf_g_final_callback);
         })
