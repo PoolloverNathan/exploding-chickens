@@ -129,7 +129,7 @@ function setup_update_options() {
         // Append to payload
         if (selected_avatar === options[i]) { // Current selection, green halo
             options_payload += "<div class=\"flex-none block text-center m-2\" onclick=\"setup_select_option('" + options[i] + "')\">\n" +
-                "    <img class=\"h-16 w-16 rounded-full ring-2 ring-offset-2 ring-success\" src=\"/public/avatars/" + options[i] + "\" id=\"" + options[i] + "\" alt=\"\">\n" +
+                "    <img class=\"h-16 w-16 rounded-full ring-2 ring-green-500\" src=\"/public/avatars/" + options[i] + "\" id=\"" + options[i] + "\" alt=\"\">\n" +
                 "</div>\n";
         } else { // Available for selection
             options_payload += "<div class=\"flex-none block text-center m-2\" onclick=\"setup_select_option('" + options[i] + "')\">\n" +
@@ -150,5 +150,5 @@ function setup_select_option(avatar) {
     }
     // Update new selection
     selected_avatar = avatar;
-    document.getElementById(selected_avatar).className = "h-16 w-16 rounded-full ring-2 ring-offset-2 ring-green-500";
+    document.getElementById(selected_avatar).className = "h-16 w-16 rounded-full ring-2 ring-green-500";
 }

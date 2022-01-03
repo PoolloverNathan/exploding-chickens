@@ -33,9 +33,10 @@ exports.attack = function (lobby_details, game_pos, card_id, callback) {
 // Desc : removes exploding chicken from hand and inserts randomly in deck
 // Author(s) : RAk3rman
 exports.defuse = function (lobby_details, game_pos, card_id, plyr_id, target, callback) {
+    console.log(target);
     // Verify target is valid
     let draw_deck = card_actions.filter_cards("draw_deck", lobby_details.games[game_pos].cards);
-    if (target.deck_pos < 0 || draw_deck.length < target.deck_pos || target.deck_pos === undefined) {
+    if (target.deck_pos < 0 || draw_deck.length < target.deck_pos || target.deck_pos === undefined || target.deck_pos === '') {
         callback.incomplete = true;
         callback.data = { max_pos: draw_deck.length };
         return;
@@ -85,8 +86,11 @@ exports.favor_targeted = function (lobby_details, game_pos, card_id, plyr_id, ta
     // Update card details
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === target.card_id) {
+            // Update card
             lobby_details.games[game_pos].cards[i].assign = plyr_id;
             lobby_details.games[game_pos].cards[i].pos = current_hand.length;
+            // Update callback
+            callback.data = lobby_details.games[game_pos].cards[i];
             break;
         }
     }
@@ -119,8 +123,11 @@ exports.favor_random = function (lobby_details, game_pos, card_id, plyr_id, targ
     // Update card details
     for (let i = 0; i < lobby_details.games[game_pos].cards.length; i++) {
         if (lobby_details.games[game_pos].cards[i]._id === target_hand[rand_pos]._id) {
+            // Update card
             lobby_details.games[game_pos].cards[i].assign = plyr_id;
             lobby_details.games[game_pos].cards[i].pos = current_hand.length;
+            // Update callback
+            callback.data = lobby_details.games[game_pos].cards[i];
             break;
         }
     }

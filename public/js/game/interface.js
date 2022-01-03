@@ -213,18 +213,25 @@ function itr_trigger_stf(top_3) {
     })
 }
 
-// Name : frontend-game.itr_trigger_taken(player_name, card_url, used_gator)
+// Name : frontend-game.itr_trigger_taken(payload)
 // Desc : triggers the card taken ui to appear
-function itr_trigger_taken(player_name, card_url, used_gator) {
-    let line1 = used_gator ? player_name + " used a <span class=\"text-green-300\">Favor Gator</span>" : player_name + " asked for a Favor";
+function itr_trigger_taken(payload) {
+    // Find nickname
+    let nickname;
+    for (let i = 0; i < payload.players.length; i++) {
+        if (payload.req_plyr_id === payload.players[i]._id) {
+            nickname = payload.players[i].nickname;
+            break;
+        }
+    }
     // Fire swal
     Swal.fire({
         html:
             "<div class=\"inline-block\">" +
-            "    <h1 class=\"text-3xl font-semibold pb-1 text-white\">" + line1 + "</h1>" +
+            "    <h1 class=\"text-3xl font-semibold pb-1 text-white\">" + nickname + " asked for a Favor</h1>" +
             "    <h1 class=\"text-xl font-semibold pb-5 text-white\">Ouch, looked like you got robbed</h1>" +
             "    <div class=\"-space-x-24 rotate-12 inline-block\">" +
-            "       <div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain\" style=\"background-image: url('/" + card_url + "');width: 10.2rem;height: 14.4rem;border-radius: 1.6rem\"></div>\n" +
+            "       <div class=\"transform inline-block rounded-xl shadow-sm center-card bg-center bg-contain\" style=\"background-image: url('" + card_url(payload.callback.data) + "');width: 10.2rem;height: 14.4rem;border-radius: 1.6rem\"></div>\n" +
             "    </div>" +
             "</div>\n",
         timer: 10000,

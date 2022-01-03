@@ -97,7 +97,7 @@ socket.on("game-update", function (payload) {
             sbr_update_game_widgets(payload);
             itr_update_players(payload);
             itr_update_pcards(payload);
-            if (payload.req_plyr_id === session_user._id && !payload.callback.incomplete) { // Trigger animation if this player played a card
+            if (payload.req_plyr_id === session_user._id && !payload.callback.incomplete) { // Complete callback from this session player, do something with the callback if we need
                 // Display see the future element
                 if (payload.callback.card.action === "seethefuture") {
                     sbr_update_game_widgets(payload);
@@ -109,17 +109,26 @@ socket.on("game-update", function (payload) {
                 } else {
                     anm_play_card(payload);
                 }
-            } else if (payload.req_plyr_id === session_user._id && payload.callback.incomplete) {
-                if (payload.callback.card.action === "defuse") {
+            } else if (payload.callback.target.plyr_id === session_user._id && !payload.callback.incomplete) { // Complete callback targeting this session player, do something with the callback
+                if (payload.callback.card.action === "randchick-1" || payload.callback.card.action === "randchick-2" || payload.callback.card.action === "randchick-3" || payload.callback.card.action === "randchick-4") {
+                    sbr_update_game_widgets(payload);
+                    itr_update_pcards(payload);
+                    itr_update_discard(payload);
+                    itr_update_hand(payload);
+                    itr_trigger_taken(payload);
+                    return;
+                }
+            } else if (payload.req_plyr_id === session_user._id && payload.callback.incomplete) { // Incomplete callback from this session player, do something with callback
+                if (payload.callback.card.action === "defuse") { // Incomplete defuse, show the deck positioning UI
                     itr_trigger_chicken_target(payload.callback.data.max_pos, payload.callback.card._id);
-                } else if (payload.callback.card.action === "favor" || payload.callback.card.action === "randchick-1" || payload.callback.card.action === "randchick-2" || payload.callback.card.action === "randchick-3" || payload.callback.card.action === "randchick-4") {
+                } else if (payload.callback.card.action === "favor" || payload.callback.card.action === "randchick-1" || payload.callback.card.action === "randchick-2" || payload.callback.card.action === "randchick-3" || payload.callback.card.action === "randchick-4") { // Incomplete favor-type card, select a player target
                     toast_turn.fire({
                         icon: 'info',
                         html: '<h1 class="text-lg text-base-content font-bold pl-2 pr-1">Select a player to target</h1>'
                     });
                     itr_update_players(payload, payload.callback.card._id, payload.req_plyr_id);
                     pending_plyr_select = true;
-                } else {
+                } else { // Incomplete callback that we don't know about
                     toast_turn.close();
                     toast_alert.fire({
                         icon: 'error',
@@ -286,9 +295,9 @@ function play_card(card_id, t_plyr_id, t_card_id, t_deck_pos) {
         plyr_id: session_user._id,
         card_id: card_id,
         target: {
-            plyr_id: t_plyr_id,
-            card_id: t_card_id,
-            deck_pos: t_deck_pos
+            plyr_id: t_plyr_id === '' ? undefined : t_plyr_id,
+            card_id: t_card_id === '' ? undefined : t_card_id,
+            deck_pos: t_deck_pos === '' ? undefined : t_deck_pos
         }
     })
 }
