@@ -710,22 +710,52 @@ describe('Players', function() {
         it('partition players to disable',  async function() {
             await lobby_actions.partition_players(lobby_details);
             let game_pos = 0;
-            let players = game_actions.get_players(lobby_details, 0);
-            player_actions.disable_player(lobby_details, 0);
-            assert.isUndefined(players[0].game_assign);
-            assert.equal(players[0].seat_pos, -1);
-            assert.equal(players[0].is_host, false);
-            assert.equal(players[0].is_dead, false);
-            assert.equal(players[0].is_disabled, true);
+            player_actions.disable_player(lobby_details, 1);
+            assert.isUndefined(lobby_details.players[1].game_assign);
+            assert.equal(lobby_details.players[1].seat_pos, -1);
+            assert.equal(lobby_details.players[1].is_host, false);
+            assert.equal(lobby_details.players[1].is_dead, false);
+            assert.equal(lobby_details.players[1].is_disabled, true);
         });
     })
     describe('#player_actions.kick_player()', function() {
         let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
+        it('partition players to kick for lobby not in progress',  async function() {
+            await lobby_actions.partition_players(lobby_details);
+            await player_actions.create_hand(lobby_details, 0);
+            let game_pos = 0;
+            await player_actions.kick_player(lobby_details, lobby_details.players[0]._id, lobby_details.players[1]._id);
+            await assert.isUndefined(lobby_details.players[1].game_assign);
+            await assert.equal(lobby_details.players[1].seat_pos, -1);
+            await assert.equal(lobby_details.players[1].is_host, false);
+            await assert.equal(lobby_details.players[1].is_dead, false);
+            await assert.equal(lobby_details.players[1].is_disabled, true);
         });
-    })
+        it('partition players to kick for lobby in progress',  async function() {
+            await lobby_actions.start_games(lobby_details);
+            await lobby_actions.partition_players(lobby_details);
+            let game_pos = 0;
+            await player_actions.kick_player(lobby_details, lobby_details.players[0]._id, lobby_details.players[2]._id);
+            await assert.isUndefined(lobby_details.players[2].game_assign);
+            await assert.equal(lobby_details.players[2].seat_pos, -1);
+            await assert.equal(lobby_details.players[2].is_host, false);
+            await assert.equal(lobby_details.players[2].is_dead, true);
+            await assert.equal(lobby_details.players[2].is_disabled, true);
+        });
+        it('partition players to kick for lobby is completed',  async function() {
+           await lobby_details.games[0].is_completed;
+            let ec_remain = 0;
+            let game_details = lobby_details.games[0];
+            for (let i = 0; i < game_details.cards.length; i++) {
+                // If the card is assigned to deck, add to count
+                if (game_details.cards[i].action === "chicken" && game_details.cards[i].assign === "draw_deck") {
+                    ec_remain += 1;
+                }
+            }
+           await assert.equal(ec_remain, 2);
+        });
+    });
     describe('#player_actions.make_host()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
