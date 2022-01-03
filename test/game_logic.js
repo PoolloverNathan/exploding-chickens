@@ -568,7 +568,7 @@ describe('Games', function() {
 
 // Name : test.players
 // Desc : adds players to a sample lobby and tests interaction
-// Author(s) : RAk3rman
+// Author(s) : RAk3rman, williamyang10
 describe('Players', function() {
     describe('#player_actions.create_player()', function() {
         let lobby_details;
@@ -707,8 +707,16 @@ describe('Players', function() {
     describe('#player_actions.disable_player()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('partition players to disable',  async function() {
+            await lobby_actions.partition_players(lobby_details);
+            let game_pos = 0;
+            let players = game_actions.get_players(lobby_details, 0);
+            player_actions.disable_player(lobby_details, 0);
+            assert.isUndefined(players[0].game_assign);
+            assert.equal(players[0].seat_pos, -1);
+            assert.equal(players[0].is_host, false);
+            assert.equal(players[0].is_dead, false);
+            assert.equal(players[0].is_disabled, true);
         });
     })
     describe('#player_actions.kick_player()', function() {
