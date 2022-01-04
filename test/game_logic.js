@@ -578,12 +578,12 @@ describe('Games', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('reseting game',  async function() {
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 2; i++) {
                 await lobby_actions.partition_players(lobby_details);
-                await player_actions.create_hand(lobby_details, 0);
-                await game_actions.reset_game(lobby_details, 0);
-                for (let j = 0; j < lobby_details.games[0].cards.length; j++) {
-                    assert.equal( "draw_deck", lobby_details.games[0].cards[j].assign);
+                await player_actions.create_hand(lobby_details, i);
+                await game_actions.reset_game(lobby_details, i);
+                for (let j = 0; j < lobby_details.games[i].cards.length; j++) {
+                    assert.equal( "draw_deck", lobby_details.games[i].cards[j].assign);
                 }
             }
         });
