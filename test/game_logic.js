@@ -621,7 +621,7 @@ describe('Games', function() {
 
 // Name : test.players
 // Desc : adds players to a sample lobby and tests interaction
-// Author(s) : RAk3rman, williamyang10
+// Author(s) : RAk3rman, williamyang10, SengdowJones
 describe('Players', function() {
     describe('#player_actions.create_player()', function() {
         let lobby_details;
@@ -839,9 +839,8 @@ describe('Players', function() {
     })
     describe('#player_actions.player_export()', function() {
         let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('export player data of non-playing host',  function() {
-            // TODO Implement test
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
+        it('export player data of non-playing host', function() {
             let player_pos = 0;
             lobby_details.players[player_pos].is_host = true;
             lobby_details.include_host = false;
@@ -849,6 +848,15 @@ describe('Players', function() {
             assert.equal(export_details.game_assign, undefined);
             assert.equal(export_details.cards.length, 0);
             assert.equal(export_details.is_exploding, false);
+        });
+        it('export player data of non-host player', async function() {
+            // Create sample game with 5 players in 1 game
+            await lobby_actions.partition_players(lobby_details);
+            // Create hand for first player
+            player_actions.create_hand(lobby_details, 0);
+            // extract info of player
+            let export_details = player_actions.player_export(lobby_details, 1);
+            assert.equal(export_details.cards.length, 5);
         });
     })
 });
