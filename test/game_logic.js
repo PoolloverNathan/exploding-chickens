@@ -502,7 +502,6 @@ describe('Games', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  async function() {
-            // TODO Implement test
             await lobby_actions.partition_players(lobby_details);
             await player_actions.create_hand(lobby_details, 0);
             for (let j = 0; j < lobby_details.players.length; j++) {
@@ -518,8 +517,19 @@ describe('Games', function() {
     describe('#game_actions.advance_turn()', function() {
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('basic test',  async function() {
+            await lobby_actions.partition_players(lobby_details);
+            await player_actions.create_hand(lobby_details, 0);
+            assert.equal(0, lobby_details.games[0].turn_seat_pos);
+            for (let i = 1; i < 5; i++) {
+                await game_actions.advance_turn(lobby_details, 0);
+                assert.equal(1, lobby_details.games[0].turns_remain);
+                assert.equal(i, lobby_details.games[0].turn_seat_pos);
+            }
+            lobby_details.games[0].turns_remain = 4;
+            await game_actions.advance_turn(lobby_details, 0);
+            assert.equal(3, lobby_details.games[0].turns_remain);
+            assert.equal(4, lobby_details.games[0].turn_seat_pos);
         });
     })
     describe('#game_actions.is_winner()', function() {
