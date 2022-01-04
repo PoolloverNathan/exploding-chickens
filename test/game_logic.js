@@ -758,16 +758,30 @@ describe('Players', function() {
     });
     describe('#player_actions.make_host()', function() {
         let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
+            it('partition host',  async function() {
+                await lobby_actions.partition_players(lobby_details);
+                let game_pos = 0;
+                player_actions.make_host(lobby_details, lobby_details.players[0]._id, lobby_details.players[1]._id);
+                assert.isTrue(lobby_details.players[1].is_host);
+                assert.isFalse(lobby_details.players[0].is_host);
         });
     })
     describe('#player_actions.is_exploding()', function() {
         let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
+        it('partition exploding players',  async function() {
+            await lobby_actions.partition_players(lobby_details);
+            let game_pos = 0;
+            player_actions.create_hand(lobby_details, 0);
+            assert.isFalse(player_actions.is_exploding(card_actions.filter_cards(lobby_details.players[0]._id, lobby_details.games[0].cards)));
+            for(let i = 0; i <lobby_details.games[0].cards.length; i++){
+                if(lobby_details.games[0].cards[i].action === "chicken"){
+                    lobby_details.games[0].cards[i].assign = lobby_details.players[0]._id;
+                    break;
+                }
+            }
+            assert.isTrue(player_actions.is_exploding(card_actions.filter_cards(lobby_details.players[0]._id, lobby_details.games[0].cards)));
         });
     })
     describe('#player_actions.player_export()', function() {
