@@ -168,7 +168,7 @@ exports.play_card = function (lobby_details, game_pos, card_id, req_plyr_id, tar
     else if (card_details.action.includes("randchick")) { card_actions.favor_random(lobby_details, game_pos, card_id, req_plyr_id, target, callback); }
     else if (card_details.action === "reverse")         { card_actions.reverse(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action === "seethefuture")    { card_actions.seethefuture(lobby_details, game_pos, card_id, callback); }
-    else if (card_details.action === "shuffle")         { card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
+    else if (card_details.action === "shuffle")          { card_actions.shuffle(lobby_details, game_pos, card_id, callback); }
     else if (card_details.action === "skip")            { card_actions.skip(lobby_details, game_pos, card_id, callback); }
     // YOLKING AROUND EXPANSION PACK
     else if (card_details.action === "hotpotato")       { card_actions.hot_potato(lobby_details, game_pos, card_id, req_plyr_id, callback); }
@@ -277,7 +277,7 @@ exports.start_game = function (lobby_details, game_pos) {
     game_actions.reset_game(lobby_details, game_pos);
     lobby_details.games[game_pos].in_progress = true;
     // Create hands and randomize seats
-    player_actions.create_hand(lobby_details, game_pos);
+    player_actions.create_hand(lobby_details, game_pos, 5);
     player_actions.randomize_seats(lobby_details, game_pos);
     // Add prelim events to game
     let host_id = "";

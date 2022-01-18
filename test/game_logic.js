@@ -104,6 +104,7 @@ async function setup_test_lobby(lobby_details, plyr_ctn) {
 // Desc : creates a test lobby and initializes to sample values
 // Author(s) : RAk3rman
 describe('Lobbies', function() {
+    // Prepare a lobby of 10 players to be create before each test case
     let lobby_details;
     beforeEach(async function () {
         lobby_details = await setup_test_lobby(lobby_details, 10);
@@ -403,124 +404,152 @@ describe('Lobbies', function() {
 // Desc : tests all functions in game-actions.js
 // Author(s) : RAk3rman
 describe('Games', function() {
+    // Prepare a lobby of 5 players to be create before each test case
+    let lobby_details;
+    beforeEach(async function () {
+        lobby_details = await setup_test_lobby(lobby_details, 5);
+    });
+    afterEach(async function () {
+        await Lobby.deleteOne({_id: lobby_details._id});
+    });
     describe('#game_actions.create_game()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('creating game',  async function() {
-            let game_pos = await game_actions.create_game(lobby_details);
-            assert.equal(game_pos,0,'testing actual length of lobby');
+        it('create game in the first position',  async function() {
+            assert.equal(await game_actions.create_game(lobby_details), 0);
+        });
+        it('create game in the second position',  async function() {
+            await game_actions.create_game(lobby_details);
+            assert.equal(await game_actions.create_game(lobby_details), 1);
         });
     })
     describe('#game_actions.get_game_details()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('returning lobby details',  async function() {
-            // TODO check in with radison
+        it('get valid game',  async function() {
+            // Create active game and make sure details exist
             await lobby_actions.partition_players(lobby_details);
-            let game_pos = await game_actions.get_game_details(lobby_details, lobby_details.games[0]._id);
-            assert.equal(lobby_details.games[0],game_pos);
-            assert.isNull(game_actions.get_game_pos(lobby_details, "cap_string"));
+            assert.equal(lobby_details.games[0], await game_actions.get_game_details(lobby_details, lobby_details.games[0]._id));
+        });
+        it('get invalid game',  async function() {
+            assert.isNull(game_actions.get_game_details(lobby_details, "GAME-DNE"));
         });
     })
     describe('#game_actions.get_game_pos()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('getting game position',  async function() {
-            // TODO check in with radison
+        it('get valid game position',  async function() {
+            // Partition players and test positioning
             await lobby_actions.partition_players(lobby_details);
-            let game_pos = game_actions.get_game_pos(lobby_details, lobby_details.games[0]._id);
-            let name = String(lobby_details.games[0]._id);
-            let cap_string = name.toUpperCase();
-            let game_pos_null = game_actions.get_game_pos(lobby_details, "cap_string");
-            assert.equal(0,game_pos);
-            assert.isNull(game_pos_null);
+            assert.equal(0, game_actions.get_game_pos(lobby_details, lobby_details.games[0]._id));
+        });
+        it('get invalid game pos',  async function() {
+            assert.isNull(game_actions.get_game_pos(lobby_details, "GAME-DNE"));
         });
     })
     describe('#game_actions.import_cards()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('importing cards',  async function() {
-            // TODO function does not have return value?
+        it('importing yolking_around expansion pack',  async function() {
+            // Partition players and attempt to import expansion pack
             await lobby_actions.partition_players(lobby_details);
             game_actions.import_cards(lobby_details, 0, "yolking_around");
             assert.isNotNull(lobby_details.games[0].cards);
-            let pack_array = require('../packs/' + "yolking_around" + '.json');
-            for (let i = 1; i <= pack_array.length - 1; i++) {
-                assert.equal("draw_deck", lobby_details.games[0].cards[i].assign);
+            for (let i = 0; i < lobby_details.games[0].cards.length; i++) {
+                if (lobby_details.games[0].cards[i].pack === "yolking_around") {
+                    return;
+                }
             }
+            assert.fail("couldn't find imported card")
         });
     })
     describe('#game_actions.export_cards()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('exporting cards',  async function() {
-            // TODO Implement test
+        it('export yolking_around expansion pack',  async function() {
+            // Import and export expansion pack
             await lobby_actions.partition_players(lobby_details);
             game_actions.import_cards(lobby_details, 0, "yolking_around");
-            game_actions.import_cards(lobby_details, 0, "base");
             game_actions.export_cards(lobby_details, 0, "yolking_around");
-            let bool = true;
             for (let i = 0; i < lobby_details.games[0].cards.length; i++) {
                 if (lobby_details.games[0].cards[i].pack === "yolking_around") {
-                    bool = false;
+                    assert.fail("card from import wasn't exported");
                 }
             }
-            assert.isTrue(bool);
+        });
+        it('export base pack',  async function() {
+            // Export base cards that are added by default
+            await lobby_actions.partition_players(lobby_details);
+            game_actions.export_cards(lobby_details, 0, "base");
+            assert.equal(0, lobby_details.games[0].cards.length);
+        });
+    })
+    describe('#game_actions.generate_cb()', function() {
+        it('generating callback',  async function() {
+            let cb = game_actions.generate_cb(undefined, undefined, undefined, { plyr_id: undefined, card_id: undefined, deck_pos: undefined }, false);
+            assert.exists(cb);
         });
     })
     describe('#game_actions.draw_card()', function() {
-        let lobby_details;
-        it('create new lobby env with 5 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('drawing cards',  async function() {
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             let drawn_card = true;
-            //drawing until draw_deck empty
+            // Drawing until draw_deck empty
             while (drawn_card !== undefined) {
                 for (let i = 0; i < lobby_details.players.length; i++) {
                     drawn_card = await game_actions.draw_card(lobby_details, 0, lobby_details.players[i]._id);
                 }
             }
-            //asserting all cards dont belong in draw and discard deck
+            // Asserting all cards don't belong in draw and discard deck
             let num_cards = 0;
             for (let i = 0; i < lobby_details.games[0].cards.length; i++) {
                 if (lobby_details.games[0].cards[i].assign === "draw_deck" || lobby_details.games[0].cards[i].assign === "discard_deck") {
                     assert.fail("card is in " + lobby_details.games[0].cards[i].assign);
                 }
-                num_cards++; // increment num cards
+                num_cards++; // Increment the total number of cards
             }
             assert.equal(lobby_details.games[0].cards.length, num_cards);
         });
     })
     describe('#game_actions.play_card()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
-        it('basic test',  function() {
-            // TODO Implement test
+        // TODO @RAk3rman Review
+        it('test all cards w/o callback',  async function() {
+            // Setup lobby/game
+            await lobby_actions.partition_players(lobby_details);
+            game_actions.import_cards(lobby_details, 0, "yolking_around");
+            player_actions.create_hand(lobby_details, 0, 15);
+            // Call all cards without a callback and no data
+            let cards = ["attack-1", "reverse-1", "shuffle-1", "skip-1", "scrambledeggs-1", "superskip-1", "safetydraw-1"];
+            cards.forEach(card => {
+                let cb = game_actions.play_card(lobby_details, 0, card, card_actions.find_card(card, lobby_details.games[0].cards).assign, { plyr_id: undefined, card_id: undefined, deck_pos: undefined }, stats_store);
+                assert.isUndefined(cb.err, card);
+                assert.equal(cb.card._id, card, card);
+                assert.isUndefined(cb.data, card);
+                assert.isUndefined(cb.target.plyr_id, card);
+                assert.isUndefined(cb.target.card_id, card);
+                assert.isUndefined(cb.target.deck_pos, card);
+                assert.isFalse(cb.incomplete, card);
+            })
+        });
+        it('test all cards with callback',  async function() {
+
+        });
+        it('test explosion-dependant cards',  async function() {
+
         });
     })
     describe('#game_actions.discard_card()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        // TODO @RAk3rman Review
         it('discarding card',  async function() {
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             for (let j = 0; j < lobby_details.players.length; j++) {
                 for (let i = 0; i < lobby_details.games[0].cards.length; i++) {
-                    if (lobby_details.games[0].cards[i].assign === lobby_details.players[j]) {
+                    if (lobby_details.games[0].cards[i].assign === lobby_details.players[j]._id) {
                         game_actions.discard_card(lobby_details, 0, lobby_details.games[0].cards[i]._id)
                         assert.equal("discard_deck", lobby_details.games[0].cards[i].assign);
+                        break;
                     }
                 }
             }
         });
     })
     describe('#game_actions.advance_turn()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        // TODO @RAk3rman Review
         it('advancing turn',  async function() {
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             assert.equal(0, lobby_details.games[0].turn_seat_pos);
             for (let i = 1; i < 5; i++) {
                 await game_actions.advance_turn(lobby_details, 0);
@@ -534,26 +563,21 @@ describe('Games', function() {
         });
     })
     describe('#game_actions.is_winner()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        // TODO @RAk3rman Review
         it('testing game winner',  async function() {
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             for (let i = 1; i < lobby_details.players.length; i++) {
                 lobby_details.players[i].is_dead = true;
             }
             assert.isTrue(game_actions.is_winner(lobby_details, 0));
-            await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 1);
-            assert.isFalse(game_actions.is_winner(lobby_details, 1));
         });
     })
     describe('#game_actions.complete_game()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        // TODO @RAk3rman Review
         it('completing game test cases',  async function() {
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             for (let i = 1; i < lobby_details.players.length; i++) {
                 lobby_details.players[i].is_dead = true;
             }
@@ -566,8 +590,6 @@ describe('Games', function() {
             }
             await game_actions.complete_game(lobby_details, 0);
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 1);
-            assert.isFalse(game_actions.is_winner(lobby_details, 1));
             assert.equal(1, lobby_details.players[winner].wins);
             for (let i = 0; i < lobby_details.players.length; i++) {
                 assert.isFalse(lobby_details.players[i].is_dead);
@@ -575,44 +597,36 @@ describe('Games', function() {
         });
     })
     describe('#game_actions.reset_game()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        // TODO @RAk3rman Review
         it('reseting game',  async function() {
-            for (let i = 0; i < 2; i++) {
-                await lobby_actions.partition_players(lobby_details);
-                await player_actions.create_hand(lobby_details, i);
-                await game_actions.reset_game(lobby_details, i);
-                for (let j = 0; j < lobby_details.games[i].cards.length; j++) {
-                    assert.equal( "draw_deck", lobby_details.games[i].cards[j].assign);
-                }
+            await lobby_actions.partition_players(lobby_details);
+            player_actions.create_hand(lobby_details, 0, 5);
+            await game_actions.reset_game(lobby_details, 0);
+            for (let i = 0; i < lobby_details.games[0].cards.length; i++) {
+                assert.equal( "draw_deck", lobby_details.games[0].cards[i].assign);
             }
         });
     })
     describe('#game_actions.get_players()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        // TODO @RAk3rman Review
         it('getting players',  async function() {
             // TODO Implement test
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             assert.equal(game_actions.get_players(lobby_details, 0).length, 5);
         });
     })
     describe('#game_actions.game_export()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        // TODO @RAk3rman Review
         it('exporting game',  async function() {
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
         });
     })
     describe('#game_actions.delete_game()', function() {
-        let lobby_details;
-        it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
+        // TODO @RAk3rman Review
         it('deleting game',  async function() {
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
-            await game_actions.complete_game(lobby_details, 0);
             game_actions.delete_game(lobby_details, lobby_details.games[0]._id);
             assert.equal(lobby_details.games.length, 0);
         });
@@ -624,6 +638,7 @@ describe('Games', function() {
 // Author(s) : RAk3rman, williamyang10, SengdowJones
 describe('Players', function() {
     describe('#player_actions.create_player()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('add 10 players to lobby', async function() {
             lobby_details = await lobby_actions.create_lobby();
@@ -640,6 +655,7 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.get_player_details()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('player details exist', function() {
@@ -653,6 +669,7 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.get_player_pos()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('player position exist', function() {
@@ -666,6 +683,7 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.get_turn_plyr_id()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('partition players', async function() {
@@ -683,6 +701,7 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.update_sockets_open()',  function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('player sockets exists', function() {
@@ -695,14 +714,15 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.create_hand()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('create hand for existing players',  async function() {
             // Create sample games with 5 players in 2 games
             await lobby_actions.partition_players(lobby_details);
             // Create hand for first player
-            player_actions.create_hand(lobby_details, 0);
-            player_actions.create_hand(lobby_details, 1);
+            player_actions.create_hand(lobby_details, 0, 5);
+            player_actions.create_hand(lobby_details, 1, 5);
             // Test cards assigned to player
             lobby_details.players.forEach(plyr => {
                 let plyr_hand = card_actions.filter_cards(plyr._id, game_actions.get_game_details(lobby_details, plyr.game_assign).cards);
@@ -730,6 +750,7 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.randomize_seats()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('partition players seats',  async function() {
@@ -745,6 +766,7 @@ describe('Players', function() {
 
     })
     describe('#player_actions.next_seat()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 5 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('partition players next seat',  async function() {
@@ -758,6 +780,7 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.disable_player()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('partition players to disable',  async function() {
@@ -772,11 +795,12 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.kick_player()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('partition players to kick for lobby not in progress',  async function() {
             await lobby_actions.partition_players(lobby_details);
-            await player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             let game_pos = 0;
             await player_actions.kick_player(lobby_details, lobby_details.players[0]._id, lobby_details.players[1]._id);
             await assert.isUndefined(lobby_details.players[1].game_assign);
@@ -810,6 +834,7 @@ describe('Players', function() {
         });
     });
     describe('#player_actions.make_host()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
             it('partition host',  async function() {
@@ -821,12 +846,13 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.is_exploding()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('partition exploding players',  async function() {
             await lobby_actions.partition_players(lobby_details);
             let game_pos = 0;
-            player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             assert.isFalse(player_actions.is_exploding(card_actions.filter_cards(lobby_details.players[0]._id, lobby_details.games[0].cards)));
             for(let i = 0; i <lobby_details.games[0].cards.length; i++){
                 if(lobby_details.games[0].cards[i].action === "chicken"){
@@ -838,6 +864,7 @@ describe('Players', function() {
         });
     })
     describe('#player_actions.player_export()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 5)});
         it('export player data of non-playing host', function() {
@@ -853,7 +880,7 @@ describe('Players', function() {
             // Create sample game with 5 players in 1 game
             await lobby_actions.partition_players(lobby_details);
             // Create hand for first player
-            player_actions.create_hand(lobby_details, 0);
+            player_actions.create_hand(lobby_details, 0, 5);
             // extract info of player
             let export_details = player_actions.player_export(lobby_details, 1);
             assert.equal(export_details.cards.length, 5);
@@ -866,6 +893,7 @@ describe('Players', function() {
 // Author(s) : RAk3rman
 describe('Cards', function() {
     describe('#card_actions.attack()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -873,6 +901,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.defuse()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -880,6 +909,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.chicken()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -887,6 +917,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.favor_targeted()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -894,6 +925,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.favor_random()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -901,6 +933,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.favor_gator()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -908,6 +941,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.verify_favor_target_plyr()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -915,6 +949,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.verify_favor_target_card()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -922,6 +957,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.verify_double()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -929,6 +965,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.reverse()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -936,6 +973,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.seethefuture()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -943,6 +981,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.shuffle()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -950,6 +989,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.shuffle_draw_deck()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -957,6 +997,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.skip()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -964,6 +1005,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.hot_potato()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -971,6 +1013,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.scrambled_eggs()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -978,6 +1021,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.scrambled_eggs()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -985,6 +1029,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.super_skip()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -992,6 +1037,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.safety_draw()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -999,6 +1045,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.draw_bottom()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -1006,6 +1053,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.kill_player()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -1013,6 +1061,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.filter_cards()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -1020,6 +1069,7 @@ describe('Cards', function() {
         });
     })
     describe('#card_actions.find_card()', function() {
+        // TODO @RAk3rman Review
         let lobby_details;
         it('create new lobby env with 10 players', async function() {lobby_details = await setup_test_lobby(lobby_details, 10)});
         it('basic test',  function() {
@@ -1119,22 +1169,22 @@ describe('Events', function() {
     })
 });
 
-// Name : test.simulation
-// Desc : simulates game play over 6 lobbies with (2 + 3 * n) number of players over 3 rounds
-// Author(s) : RAk3rman
-describe('Simulation (final boss)', function() {
-    let stats = { lobbies: 0, games: 0, cards: 0 }
-    // Create 6 lobbies
-    for (let i = 0; i < 6; i++) {
-        let plyr_ctn = 2 + 3 * i;
-        let rounds = 3;
-        simulate_lobby(i + 1, plyr_ctn, rounds, stats);
-    }
-    // Print stats after we are done with this test
-    after(function() {
-        console.log(wipe(`\n${chalk.bold.red('Mocha')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Simulation stats: ` + stats.lobbies + ` lobbies, ` + stats.games + ` games, with ` + stats.cards + ` card interactions`));
-    });
-});
+// // Name : test.simulation
+// // Desc : simulates game play over 6 lobbies with (2 + 3 * n) number of players over 3 rounds
+// // Author(s) : RAk3rman
+// describe('Simulation (final boss)', function() {
+//     let stats = { lobbies: 0, games: 0, cards: 0 }
+//     // Create 6 lobbies
+//     for (let i = 0; i < 6; i++) {
+//         let plyr_ctn = 2 + 3 * i;
+//         let rounds = 3;
+//         simulate_lobby(i + 1, plyr_ctn, rounds, stats);
+//     }
+//     // Print stats after we are done with this test
+//     after(function() {
+//         console.log(wipe(`\n${chalk.bold.red('Mocha')}:   [` + moment().format('MM/DD/YY-HH:mm:ss') + `] Simulation stats: ` + stats.lobbies + ` lobbies, ` + stats.games + ` games, with ` + stats.cards + ` card interactions`));
+//     });
+// });
 
 // Name : test.simulate_lobby
 // Desc : simulates game play in a single lobby with n number of rounds

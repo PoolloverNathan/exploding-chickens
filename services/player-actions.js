@@ -90,10 +90,10 @@ exports.update_sockets_open = function (lobby_details, plyr_id, method) {
     return null;
 };
 
-// Name : player_actions.create_hand(lobby_details, game_pos)
+// Name : player_actions.create_hand(lobby_details, game_pos, plyr_card_ctn)
 // Desc : gives each player a defuse card and 4 random cards from the draw_deck, rations ec
 // Author(s) : RAk3rman
-exports.create_hand = function (lobby_details, game_pos) {
+exports.create_hand = function (lobby_details, game_pos, plyr_card_ctn) {
     // Create array containing the position of each defuse card and regular card
     let defuse_bucket = [];
     let exploding_bucket = [];
@@ -121,8 +121,8 @@ exports.create_hand = function (lobby_details, game_pos) {
         let rand_defuse_pos = rand_bucket(defuse_bucket);
         lobby_details.games[game_pos].cards[rand_defuse_pos].assign = plyr_array[i]._id;
         lobby_details.games[game_pos].cards[rand_defuse_pos].pos = 0;
-        // Choose remaining 4 cards at random
-        for (let j = 1; j <= 4; j++) {
+        // Choose remaining n cards at random
+        for (let j = 1; j <= (plyr_card_ctn - 1) && card_bucket.length > 0; j++) {
             let rand_card_pos = rand_bucket(card_bucket);
             lobby_details.games[game_pos].cards[rand_card_pos].assign = plyr_array[i]._id;
             lobby_details.games[game_pos].cards[rand_card_pos].pos = j;
